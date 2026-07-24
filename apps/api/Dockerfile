@@ -27,4 +27,4 @@ COPY --from=builder /app/packages/shared ./packages/shared
 
 EXPOSE 3001
 
-CMD ["node", "dist/index.js"]
+CMD ["npm", "run", "start:prod"]

@@ -1,7 +1,7 @@
 services:
 
   web:
-    image: ghcr.io/Xln-0/arbora-web:latest
+    image: ghcr.io/xln-0/arbora-web:latest
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -9,7 +9,7 @@ services:
       - api
 
   api:
-    image: ghcr.io/Xln-0/arbora-api:latest
+    image: ghcr.io/xln-0/arbora-api:latest
     restart: unless-stopped
     environment:
       PORT: ${PORT}
