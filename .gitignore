@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+
+coverage
+*.log
+
+.vscode/settings.json
+
+apps/**/dist
+packages/**/dist
+
+packages/database/generated

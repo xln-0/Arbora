@@ -1,0 +1,60 @@
+services:
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+
+    restart: unless-stopped
+
+    environment:
+      VITE_API_URL: ${VITE_API_URL}
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+
+    restart: unless-stopped
+
+    environment:
+      PORT: ${PORT}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "3001:3001"
+
+  postgres:
+    image: postgres:17
+
+    container_name: arbora-postgres
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    volumes:
+      - arbora_pgdata:/var/lib/postgresql/data
+
+volumes:
+  arbora_pgdata:

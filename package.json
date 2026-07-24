@@ -1,0 +1,27 @@
+{
+  "name": "arbora",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix apps/web\" \"npm run dev --prefix apps/api\"",
+    "gen:database": "npm run generate --workspace @arbora/database",
+    "build:database": "npm run build --workspace @arbora/database",
+    "build:shared": "npm run build --workspace @arbora/shared",
+    "build:api": "npm run build --workspace api",
+    "build:web": "npm run build --workspace arbora",
+    "build": "npm run build:shared && npm run build:api && npm run build:web"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  },
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

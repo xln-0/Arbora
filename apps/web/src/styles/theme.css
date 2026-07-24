@@ -1,0 +1,38 @@
+:root {
+
+  /* Brand */
+
+  --color-primary: #16a34a;
+  --color-primary-hover: #15803d;
+  --color-primary-soft: #dcfce7;
+
+
+  /* Secondary */
+
+  --color-secondary: #fed7aa;
+  --color-secondary-hover: #fdba74;
+  --color-secondary-foreground: #9a3412;
+
+
+  /* Background */
+
+  --color-background: #fafaf9;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f5f4;
+
+
+  /* Text */
+
+  --color-foreground: #111827;
+  --color-muted: #6b7280;
+
+
+  /* Border */
+
+  --color-border: #e5e7eb;
+
+
+  /* Radius */
+
+  --radius-card: 16px;
+}
