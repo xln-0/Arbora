@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 export async function apiClient<T>(
   path: string,
@@ -10,7 +10,9 @@ export async function apiClient<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const url = `${API_URL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
+
+  const response = await fetch(url, {
     credentials: "include",
     headers,
     ...options,
