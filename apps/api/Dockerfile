@@ -8,7 +8,7 @@ COPY apps ./apps
 COPY packages ./packages
 
 RUN npm ci
-RUN npm run gen:database
+RUN DATABASE_URL="postgresql://arbora:password@localhost:5432/arbora" npm run gen:database
 RUN npm run build:database
 RUN npm run build:shared
 RUN npm run build:api
