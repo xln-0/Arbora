@@ -37,6 +37,10 @@ export function createTree(name: string) {
   });
 }
 
+export function deleteTree(id: string) {
+  return apiClient(`/trees/${id}`, { method: "DELETE" });
+}
+
 export function getTreeGraph(id: string) {
   return apiClient<TreeGraph>(`/trees/${id}/graph`);
 }

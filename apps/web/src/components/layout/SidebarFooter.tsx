@@ -6,6 +6,19 @@ import { Button } from "@/components/ui";
 import { t } from "@/i18n";
 import { useAuth } from "@/modules/auth/useAuth";
 
+const items = [
+  {
+    key: "settings",
+    icon: Settings,
+    to: "/settings",
+  },
+  {
+    key: "account",
+    icon: User,
+    to: "/account",
+  },
+];
+
 export function SidebarFooter() {
   const { logout } = useAuth();
 
@@ -24,35 +37,42 @@ export function SidebarFooter() {
         gap-2
       "
     >
-      <NavLink
-        to="/settings"
-        className={({ isActive }) =>
-          `
-            flex
-            items-center
-            gap-3
+      {items.map((item) => {
+        const Icon = item.icon;
 
-            rounded-lg
-
-            px-3
-            py-2
-
-            text-sm
-
-            transition
-
-            ${
-              isActive
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:bg-surface-muted"
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `
+                      flex
+                      items-center
+                      gap-3
+      
+                      rounded-lg
+      
+                      px-3
+                      py-2
+      
+                      text-sm
+      
+                      transition
+      
+                      ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:bg-surface-muted"
+                      }
+                      `
             }
-          `
-        }
-      >
-        <Settings size={18} />
+          >
+            <Icon size={18} />
 
-        {t("navigation.settings")}
-      </NavLink>
+            {t(`navigation.${item.key}`)}
+          </NavLink>
+        );
+      })}
 
       <Button
         variant="secondary"

@@ -2,13 +2,15 @@ import { createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
 
-import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
-import GuestRoute from "@/modules/auth/components/GuestRoute";
-import ProtectedRoute from "@/modules/auth/components/ProtectedRoute";
-import PeoplePage from "@/pages/PeoplePage";
-import SettingsPage from "@/pages/SettingsPage";
-import TreeSettingsPage from "@/pages/TreeSettingsPage";
+import { GuestRoute, ProtectedRoute } from "@/modules/auth/components";
+import {
+  LoginPage,
+  DashboardPage,
+  PeoplePage,
+  SettingsPage,
+  TreeSettingsPage,
+  AccountPage,
+} from "@/pages";
 
 export const router = createBrowserRouter([
   {
@@ -56,6 +58,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <TreeSettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/account",
+        element: (
+          <ProtectedRoute>
+            <AccountPage />
           </ProtectedRoute>
         ),
       },

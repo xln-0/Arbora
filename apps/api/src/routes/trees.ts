@@ -1,8 +1,15 @@
 import type { FastifyPluginAsync } from "fastify";
 
-import { createTree, getTree, updateTree } from "../services/treesService.js";
+import {
+  createTree,
+  deleteTree,
+  getTree,
+  updateTree,
+} from "../services/treesService.js";
 
 const treesRoutes: FastifyPluginAsync = async (app) => {
+  // Create a tree
+
   app.post(
     "/",
     {
@@ -22,6 +29,8 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
+  // Get User's trees
+
   app.get(
     "/",
     {
@@ -37,6 +46,8 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
       return trees;
     },
   );
+
+  // Get Tree
 
   app.get(
     "/:id",
@@ -60,6 +71,8 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
+  // Update tree
+
   app.patch(
     "/:id",
     {
@@ -77,6 +90,18 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
       return updateTree(app.prisma, id, body as any);
     },
   );
+
+  // Supprimer
+
+  app.delete("/:id", async (request) => {
+    const { id } = request.params as {
+      id: string;
+    };
+
+    return deleteTree(app.prisma, id);
+  });
+
+  // Get graph
 
   app.get(
     "/:treeId/graph",

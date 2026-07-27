@@ -1,22 +1,32 @@
 import { useEffect, useState } from "react";
 
-import { AppLayout } from "@/components/layout/AppLayout";
+import { AppLayout } from "@/components/layout";
+import { ConfirmDialog } from "@/components/ui";
 import { useTreeStore } from "@/stores/treeStore";
-import { editTree } from "@/api/treesApi";
+import { deleteTree, editTree } from "@/api/treesApi";
 import { t } from "@/i18n";
+import { Button } from "@/components/ui";
+import { useNavigate } from "react-router-dom";
 
 export default function TreeSettingsPage() {
+  const navigate = useNavigate();
+
   const trees = useTreeStore((state) => state.trees);
 
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
 
   const selectedTree = trees.find((tree) => tree.id === selectedTreeId);
 
-  const updateTree = useTreeStore((state) => state.updateTree);
+  const tree = trees.find((tree) => tree.id === selectedTreeId);
 
   const [treeName, setTreeName] = useState(selectedTree?.name ?? "");
-
   const [isSaving, setIsSaving] = useState(false);
+
+  const updateTree = useTreeStore((state) => state.updateTree);
+
+  const [showDelete, setShowDelete] = useState(false);
+
+  const removeTree = useTreeStore((state) => state.removeTree);
 
   useEffect(() => {
     if (selectedTree) {
@@ -44,6 +54,24 @@ export default function TreeSettingsPage() {
     }
   }
 
+  async function handleDeleteTree() {
+    if (!tree) {
+      return;
+    }
+
+    try {
+      await deleteTree(tree.id);
+
+      removeTree(tree.id);
+
+      setShowDelete(false);
+
+      navigate("/");
+    } catch (error) {
+      console.error("Failed to delete tree", error);
+    }
+  }
+
   return (
     <AppLayout title={t(`navigation.treeSettings`)}>
       <div className="flex h-screen flex-col">
@@ -55,6 +83,7 @@ export default function TreeSettingsPage() {
               space-y-6
             "
           >
+            {/* Tree Name */}
             <section
               className="
                 bg-surface
@@ -122,9 +151,69 @@ export default function TreeSettingsPage() {
                 </button>
               </form>
             </section>
+
+            {/* Delete */}
+            <section
+              className="
+                bg-surface
+
+                border
+                border-red-200
+
+                rounded-2xl
+
+                p-6
+
+                shadow-sm
+              "
+            >
+              <h2
+                className="
+                  text-lg
+                  font-semibold
+
+                  text-red-600
+
+                  mb-2
+                "
+              >
+                Zone dangereuse
+              </h2>
+
+              <p
+                className="
+                  text-sm
+                  text-muted
+
+                  mb-4
+                "
+              >
+                Supprimer cet arbre supprimera définitivement toutes les
+                personnes et relations associées.
+              </p>
+
+              <Button variant="danger" onClick={() => setShowDelete(true)}>
+                Supprimer l'arbre
+              </Button>
+            </section>
           </div>
         </main>
       </div>
+      {tree && showDelete && (
+        <ConfirmDialog
+          title="Supprimer l'arbre"
+          message="
+            Cette action est définitive.
+            Toutes les données associées seront supprimées.
+
+            Tapez le nom de l'arbre pour confirmer.
+          "
+          confirmationText={tree.name}
+          confirmLabel="Supprimer l'arbre"
+          onConfirm={handleDeleteTree}
+          onCancel={() => setShowDelete(false)}
+        />
+      )}
     </AppLayout>
   );
 }

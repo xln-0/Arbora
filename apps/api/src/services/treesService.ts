@@ -70,3 +70,9 @@ export async function updateTree(
     data,
   });
 }
+
+export async function deleteTree(prisma: PrismaClient, id: string) {
+  return prisma.familyTree.delete({
+    where: { id },
+  });
+}

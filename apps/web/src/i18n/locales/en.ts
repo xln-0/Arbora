@@ -9,9 +9,12 @@ export default {
     people: "People",
     settings: "Settings",
     treeSettings: "Tree Settings",
+    account: "My account",
   },
 
   account: {
+    profile: "Profile",
+    trees: "My trees",
     logout: "Log out",
   },
 
@@ -22,6 +25,12 @@ export default {
     close: "Close",
     save: "Save",
     cancel: "Cancel",
+  },
+
+  tree: {
+    name: "Tree name",
+    create: "Create a tree",
+    empty: "No trees",
   },
 
   person: {

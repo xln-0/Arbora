@@ -13,6 +13,8 @@ interface TreeState {
   clearSelectedTree(): void;
 
   updateTree(tree: FamilyTree): void;
+
+  removeTree(treeId: string): void;
 }
 
 export const useTreeStore = create<TreeState>((set) => ({
@@ -42,5 +44,22 @@ export const useTreeStore = create<TreeState>((set) => ({
     set((state) => ({
       trees: state.trees.map((item) => (item.id === tree.id ? tree : item)),
     }));
+  },
+
+  removeTree(treeId) {
+    set((state) => {
+      const trees = state.trees.filter((tree) => tree.id !== treeId);
+
+      let selectedTreeId = state.selectedTreeId;
+
+      if (selectedTreeId === treeId) {
+        selectedTreeId = trees[0]?.id;
+      }
+
+      return {
+        trees,
+        selectedTreeId,
+      };
+    });
   },
 }));
