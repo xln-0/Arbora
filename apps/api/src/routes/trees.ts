@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 
-import { createTree, getTree } from "../services/treesService.js";
+import { createTree, getTree, updateTree } from "../services/treesService.js";
 
 const treesRoutes: FastifyPluginAsync = async (app) => {
   app.post(
@@ -57,6 +57,24 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
       }
 
       return tree;
+    },
+  );
+
+  app.patch(
+    "/:id",
+    {
+      preHandler: [app.authenticate],
+    },
+    async (request) => {
+      const { id } = request.params as {
+        id: string;
+      };
+
+      const body = request.body as {
+        name: string;
+      };
+
+      return updateTree(app.prisma, id, body as any);
     },
   );
 

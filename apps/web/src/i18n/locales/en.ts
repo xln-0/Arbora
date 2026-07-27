@@ -24,7 +24,6 @@ export default {
   },
 
   person: {
-    title: "Person",
     add: "Add a person",
     edit: "Edit person",
 
@@ -61,8 +60,8 @@ export default {
   },
 
   settings: {
-    title: "Settings",
     language: "Language",
+    treeName: "Tree Name",
   },
 
   confirm: {

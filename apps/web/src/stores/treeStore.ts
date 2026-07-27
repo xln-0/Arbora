@@ -11,6 +11,8 @@ interface TreeState {
   selectTree(treeId: string): void;
 
   clearSelectedTree(): void;
+
+  updateTree(tree: FamilyTree): void;
 }
 
 export const useTreeStore = create<TreeState>((set) => ({
@@ -34,5 +36,11 @@ export const useTreeStore = create<TreeState>((set) => ({
     set({
       selectedTreeId: undefined,
     });
+  },
+
+  updateTree(tree) {
+    set((state) => ({
+      trees: state.trees.map((item) => (item.id === tree.id ? tree : item)),
+    }));
   },
 }));

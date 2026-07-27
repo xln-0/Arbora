@@ -1,12 +1,53 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-
 import { locales, type Locale, t } from "@/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useEffect, useState } from "react";
+
+import { AppLayout } from "@/components/layout/AppLayout";
+import { useTreeStore } from "@/stores/treeStore";
+import { editTree } from "@/api/treesApi";
 
 export default function SettingsPage() {
   const locale = useSettingsStore((state) => state.locale);
 
   const setLocale = useSettingsStore((state) => state.setLocale);
+
+  const trees = useTreeStore((state) => state.trees);
+
+  const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
+
+  const selectedTree = trees.find((tree) => tree.id === selectedTreeId);
+
+  const updateTree = useTreeStore((state) => state.updateTree);
+
+  const [treeName, setTreeName] = useState(selectedTree?.name ?? "");
+
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (selectedTree) {
+      setTreeName(selectedTree.name);
+    }
+  }, [selectedTreeId, selectedTree]);
+
+  async function handleSaveTreeName() {
+    if (!selectedTree) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const updatedTree = await editTree(selectedTree.id, {
+        name: treeName,
+      });
+
+      updateTree(updatedTree);
+    } catch (error) {
+      console.error("Failed to update tree name", error);
+    } finally {
+      setIsSaving(false);
+    }
+  }
 
   return (
     <AppLayout title={t(`navigation.settings`)}>
@@ -66,6 +107,73 @@ export default function SettingsPage() {
                     </option>
                   ))}
               </select>
+            </section>
+            <section
+              className="
+                bg-surface
+
+                border
+                border-border
+
+                rounded-2xl
+
+                p-6
+
+                shadow-sm
+              "
+            >
+              <h2
+                className="
+                  text-lg
+                  font-semibold
+                  mb-4
+                "
+              >
+                {t(`settings.treeName`)}
+              </h2>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSaveTreeName();
+                }}
+                className="space-y-4"
+              >
+                <input
+                  className="
+                    w-full
+                    border
+                    border-border
+                    rounded-lg
+                    px-3
+                    py-2
+                  "
+                  value={treeName}
+                  onChange={(e) => setTreeName(e.target.value)}
+                />
+
+                <button
+                  type="submit"
+                  disabled={
+                    isSaving ||
+                    !selectedTree ||
+                    treeName.trim() === selectedTree.name
+                  }
+                  className="
+                    px-4
+                    py-2
+
+                    rounded-lg
+
+                    bg-primary
+                    text-white
+
+                    disabled:opacity-50
+                  "
+                >
+                  {t(`actions.save`)}
+                </button>
+              </form>
             </section>
           </div>
         </main>

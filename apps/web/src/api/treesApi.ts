@@ -15,6 +15,18 @@ export function getTree(id: string) {
   return apiClient<FamilyTree>(`/trees/${id}`);
 }
 
+export function editTree(
+  id: string,
+  data: {
+    name: string;
+  },
+) {
+  return apiClient<FamilyTree>(`/trees/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
 export function createTree(name: string) {
   return apiClient<FamilyTree>("/trees", {
     method: "POST",

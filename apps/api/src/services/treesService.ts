@@ -57,3 +57,16 @@ export async function getTree(prisma: PrismaClient, id: string) {
     })),
   };
 }
+
+export async function updateTree(
+  prisma: PrismaClient,
+  id: string,
+  data: {
+    name: string;
+  },
+) {
+  return prisma.familyTree.update({
+    where: { id },
+    data,
+  });
+}
