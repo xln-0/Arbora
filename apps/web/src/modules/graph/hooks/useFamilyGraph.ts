@@ -11,6 +11,7 @@ import { useGraphStore } from "@/stores/graphStore";
 
 import type { GraphNode } from "../types";
 import { buildGraph } from "../graphMapper";
+import { applyTreeLayout, updateRelationshipNodes } from "../layout/treeLayout";
 
 export function useFamilyGraph() {
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
@@ -66,8 +67,74 @@ export function useFamilyGraph() {
     }
   }
 
+  function buildDagreGraph() {
+    const dagreNodes = nodes.filter((node) => node.type === "person");
+
+    const dagreEdges: {
+      source: string;
+      target: string;
+    }[] = [];
+
+    for (const edge of edges) {
+      if (edge.data?.relationshipType !== "PARENT") {
+        continue;
+      }
+
+      /**
+       * Cas simple :
+       * parent -> enfant
+       */
+      if (!edge.source.startsWith("relationship-")) {
+        dagreEdges.push({
+          source: edge.source,
+          target: edge.target,
+        });
+
+        continue;
+      }
+
+      /**
+       * Cas couple :
+       * relationship-node -> enfant
+       *
+       * On récupère les deux parents
+       */
+      const relationshipNodeId = edge.source;
+
+      const partnerEdges = edges.filter(
+        (partnerEdge) =>
+          partnerEdge.target === relationshipNodeId &&
+          partnerEdge.data?.relationshipType === "PARTNER",
+      );
+
+      for (const partnerEdge of partnerEdges) {
+        dagreEdges.push({
+          source: partnerEdge.source,
+          target: edge.target,
+        });
+      }
+    }
+
+    return {
+      nodes: dagreNodes,
+      edges: dagreEdges,
+    };
+  }
+
+  const dagreGraph = buildDagreGraph();
+
+  const layoutedPersonNodes = applyTreeLayout(
+    dagreGraph.nodes,
+    dagreGraph.edges,
+  );
+
+  const layoutedNodes = updateRelationshipNodes([
+    ...layoutedPersonNodes,
+    ...nodes.filter((node) => node.type === "relationship"),
+  ]);
+
   return {
-    nodes,
+    nodes: layoutedNodes,
     edges,
 
     setNodes,

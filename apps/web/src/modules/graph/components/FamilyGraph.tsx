@@ -7,6 +7,7 @@ import { useUiStore } from "@/stores/uiStore";
 import GraphToolbar from "./GraphToolbar";
 import PersonNode from "./PersonNode";
 import RelationshipNode from "./RelationshipNode";
+import FamilyEdge from "./FamilyEdge";
 
 import { SNAP_DISTANCE } from "../constants";
 import { useFamilyGraph } from "../hooks/useFamilyGraph";
@@ -14,6 +15,10 @@ import { useFamilyGraph } from "../hooks/useFamilyGraph";
 const nodeTypes = {
   person: PersonNode,
   relationship: RelationshipNode,
+};
+
+const edgeTypes = {
+  family: FamilyEdge,
 };
 
 export default function FamilyGraph() {
@@ -29,6 +34,8 @@ export default function FamilyGraph() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={handleNodeDragStop}
@@ -37,7 +44,6 @@ export default function FamilyGraph() {
             openViewPerson(node.id);
           }
         }}
-        nodeTypes={nodeTypes}
         fitView
         snapToGrid
         snapGrid={[SNAP_DISTANCE, SNAP_DISTANCE]}

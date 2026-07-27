@@ -1,4 +1,9 @@
-export const PERSON_NODE_WIDTH = 256;
-export const PERSON_NODE_HEIGHT = 96;
-export const RELATIONSHIP_NODE_SIZE = 16;
+export const PERSON_NODE_WIDTH = 100;
+export const PERSON_NODE_HEIGHT = 150;
+export const RELATIONSHIP_NODE_SIZE = 20;
 export const SNAP_DISTANCE = 8;
+export const DAGRE_LAYOUT = {
+  RANKDIR: "TB",
+  NODE_SEPARATION: 40,
+  RANK_SEPARATION: 60,
+};

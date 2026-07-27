@@ -47,7 +47,7 @@ export function mapParentRelationships(
 
             targetHandle: "child",
 
-            type: "default",
+            type: "family",
 
             data: {
               relationshipType: "PARENT",
@@ -72,7 +72,7 @@ export function mapParentRelationships(
 
       targetHandle: "child",
 
-      type: "default",
+      type: "family",
 
       data: {
         relationshipType: relationship.type,
