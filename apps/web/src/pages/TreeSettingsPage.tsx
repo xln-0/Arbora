@@ -1,16 +1,11 @@
-import { locales, type Locale, t } from "@/i18n";
-import { useSettingsStore } from "@/stores/settingsStore";
 import { useEffect, useState } from "react";
 
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useTreeStore } from "@/stores/treeStore";
 import { editTree } from "@/api/treesApi";
+import { t } from "@/i18n";
 
-export default function SettingsPage() {
-  const locale = useSettingsStore((state) => state.locale);
-
-  const setLocale = useSettingsStore((state) => state.setLocale);
-
+export default function TreeSettingsPage() {
   const trees = useTreeStore((state) => state.trees);
 
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
@@ -50,7 +45,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <AppLayout title={t(`navigation.settings`)}>
+    <AppLayout title={t(`navigation.treeSettings`)}>
       <div className="flex h-screen flex-col">
         <main className="flex-1 overflow-auto p-6">
           <div
@@ -81,32 +76,51 @@ export default function SettingsPage() {
                   mb-4
                 "
               >
-                {t(`settings.language`)}
+                {t(`settings.treeName`)}
               </h2>
 
-              <select
-                className="
-                  w-full
-
-                  border
-                  border-border
-
-                  rounded-lg
-
-                  px-3
-                  py-2
-                "
-                value={locale}
-                onChange={(e) => setLocale(e.target.value as Locale)}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSaveTreeName();
+                }}
+                className="space-y-4"
               >
-                {Object.entries(locales)
-                  .sort(([, a], [, b]) => a.label.localeCompare(b.label))
-                  .map(([key, value]) => (
-                    <option key={key} value={key}>
-                      {value.label}
-                    </option>
-                  ))}
-              </select>
+                <input
+                  className="
+                    w-full
+                    border
+                    border-border
+                    rounded-lg
+                    px-3
+                    py-2
+                  "
+                  value={treeName}
+                  onChange={(e) => setTreeName(e.target.value)}
+                />
+
+                <button
+                  type="submit"
+                  disabled={
+                    isSaving ||
+                    !selectedTree ||
+                    treeName.trim() === selectedTree.name
+                  }
+                  className="
+                    px-4
+                    py-2
+
+                    rounded-lg
+
+                    bg-primary
+                    text-white
+
+                    disabled:opacity-50
+                  "
+                >
+                  {t(`actions.save`)}
+                </button>
+              </form>
             </section>
           </div>
         </main>

@@ -15,6 +15,7 @@ import { useRelationshipActions } from "@/modules/relationship/hooks/useRelation
 import type { Relationship, RelationshipType } from "@arbora/shared";
 
 import { useGraphStore, useTreeStore, useUiStore } from "@/stores";
+import TreeSettingsButton from "@/modules/trees/TreeSettingsButton";
 
 export default function DashboardPage() {
   //
@@ -77,7 +78,11 @@ export default function DashboardPage() {
   // Tree
   //
 
+  const trees = useTreeStore((state) => state.trees);
+
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
+
+  const selectedTree = trees.find((tree) => tree.id === selectedTreeId);
 
   //
   // Actions
@@ -121,7 +126,14 @@ export default function DashboardPage() {
 
   return (
     <>
-      <AppLayout title={t("navigation.dashboard")}>
+      <AppLayout
+        title={
+          selectedTree
+            ? `${t("navigation.dashboard")} - ${selectedTree.name}`
+            : t("navigation.dashboard")
+        }
+        actions={<TreeSettingsButton />}
+      >
         <FamilyGraph />
       </AppLayout>
 

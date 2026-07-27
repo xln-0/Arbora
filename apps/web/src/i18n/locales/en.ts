@@ -8,6 +8,7 @@ export default {
     tree: "My tree",
     people: "People",
     settings: "Settings",
+    treeSettings: "Tree Settings",
   },
 
   account: {

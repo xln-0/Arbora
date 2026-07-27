@@ -8,6 +8,7 @@ import GuestRoute from "@/modules/auth/components/GuestRoute";
 import ProtectedRoute from "@/modules/auth/components/ProtectedRoute";
 import PeoplePage from "@/pages/PeoplePage";
 import SettingsPage from "@/pages/SettingsPage";
+import TreeSettingsPage from "@/pages/TreeSettingsPage";
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/tree-settings",
+        element: (
+          <ProtectedRoute>
+            <TreeSettingsPage />
           </ProtectedRoute>
         ),
       },

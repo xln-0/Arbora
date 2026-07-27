@@ -1,10 +1,9 @@
-import TreeSelector from "@/modules/trees/TreeSelector";
-
 interface TopbarProps {
   title: string;
+  actions?: React.ReactNode;
 }
 
-export function Topbar({ title }: TopbarProps) {
+export function Topbar({ title, actions }: TopbarProps) {
   return (
     <header
       className="
@@ -27,8 +26,15 @@ export function Topbar({ title }: TopbarProps) {
       >
         {title}
       </h1>
-
-      <TreeSelector />
+      <div
+        className="
+          flex
+          items-center
+          gap-2
+        "
+      >
+        {actions}
+      </div>
     </header>
   );
 }

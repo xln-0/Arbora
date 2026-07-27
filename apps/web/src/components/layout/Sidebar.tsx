@@ -1,16 +1,9 @@
-import { LogOut } from "lucide-react";
-
-import { Button } from "@/components/ui";
-
-import { useAuth } from "@/modules/auth/useAuth";
-
 import { SidebarNavigation } from "./SidebarNavigation";
+import { SidebarFooter } from "./SidebarFooter";
 
-import { t } from "@/i18n";
+import TreeSelector from "@/modules/trees/TreeSelector";
 
 export function Sidebar() {
-  const { logout } = useAuth();
-
   return (
     <aside
       className="
@@ -28,36 +21,21 @@ export function Sidebar() {
         p-6
       "
     >
-      {/* Header */}
       <h1
         className="
-            text-2xl
-            font-bold
-          "
+          text-2xl
+          font-bold
+          mb-4
+        "
       >
         🌳 Arbora
       </h1>
 
+      <TreeSelector />
+
       <SidebarNavigation />
 
-      {/* Footer */}
-      <div
-        className="
-          mt-auto
-          border-t
-          border-border
-          pt-4
-        "
-      >
-        <Button
-          variant="ghost"
-          className="w-full justify-start"
-          onClick={logout}
-        >
-          <LogOut size={18} />
-          {t(`account.logout`)}
-        </Button>
-      </div>
+      <SidebarFooter />
     </aside>
   );
 }
