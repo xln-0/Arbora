@@ -16,6 +16,7 @@ import type { Relationship, RelationshipType } from "@arbora/shared";
 
 import { useGraphStore, useTreeStore, useUiStore } from "@/stores";
 import TreeSettingsButton from "@/modules/trees/TreeSettingsButton";
+import { WelcomePage } from "@/pages";
 
 export default function DashboardPage() {
   //
@@ -134,7 +135,7 @@ export default function DashboardPage() {
         }
         actions={<TreeSettingsButton />}
       >
-        <FamilyGraph />
+        {selectedTreeId ? <FamilyGraph /> : <WelcomePage />}
       </AppLayout>
 
       <OverlayLayer>
