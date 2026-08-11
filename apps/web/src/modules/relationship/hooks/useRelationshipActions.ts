@@ -7,7 +7,10 @@ import { useUiStore } from "@/stores/uiStore";
 
 import type { Relationship, RelationshipType } from "@arbora/shared";
 
-import { getRelatedPersonName } from "../relationshipUtils";
+import {
+  buildRelationshipInput,
+  getRelatedPersonName,
+} from "../relationshipUtils";
 
 export function useRelationshipActions() {
   const refreshGraph = useGraphStore((state) => state.refresh);
@@ -24,28 +27,17 @@ export function useRelationshipActions() {
     data: {
       targetPersonId: string;
       type: RelationshipType;
+      date?: string;
     },
   ) {
     if (!selectedTreeId || !selectedPersonId) {
       return;
     }
 
-    const isTargetParent = data.type === "PARENT";
-    const isParentChildRelationship =
-      data.type === "PARENT" || data.type === "CHILD";
-
-    await createRelationship(selectedTreeId, {
-      // The form describes the selected target relative to the current person.
-      // The API and database store parent/child links canonically as
-      // parent -> child, so both UI choices are normalized before sending.
-      sourcePersonId: isTargetParent
-        ? data.targetPersonId
-        : selectedPersonId,
-      targetPersonId: isTargetParent
-        ? selectedPersonId
-        : data.targetPersonId,
-      type: isParentChildRelationship ? "PARENT" : "PARTNER",
-    });
+    await createRelationship(
+      selectedTreeId,
+      buildRelationshipInput(selectedPersonId, data),
+    );
 
     refreshGraph();
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 
 import { ArrowRight, GitFork, UsersRound } from "lucide-react";
 
@@ -217,7 +218,10 @@ function PersonCard({ person }: { person: Person }) {
   }[person.gender];
 
   return (
-    <article className="flex min-h-28 items-center gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <Link
+      to={`/people/${person.id}`}
+      className="flex min-h-28 items-center gap-4 rounded-2xl border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
       <Avatar name={name} className={avatarStyle} />
 
       <div className="min-w-0">
@@ -227,7 +231,7 @@ function PersonCard({ person }: { person: Person }) {
         </p>
         {lifespan && <p className="mt-1 text-xs text-muted">{lifespan}</p>}
       </div>
-    </article>
+    </Link>
   );
 }
 

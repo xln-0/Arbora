@@ -7,3 +7,4 @@ export { default as AccountPage } from "@/pages/AccountPage";
 export { default as WelcomePage } from "@/pages/WelcomePage";
 export { default as TreeElementsPage } from "@/pages/TreeElementsPage";
 export { default as TreeTimelinePage } from "@/pages/TreeTimelinePage";
+export { default as PersonDetailsPage } from "@/pages/PersonDetailsPage";

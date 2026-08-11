@@ -1,9 +1,12 @@
 export default {
   app: {
     name: "Arbora",
+    tagline: "Histoires de famille",
   },
 
   navigation: {
+    explore: "Explorer",
+    currentTree: "Arbre actuel",
     dashboard: "Tableau de bord",
     tree: "Mon arbre",
     people: "Personnes",
@@ -81,6 +84,41 @@ export default {
       children: "Enfants",
       partners: "Conjoints",
     },
+
+    form: {
+      createDescription: "Renseignez les informations essentielles.",
+      editDescription: "Mettez à jour les informations de cette personne.",
+      viewDescription: "Aperçu de la personne et de ses proches.",
+      relationshipDescription: "Les relations enregistrées dans cet arbre.",
+      lifeDates: "Dates de vie",
+    },
+  },
+
+  personDetails: {
+    title: "Fiche personne",
+    open: "Voir la fiche complète",
+    back: "Retour aux éléments de l’arbre",
+    loading: "Chargement de la personne…",
+    loadError: "Impossible de charger la personne.",
+    noTree: "Sélectionnez un arbre pour afficher cette personne.",
+    notFound: "Cette personne n’existe pas dans l’arbre sélectionné.",
+    relationshipError: "Impossible d’ajouter cette relation.",
+    family: "Relations familiales",
+    familyDescription: "Naviguez directement vers les proches de cette personne.",
+    noParents: "Aucun parent renseigné.",
+    noPartners: "Aucun conjoint renseigné.",
+    noChildren: "Aucun enfant renseigné.",
+    timeline: {
+      title: "Frise chronologique",
+      description: "Les événements marquants de sa vie, classés par date.",
+      empty: "Ajoutez des dates et des relations pour construire cette frise.",
+      events: {
+        birth: "Naissance",
+        union: "Mariage ou union",
+        childBirth: "Naissance d’un enfant",
+        death: "Décès",
+      },
+    },
   },
 
   gender: {
@@ -91,9 +129,16 @@ export default {
 
   relationship: {
     add: "Ajouter une relation",
-    selectPerson: "Selectionner une personne",
+    description: "Reliez cette personne à un autre membre de l’arbre.",
+    selectPerson: "Sélectionner une personne",
     thisPerson: "Cette personne",
     isTheir: "est son/sa",
+    noAvailablePersons: "Aucune autre personne n’est disponible dans cet arbre.",
+    summaryTitle: "Relation à créer",
+    summary: "{{name}} · {{relation}}",
+    selectSource: "Sélectionnez d’abord une personne dans l’arbre.",
+    unionDate: "Date du mariage ou de l’union",
+    unionDateHint: "Optionnelle, elle apparaîtra dans la frise chronologique.",
 
     types: {
       PARENT: "Parent",

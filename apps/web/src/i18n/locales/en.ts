@@ -1,9 +1,12 @@
 export default {
   app: {
     name: "Arbora",
+    tagline: "Family stories",
   },
 
   navigation: {
+    explore: "Explore",
+    currentTree: "Current tree",
     dashboard: "Dashboard",
     tree: "My tree",
     people: "People",
@@ -81,6 +84,41 @@ export default {
       children: "Children",
       partners: "Partners",
     },
+
+    form: {
+      createDescription: "Enter the essential information.",
+      editDescription: "Update this person's information.",
+      viewDescription: "Overview of this person and their relatives.",
+      relationshipDescription: "Relationships recorded in this tree.",
+      lifeDates: "Life dates",
+    },
+  },
+
+  personDetails: {
+    title: "Person details",
+    open: "View full details",
+    back: "Back to tree elements",
+    loading: "Loading person…",
+    loadError: "Unable to load this person.",
+    noTree: "Select a tree to display this person.",
+    notFound: "This person does not exist in the selected tree.",
+    relationshipError: "Unable to add this relationship.",
+    family: "Family relationships",
+    familyDescription: "Navigate directly to this person's relatives.",
+    noParents: "No parents provided.",
+    noPartners: "No partner provided.",
+    noChildren: "No children provided.",
+    timeline: {
+      title: "Timeline",
+      description: "The key events in their life, sorted by date.",
+      empty: "Add dates and relationships to build this timeline.",
+      events: {
+        birth: "Birth",
+        union: "Marriage or union",
+        childBirth: "Birth of a child",
+        death: "Death",
+      },
+    },
   },
 
   gender: {
@@ -91,9 +129,16 @@ export default {
 
   relationship: {
     add: "Add a relationship",
+    description: "Connect this person to another member of the tree.",
     selectPerson: "Select a person",
     thisPerson: "This person",
     isTheir: "is their",
+    noAvailablePersons: "No other person is available in this tree.",
+    summaryTitle: "Relationship to create",
+    summary: "{{name}} · {{relation}}",
+    selectSource: "Select a person in the tree first.",
+    unionDate: "Marriage or union date",
+    unionDateHint: "Optional, it will appear in the timeline.",
 
     types: {
       PARENT: "Parent",

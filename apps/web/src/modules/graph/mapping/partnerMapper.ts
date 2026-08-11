@@ -18,17 +18,12 @@ export function mapPartnerRelationships(
   const edges: RelationshipEdge[] = [];
 
   for (const relationship of relationships) {
-    let source = persons.find((p) => p.id === relationship.sourcePersonId);
+    const source = persons.find((p) => p.id === relationship.sourcePersonId);
 
-    let target = persons.find((p) => p.id === relationship.targetPersonId);
+    const target = persons.find((p) => p.id === relationship.targetPersonId);
 
     if (!source || !target) {
       continue;
-    }
-
-    // Homme à gauche, femme à droite
-    if (source.gender === "MALE" && target.gender === "FEMALE") {
-      [source, target] = [target, source];
     }
 
     const relationshipNodeId = `relationship-${relationship.id}`;

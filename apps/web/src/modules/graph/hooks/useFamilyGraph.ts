@@ -11,7 +11,11 @@ import { useGraphStore } from "@/stores/graphStore";
 
 import type { GraphNode } from "../types";
 import { buildGraph } from "../graphMapper";
-import { applyTreeLayout, updateRelationshipNodes } from "../layout/treeLayout";
+import {
+  applyFamilyLayout,
+  updatePartnerEdgeHandles,
+  updateRelationshipNodes,
+} from "../layout/treeLayout";
 
 export function useFamilyGraph() {
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
@@ -135,19 +139,13 @@ export function useFamilyGraph() {
 
   const dagreGraph = buildDagreGraph();
 
-  const layoutedPersonNodes = applyTreeLayout(
-    dagreGraph.nodes,
-    dagreGraph.edges,
-  );
-
-  const layoutedNodes = updateRelationshipNodes([
-    ...layoutedPersonNodes,
-    ...nodes.filter((node) => node.type === "relationship"),
-  ]);
+  const familyLayoutNodes = applyFamilyLayout(nodes, dagreGraph.edges);
+  const layoutedNodes = updateRelationshipNodes(familyLayoutNodes);
+  const layoutedEdges = updatePartnerEdgeHandles(edges, layoutedNodes);
 
   return {
     nodes: layoutedNodes,
-    edges,
+    edges: layoutedEdges,
 
     setNodes,
 
