@@ -4,10 +4,16 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY apps ./apps
-COPY packages ./packages
+COPY apps/api/package*.json ./apps/api/
+COPY apps/web/package*.json ./apps/web/
+COPY packages/database/package*.json ./packages/database/
+COPY packages/shared/package*.json ./packages/shared/
 
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
+
+COPY apps/api ./apps/api
+COPY packages/database ./packages/database
+COPY packages/shared ./packages/shared
 RUN DATABASE_URL="postgresql://arbora:password@localhost:5432/arbora" npm run gen:database
 RUN npm run build:database
 RUN npm run build:shared
