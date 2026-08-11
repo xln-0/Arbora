@@ -1,134 +1,145 @@
 import type { FastifyPluginAsync } from "fastify";
 
+import type { CreateTreeInput, UpdateTreeInput } from "@arbora/shared";
+
 import {
   createTree,
   deleteTree,
   getTree,
+  getTreesByUser,
   updateTree,
 } from "../services/treesService.js";
 
 const treesRoutes: FastifyPluginAsync = async (app) => {
-  // Create a tree
-
+  /**
+   * Crée un nouvel arbre généalogique.
+   *
+   * POST /trees
+   *
+   * Permission:
+   * - Utilisateur authentifié
+   */
   app.post(
     "/",
     {
       preHandler: [app.authenticate],
     },
     async (request) => {
-      const body = request.body as {
-        name: string;
-      };
+      const body = request.body as CreateTreeInput;
 
-      const tree = await createTree(app.prisma, {
-        name: body.name,
-        ownerId: request.user!.id,
-      });
-
-      return tree;
+      return createTree(app.prisma, request.user!.id, body);
     },
   );
 
-  // Get User's trees
-
+  /**
+   * Retourne les arbres accessibles par l'utilisateur.
+   *
+   * GET /trees
+   *
+   * Permission:
+   * - Utilisateur authentifié
+   */
   app.get(
     "/",
     {
       preHandler: [app.authenticate],
     },
     async (request) => {
-      const trees = await app.prisma.familyTree.findMany({
-        where: {
-          ownerId: request.user!.id,
-        },
-      });
-
-      return trees;
+      return getTreesByUser(app.prisma, request.user!.id);
     },
   );
 
-  // Get Tree
-
+  /**
+   * Retourne un arbre avec son graphe.
+   *
+   * GET /trees/:treeId
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   * - VIEWER
+   */
   app.get(
-    "/:id",
+    "/:treeId",
     {
-      preHandler: [app.authenticate],
-    },
-    async (request, reply) => {
-      const { id } = request.params as {
-        id: string;
-      };
-
-      const tree = await getTree(app.prisma, id);
-
-      if (!tree) {
-        return reply.code(404).send({
-          message: "Tree not found",
-        });
-      }
-
-      return tree;
-    },
-  );
-
-  // Update tree
-
-  app.patch(
-    "/:id",
-    {
-      preHandler: [app.authenticate],
+      preHandler: [app.authenticate, app.requireTreeMember],
     },
     async (request) => {
-      const { id } = request.params as {
-        id: string;
-      };
-
-      const body = request.body as {
-        name: string;
-      };
-
-      return updateTree(app.prisma, id, body as any);
-    },
-  );
-
-  // Supprimer
-
-  app.delete("/:id", async (request) => {
-    const { id } = request.params as {
-      id: string;
-    };
-
-    return deleteTree(app.prisma, id);
-  });
-
-  // Get graph
-
-  app.get(
-    "/:treeId/graph",
-    {
-      preHandler: [app.authenticate],
-    },
-    async (request, reply) => {
       const { treeId } = request.params as {
         treeId: string;
       };
 
-      const tree = await app.prisma.familyTree.findUnique({
-        where: {
-          id: treeId,
-        },
+      return getTree(app.prisma, treeId, request.user!.id);
+    },
+  );
 
-        include: {
-          persons: true,
-          relationships: true,
-        },
-      });
+  /**
+   * Modifie un arbre.
+   *
+   * PATCH /trees/:id
+   *
+   * Permission:
+   * - OWNER
+   */
+  app.patch(
+    "/:treeId",
+    {
+      preHandler: [app.authenticate, app.requireTreeOwner],
+    },
+    async (request) => {
+      const { treeId } = request.params as {
+        treeId: string;
+      };
 
-      if (!tree) {
-        return reply.code(404).send({
-          message: "Tree not found",
-        });
-      }
+      const body = request.body as UpdateTreeInput;
+
+      return updateTree(app.prisma, treeId, body);
+    },
+  );
+
+  /**
+   * Supprime un arbre.
+   *
+   * DELETE /trees/:id
+   *
+   * Permission:
+   * - OWNER
+   */
+  app.delete(
+    "/:treeId",
+    {
+      preHandler: [app.authenticate, app.requireTreeOwner],
+    },
+    async (request) => {
+      const { treeId } = request.params as {
+        treeId: string;
+      };
+
+      return deleteTree(app.prisma, treeId);
+    },
+  );
+
+  /**
+   * Retourne le graphe d'un arbre.
+   *
+   * GET /trees/:treeId/graph
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   * - VIEWER
+   */
+  app.get(
+    "/:treeId/graph",
+    {
+      preHandler: [app.authenticate, app.requireTreeMember],
+    },
+    async (request) => {
+      const { treeId } = request.params as {
+        treeId: string;
+      };
+
+      const tree = await getTree(app.prisma, treeId, request.user!.id);
 
       return {
         persons: tree.persons,

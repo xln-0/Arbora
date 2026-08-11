@@ -12,7 +12,7 @@ import { createTree } from "@/api/treesApi";
 export default function AccountPage() {
   const user = useAuthStore((state) => state.user);
 
-  const setTrees = useTreeStore((state) => state.setTrees);
+  const addTree = useTreeStore((state) => state.addTree);
 
   const selectTree = useTreeStore((state) => state.selectTree);
 
@@ -20,6 +20,7 @@ export default function AccountPage() {
 
   const [isCreatingTree, setIsCreatingTree] = useState(false);
   const [newTreeName, setNewTreeName] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string>();
 
   async function handleCreateTree() {
     if (!newTreeName.trim()) {
@@ -28,16 +29,20 @@ export default function AccountPage() {
 
     try {
       setIsCreatingTree(true);
+      setErrorMessage(undefined);
 
-      const tree = await createTree(newTreeName.trim());
+      const tree = await createTree({ name: newTreeName.trim() });
 
-      setTrees([...trees, tree]);
+      addTree(tree);
 
       selectTree(tree.id);
 
       setNewTreeName("");
     } catch (error) {
       console.error("Failed to create tree", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to create tree",
+      );
     } finally {
       setIsCreatingTree(false);
     }
@@ -160,6 +165,10 @@ export default function AccountPage() {
               space-y-2
             "
           >
+            {errorMessage && (
+              <p className="text-sm text-red-600">{errorMessage}</p>
+            )}
+
             {trees.map((tree) => (
               <div
                 key={tree.id}
@@ -172,7 +181,14 @@ export default function AccountPage() {
                   py-3
                 "
               >
-                🌳 {tree.name}
+                <div className="flex items-center justify-between gap-3">
+                  <span>🌳 {tree.name}</span>
+                  {tree.role && (
+                    <span className="text-xs text-muted">
+                      {t(`settings.roles.${tree.role.toLowerCase()}`)}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

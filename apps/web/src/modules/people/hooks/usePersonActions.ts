@@ -4,6 +4,7 @@ import { createPerson, deletePerson, editPerson } from "@/api/personsApi";
 
 import { useGraphStore } from "@/stores/graphStore";
 import { useUiStore } from "@/stores/uiStore";
+import type { CreatePersonInput } from "@arbora/shared";
 
 export function usePersonActions() {
   const refreshGraph = useGraphStore((state) => state.refresh);
@@ -16,13 +17,7 @@ export function usePersonActions() {
     selectedTreeId: string | undefined,
     selectedPersonId: string | undefined,
     mode: "create" | "edit" | "view",
-    data: {
-      firstName: string;
-      lastName?: string;
-      gender?: string;
-      birthDate?: string;
-      deathDate?: string;
-    },
+    data: CreatePersonInput,
   ) {
     if (!selectedTreeId) {
       return;
@@ -41,14 +36,18 @@ export function usePersonActions() {
         return;
       }
 
-      await editPerson(selectedPersonId, data);
+      await editPerson(selectedTreeId, selectedPersonId, data);
     }
 
     refreshGraph();
     closePerson();
   }
 
-  function confirmDeletePerson(personId: string, name: string) {
+  function confirmDeletePerson(
+    treeId: string,
+    personId: string,
+    name: string,
+  ) {
     openConfirmDialog({
       title: t("confirm.deletePersonTitle", {
         name,
@@ -57,7 +56,7 @@ export function usePersonActions() {
       message: t("confirm.deletePersonMessage"),
 
       onConfirm: async () => {
-        await deletePerson(personId);
+        await deletePerson(treeId, personId);
 
         refreshGraph();
 

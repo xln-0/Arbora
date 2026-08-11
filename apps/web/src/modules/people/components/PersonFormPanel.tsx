@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 
 import {
   type Person,
-  genders,
+  GENDERS,
   type Gender,
   type Relationship,
 } from "@arbora/shared";
@@ -33,6 +33,7 @@ interface PersonFormPanelProps {
   onDelete?: () => void;
   onAddRelationship?: (data: any) => void;
   onDeleteRelationship: (relationship: Relationship) => void;
+  canEdit: boolean;
 }
 
 export default function PersonFormPanel({
@@ -46,6 +47,7 @@ export default function PersonFormPanel({
   onDelete,
   onAddRelationship,
   onDeleteRelationship,
+  canEdit,
 }: PersonFormPanelProps) {
   const [firstName, setFirstName] = useState(person?.firstName ?? "");
   const [lastName, setLastName] = useState(person?.lastName ?? "");
@@ -198,6 +200,7 @@ export default function PersonFormPanel({
                   persons={persons}
                   currentPersonId={person!.id}
                   onDelete={onDeleteRelationship}
+                  canEdit={canEdit}
                 />
 
                 <RelationshipSection
@@ -206,6 +209,7 @@ export default function PersonFormPanel({
                   persons={persons}
                   currentPersonId={person!.id}
                   onDelete={onDeleteRelationship}
+                  canEdit={canEdit}
                 />
 
                 <RelationshipSection
@@ -214,12 +218,15 @@ export default function PersonFormPanel({
                   persons={persons}
                   currentPersonId={person!.id}
                   onDelete={onDeleteRelationship}
+                  canEdit={canEdit}
                 />
               </div>
             )}
-            <Button variant="secondary" onClick={onAddRelationship}>
-              {t(`relationship.add`)}
-            </Button>
+            {canEdit && (
+              <Button variant="secondary" onClick={onAddRelationship}>
+                {t(`relationship.add`)}
+              </Button>
+            )}
           </>
         ) : (
           <>
@@ -263,7 +270,7 @@ export default function PersonFormPanel({
               value={gender}
               onChange={(e) => setGender(e.target.value as Gender)}
             >
-              {genders.map((gender) => (
+              {GENDERS.map((gender) => (
                 <option key={gender} value={gender}>
                   {t(`gender.${gender}`)}
                 </option>
@@ -314,7 +321,7 @@ export default function PersonFormPanel({
           {t(`actions.close`)}
         </Button>
 
-        {mode === "view" && (
+        {mode === "view" && canEdit && (
           <>
             <Button variant="secondary" onClick={onEdit}>
               {t(`actions.edit`)}

@@ -1,107 +1,187 @@
 import type { FastifyPluginAsync } from "fastify";
 
+import type { CreatePersonInput, UpdatePersonInput } from "@arbora/shared";
+
 import {
   createPerson,
   getPersonsByTree,
   getPerson,
   updatePerson,
   deletePerson,
+  updatePersonPosition,
 } from "../services/personsService.js";
-import { Gender } from "@arbora/shared";
 
 const personsRoutes: FastifyPluginAsync = async (app) => {
-  // Ajouter une personne dans un arbre
-
+  /**
+   * Ajoute une personne dans un arbre.
+   *
+   * POST /trees/:treeId/persons
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   *
+   * Body:
+   * {
+   *   firstName: string,
+   *   lastName?: string,
+   *   gender?: Gender,
+   *   birthDate?: string,
+   *   deathDate?: string
+   * }
+   */
   app.post(
     "/trees/:treeId/persons",
     {
-      preHandler: [app.authenticate],
+      preHandler: [app.authenticate, app.requireTreeEditor],
     },
     async (request) => {
       const { treeId } = request.params as {
         treeId: string;
       };
 
-      const body = request.body as {
-        firstName: string;
-        lastName?: string;
-        gender?: Gender;
-        birthDate?: string;
-      };
+      const body = request.body as CreatePersonInput;
 
-      return createPerson(app.prisma, treeId, body as any);
+      return createPerson(app.prisma, treeId, body);
     },
   );
 
-  // Liste des personnes d'un arbre
-  app.get("/trees/:treeId/persons", async (request) => {
-    const { treeId } = request.params as {
-      treeId: string;
-    };
+  /**
+   * Retourne toutes les personnes d'un arbre.
+   *
+   * GET /trees/:treeId/persons
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   * - VIEWER
+   */
+  app.get(
+    "/trees/:treeId/persons",
+    {
+      preHandler: [app.authenticate, app.requireTreeMember],
+    },
+    async (request) => {
+      const { treeId } = request.params as {
+        treeId: string;
+      };
 
-    return getPersonsByTree(app.prisma, treeId);
-  });
+      return getPersonsByTree(app.prisma, treeId);
+    },
+  );
 
-  // Une personne
+  /**
+   * Retourne une personne.
+   *
+   * GET /trees/:treeId/persons/:personId
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   * - VIEWER
+   */
+  app.get(
+    "/trees/:treeId/persons/:personId",
+    {
+      preHandler: [app.authenticate, app.requireTreeMember],
+    },
+    async (request) => {
+      const { treeId, personId } = request.params as {
+        treeId: string;
+        personId: string;
+      };
 
-  app.get("/persons/:id", async (request) => {
-    const { id } = request.params as {
-      id: string;
-    };
+      return getPerson(app.prisma, treeId, personId);
+    },
+  );
 
-    return getPerson(app.prisma, id);
-  });
+  /**
+   * Modifie une personne.
+   *
+   * PATCH /trees/:treeId/persons/:id
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   */
+  app.patch(
+    "/trees/:treeId/persons/:personId",
+    {
+      preHandler: [app.authenticate, app.requireTreeEditor],
+    },
+    async (request) => {
+      const { treeId, personId } = request.params as {
+        treeId: string;
+        personId: string;
+      };
 
-  // Modifier
+      const body = request.body as UpdatePersonInput;
 
-  app.patch("/persons/:id", async (request) => {
-    const { id } = request.params as {
-      id: string;
-    };
+      return updatePerson(app.prisma, treeId, personId, body);
+    },
+  );
 
-    const body = request.body as {
-      firstName: string;
-      lastName?: string;
-      gender: Gender;
-      birthDate?: string;
-    };
+  /**
+   * Supprime une personne.
+   *
+   * DELETE /trees/:treeId/persons/:personId
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   */
+  app.delete(
+    "/trees/:treeId/persons/:personId",
+    {
+      preHandler: [app.authenticate, app.requireTreeEditor],
+    },
+    async (request) => {
+      const { treeId, personId } = request.params as {
+        treeId: string;
+        personId: string;
+      };
 
-    return updatePerson(app.prisma, id, body as any);
-  });
+      return deletePerson(app.prisma, treeId, personId);
+    },
+  );
 
-  // Supprimer
+  /**
+   * Met à jour la position graphique d'une personne.
+   *
+   * PATCH /trees/:treeId/persons/:personId/position
+   *
+   * Utilisé par:
+   * - React Flow
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   *
+   * Body:
+   * {
+   *   x: number,
+   *   y: number
+   * }
+   */
+  app.patch(
+    "/trees/:treeId/persons/:personId/position",
+    {
+      preHandler: [app.authenticate, app.requireTreeEditor],
+    },
+    async (request) => {
+      const { treeId, personId } = request.params as {
+        treeId: string;
+        personId: string;
+      };
 
-  app.delete("/persons/:id", async (request) => {
-    const { id } = request.params as {
-      id: string;
-    };
+      const body = request.body as {
+        x: number;
+        y: number;
+      };
 
-    return deletePerson(app.prisma, id);
-  });
-
-  // Patch position
-
-  app.patch("/persons/:id/position", async (request) => {
-    const { id } = request.params as {
-      id: string;
-    };
-
-    const body = request.body as {
-      x: number;
-      y: number;
-    };
-
-    return app.prisma.person.update({
-      where: {
-        id,
-      },
-
-      data: {
-        positionX: body.x,
-        positionY: body.y,
-      },
-    });
-  });
+      return updatePersonPosition(app.prisma, treeId, personId, body);
+    },
+  );
 };
 
 export default personsRoutes;

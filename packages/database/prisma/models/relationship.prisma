@@ -1,0 +1,28 @@
+model Relationship {
+    id String @id @default(uuid())
+
+    treeId String
+
+    tree FamilyTree @relation(fields: [treeId], references: [id], onDelete: Cascade)
+
+    type RelationshipType
+
+    sourcePersonId String
+
+    sourcePerson Person @relation("sourceRelationships", fields: [sourcePersonId], references: [id], onDelete: Cascade)
+
+    targetPersonId String
+
+    targetPerson Person @relation("targetRelationships", fields: [targetPersonId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+
+    @@index([treeId])
+    @@index([sourcePersonId])
+    @@index([targetPersonId])
+}
+
+enum RelationshipType {
+    PARENT
+    PARTNER
+}

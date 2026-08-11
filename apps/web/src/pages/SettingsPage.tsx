@@ -1,53 +1,12 @@
 import { locales, type Locale, t } from "@/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
-import { useEffect, useState } from "react";
 
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useTreeStore } from "@/stores/treeStore";
-import { editTree } from "@/api/treesApi";
 
 export default function SettingsPage() {
   const locale = useSettingsStore((state) => state.locale);
 
   const setLocale = useSettingsStore((state) => state.setLocale);
-
-  const trees = useTreeStore((state) => state.trees);
-
-  const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
-
-  const selectedTree = trees.find((tree) => tree.id === selectedTreeId);
-
-  const updateTree = useTreeStore((state) => state.updateTree);
-
-  const [treeName, setTreeName] = useState(selectedTree?.name ?? "");
-
-  const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (selectedTree) {
-      setTreeName(selectedTree.name);
-    }
-  }, [selectedTreeId, selectedTree]);
-
-  async function handleSaveTreeName() {
-    if (!selectedTree) {
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-
-      const updatedTree = await editTree(selectedTree.id, {
-        name: treeName,
-      });
-
-      updateTree(updatedTree);
-    } catch (error) {
-      console.error("Failed to update tree name", error);
-    } finally {
-      setIsSaving(false);
-    }
-  }
 
   return (
     <AppLayout title={t(`navigation.settings`)}>

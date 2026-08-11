@@ -2,6 +2,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui";
 import { useState } from "react";
+import { t } from "@/i18n";
 
 interface ConfirmDialogProps {
   title: string;
@@ -22,8 +23,8 @@ interface ConfirmDialogProps {
 export default function ConfirmDialog({
   title,
   message,
-  confirmLabel = "Supprimer",
-  cancelLabel = "Annuler",
+  confirmLabel = t(`actions.delete`),
+  cancelLabel = t(`actions.cancel`),
   confirmationText,
   onConfirm,
   onCancel,
@@ -129,7 +130,9 @@ export default function ConfirmDialog({
                 text-muted
               "
                 >
-                  Tapez :<strong className="ml-1">{confirmationText}</strong>
+                  {t(`confirm.typeToConfirm`)}
+                  {":"}
+                  <strong className="ml-1">{confirmationText}</strong>
                 </p>
 
                 <input

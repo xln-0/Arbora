@@ -1,0 +1,35 @@
+model Person {
+    id String @id @default(uuid())
+
+    treeId String
+
+    tree FamilyTree @relation(fields: [treeId], references: [id], onDelete: Cascade)
+
+    firstName String
+
+    lastName String?
+
+    gender Gender @default(UNKNOWN)
+
+    birthDate DateTime? @db.Date
+
+    deathDate DateTime? @db.Date
+
+    positionX Float @default(0)
+
+    positionY Float @default(0)
+
+    createdAt DateTime @default(now())
+
+    relationshipsFrom Relationship[] @relation("sourceRelationships")
+
+    relationshipsTo Relationship[] @relation("targetRelationships")
+
+    @@index([treeId])
+}
+
+enum Gender {
+    MALE
+    FEMALE
+    UNKNOWN
+}

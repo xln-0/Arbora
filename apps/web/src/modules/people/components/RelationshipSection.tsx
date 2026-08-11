@@ -9,6 +9,7 @@ export function RelationshipSection({
   persons,
   currentPersonId,
   onDelete,
+  canEdit,
 }: {
   title: string;
   relationships: Relationship[];
@@ -16,6 +17,7 @@ export function RelationshipSection({
   currentPersonId: string;
 
   onDelete: (relationship: Relationship) => void;
+  canEdit: boolean;
 }) {
   if (relationships.length === 0) {
     return null;
@@ -65,19 +67,20 @@ export function RelationshipSection({
                 {otherPerson.firstName} {otherPerson.lastName}
               </p>
 
-              <button
-                type="button"
-                onClick={() => onDelete(relationship)}
-                className="
-                  text-muted-foreground
-                  hover:text-destructive
-                  transition
-                  hover:text-red-500
-                  
-                "
-              >
-                <Trash2 size={16} />
-              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() => onDelete(relationship)}
+                  className="
+                    text-muted-foreground
+                    hover:text-destructive
+                    transition
+                    hover:text-red-500
+                  "
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
           );
         })}

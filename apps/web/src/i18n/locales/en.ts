@@ -65,13 +65,27 @@ export default {
     types: {
       PARENT: "Parent",
       PARTNER: "Partner",
-      CHILD: "Children",
+      CHILD: "Child",
     },
   },
 
   settings: {
     language: "Language",
     treeName: "Tree Name",
+    members: "Members",
+    email: "Email",
+    addMember: "Add Member",
+    dangerZone: "Danger Zone",
+    deleteTreeWarning:
+      "Deleting this tree will permanently remove all associated people and relationships.",
+    roles: {
+      owner: "Owner",
+      editor: "Editor",
+      viewer: "Viewer",
+    },
+    removeMember: "Remove member",
+    unknownUser: "Unknown user",
+    ownerOnly: "Only the owner can manage this tree's settings.",
   },
 
   confirm: {
@@ -80,5 +94,10 @@ export default {
       "This action will also delete all related relationships.",
     deleteRelationshipTitle: "Delete relationship?",
     deleteRelationshipMessage: "Delete relationship with {{name}}?",
+    deleteTreeTitle: "Delete Tree",
+    deleteTreeMessage:
+      "This action is permanent. All associated data will be deleted.",
+    deleteTypeToConfirm: "Type the tree name to confirm.",
+    typeToConfirm: "Type",
   },
 };

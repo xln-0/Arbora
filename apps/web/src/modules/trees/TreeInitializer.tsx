@@ -2,21 +2,28 @@ import { useEffect } from "react";
 
 import { getTrees } from "@/api/treesApi";
 import { useTreeStore } from "@/stores/treeStore";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function TreeInitializer() {
   const setTrees = useTreeStore((state) => state.setTrees);
 
-  const selectTree = useTreeStore((state) => state.selectTree);
+  const user = useAuthStore((state) => state.user);
+  const initialized = useAuthStore((state) => state.initialized);
 
   useEffect(() => {
-    getTrees().then((trees) => {
-      setTrees(trees);
+    if (!initialized) {
+      return;
+    }
 
-      if (trees.length > 0) {
-        selectTree(trees[0].id);
-      }
-    });
-  }, []);
+    if (!user) {
+      setTrees([]);
+      return;
+    }
+
+    getTrees()
+      .then(setTrees)
+      .catch((error) => console.error("Failed to load trees", error));
+  }, [initialized, user, setTrees]);
 
   return null;
 }

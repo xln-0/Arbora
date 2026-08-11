@@ -1,78 +1,172 @@
 import type { PrismaClient } from "@arbora/database";
-import type { Prisma } from "@prisma/client";
 
-const treeWithRelations = {
-  include: {
-    persons: true,
-    relationships: true,
-  },
-} satisfies Prisma.FamilyTreeDefaultArgs;
+import type { CreateTreeInput, UpdateTreeInput } from "@arbora/shared";
+import { createAppError } from "../errors/createAppError.js";
+import { mapPerson } from "../mappers/personMapper.js";
 
-type TreeWithRelations = Prisma.FamilyTreeGetPayload<typeof treeWithRelations>;
+const TREE_NAME_MAX_LENGTH = 120;
 
-export async function createTree(
-  prisma: PrismaClient,
-  data: {
-    name: string;
-    ownerId: string;
-  },
-) {
-  return prisma.familyTree.create({
-    data: {
-      name: data.name,
-      ownerId: data.ownerId,
-    },
-  });
-}
+function normalizeTreeName(name: unknown) {
+  const normalizedName = typeof name === "string" ? name.trim() : "";
 
-export async function getTree(prisma: PrismaClient, id: string) {
-  const tree: TreeWithRelations | null = await prisma.familyTree.findUnique({
-    where: {
-      id,
-    },
-
-    ...treeWithRelations,
-  });
-
-  if (!tree) {
-    throw new Error("Tree not found");
+  if (!normalizedName) {
+    throw createAppError("TREE_NAME_REQUIRED");
   }
 
+  if (normalizedName.length > TREE_NAME_MAX_LENGTH) {
+    throw createAppError("TREE_NAME_TOO_LONG");
+  }
+
+  return normalizedName;
+}
+
+function mapTreeSummary<T extends {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: Date;
+}>(tree: T, role: "OWNER" | "EDITOR" | "VIEWER") {
   return {
     id: tree.id,
     name: tree.name,
-
-    persons: tree.persons.map((person) => ({
-      id: person.id,
-      firstName: person.firstName,
-      lastName: person.lastName,
-      gender: person.gender,
-    })),
-
-    relationships: tree.relationships.map((rel) => ({
-      id: rel.id,
-      type: rel.type,
-      source: rel.sourcePersonId,
-      target: rel.targetPersonId,
-    })),
+    ownerId: tree.ownerId,
+    createdAt: tree.createdAt.toISOString(),
+    role,
   };
 }
 
-export async function updateTree(
+/**
+ * Crée un arbre généalogique.
+ * Le créateur est automatiquement ajouté comme OWNER.
+ */
+export async function createTree(
   prisma: PrismaClient,
-  id: string,
-  data: {
-    name: string;
-  },
+  ownerId: string,
+  data: CreateTreeInput,
 ) {
-  return prisma.familyTree.update({
-    where: { id },
-    data,
+  const name = normalizeTreeName(data?.name);
+
+  return prisma.$transaction(async (tx) => {
+    const tree = await tx.familyTree.create({
+      data: {
+        name,
+        ownerId,
+      },
+    });
+
+    await tx.treeMember.create({
+      data: {
+        treeId: tree.id,
+        userId: ownerId,
+        role: "OWNER",
+      },
+    });
+
+    return mapTreeSummary(tree, "OWNER");
   });
 }
 
-export async function deleteTree(prisma: PrismaClient, id: string) {
+/**
+ * Retourne tous les arbres accessibles à un utilisateur.
+ */
+export async function getTreesByUser(prisma: PrismaClient, userId: string) {
+  const trees = await prisma.familyTree.findMany({
+    where: {
+      members: {
+        some: {
+          userId,
+        },
+      },
+    },
+
+    include: {
+      members: {
+        where: {
+          userId,
+        },
+        select: {
+          role: true,
+        },
+      },
+    },
+
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  return trees.map((tree) => mapTreeSummary(tree, tree.members[0].role));
+}
+
+/**
+ * Retourne un arbre avec son graphe.
+ */
+export async function getTree(
+  prisma: PrismaClient,
+  treeId: string,
+  userId: string,
+) {
+  const tree = await prisma.familyTree.findUnique({
+    where: {
+      id: treeId,
+    },
+    include: {
+      persons: true,
+      relationships: true,
+      members: {
+        where: { userId },
+        select: { role: true },
+      },
+    },
+  });
+
+  if (!tree) {
+    throw createAppError("TREE_NOT_FOUND");
+  }
+
+  const role = tree.ownerId === userId ? "OWNER" : tree.members[0]?.role;
+
+  if (!role) {
+    throw createAppError("FORBIDDEN");
+  }
+
+  return {
+    ...mapTreeSummary(tree, role),
+    persons: tree.persons.map(mapPerson),
+    relationships: tree.relationships,
+  };
+}
+
+/**
+ * Modifie un arbre.
+ */
+export async function updateTree(
+  prisma: PrismaClient,
+  treeId: string,
+  data: UpdateTreeInput,
+) {
+  const name = normalizeTreeName(data?.name);
+
+  const tree = await prisma.familyTree.update({
+    where: {
+      id: treeId,
+    },
+
+    data: {
+      name,
+    },
+  });
+
+  return mapTreeSummary(tree, "OWNER");
+}
+
+/**
+ * Supprime un arbre.
+ */
+export async function deleteTree(prisma: PrismaClient, treeId: string) {
   return prisma.familyTree.delete({
-    where: { id },
+    where: {
+      id: treeId,
+    },
   });
 }

@@ -1,4 +1,4 @@
-import CreateTreeForm from "@/modules/trees/CreateTreeForm";
+import CreateTreeForm from "@/modules/trees/components/CreateTreeForm";
 
 export default function WelcomePage() {
   return (

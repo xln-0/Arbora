@@ -1,6 +1,12 @@
 import { apiClient } from "./client";
 
-import type { FamilyTree, Person, Relationship } from "@arbora/shared";
+import type {
+  CreateTreeInput,
+  FamilyTree,
+  Person,
+  Relationship,
+  UpdateTreeInput,
+} from "@arbora/shared";
 
 export interface TreeGraph {
   persons: Person[];
@@ -17,9 +23,7 @@ export function getTree(id: string) {
 
 export function editTree(
   id: string,
-  data: {
-    name: string;
-  },
+  data: UpdateTreeInput,
 ) {
   return apiClient<FamilyTree>(`/trees/${id}`, {
     method: "PATCH",
@@ -27,13 +31,11 @@ export function editTree(
   });
 }
 
-export function createTree(name: string) {
+export function createTree(data: CreateTreeInput) {
   return apiClient<FamilyTree>("/trees", {
     method: "POST",
 
-    body: JSON.stringify({
-      name,
-    }),
+    body: JSON.stringify(data),
   });
 }
 

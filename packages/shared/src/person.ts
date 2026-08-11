@@ -1,7 +1,29 @@
-export const genders = ["UNKNOWN", "MALE", "FEMALE"] as const;
+/**
+ * Genres disponibles pour une personne.
+ */
+export const GENDERS = ["UNKNOWN", "MALE", "FEMALE"] as const;
 
-export type Gender = (typeof genders)[number];
+export type Gender = (typeof GENDERS)[number];
 
+/**
+ * Données utilisées pour créer une personne.
+ */
+export type CreatePersonInput = {
+  firstName: string;
+  lastName?: string | null;
+  gender?: Gender;
+  birthDate?: string;
+  deathDate?: string;
+};
+
+/**
+ * Données partielles utilisées pour modifier une personne.
+ */
+export type UpdatePersonInput = Partial<CreatePersonInput>;
+
+/**
+ * Personne appartenant à un arbre généalogique.
+ */
 export interface Person {
   id: string;
 
@@ -9,14 +31,17 @@ export interface Person {
 
   firstName: string;
 
-  lastName: string;
+  lastName?: string | null;
 
   gender: Gender;
 
-  birthDate?: string;
+  birthDate?: string | null;
 
-  deathDate?: string;
+  deathDate?: string | null;
 
+  /**
+   * Position du nœud dans l'éditeur graphique.
+   */
   positionX: number;
 
   positionY: number;

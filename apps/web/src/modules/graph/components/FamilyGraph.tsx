@@ -24,12 +24,18 @@ const edgeTypes = {
 export default function FamilyGraph() {
   const openViewPerson = useUiStore((state) => state.openViewPerson);
 
-  const { nodes, edges, onNodesChange, onEdgesChange, handleNodeDragStop } =
-    useFamilyGraph();
+  const {
+    nodes,
+    edges,
+    onNodesChange,
+    onEdgesChange,
+    handleNodeDragStop,
+    canEdit,
+  } = useFamilyGraph();
 
   return (
     <div className="relative h-full w-full">
-      <GraphToolbar />
+      {canEdit && <GraphToolbar />}
 
       <ReactFlow
         nodes={nodes}
@@ -39,6 +45,7 @@ export default function FamilyGraph() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={handleNodeDragStop}
+        nodesDraggable={canEdit}
         onNodeClick={(_, node) => {
           if (node.type === "person") {
             openViewPerson(node.id);

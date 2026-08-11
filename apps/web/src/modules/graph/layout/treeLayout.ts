@@ -1,6 +1,6 @@
 import dagre from "@dagrejs/dagre";
 
-import type { GraphNode } from "../types";
+import type { GraphNode, PersonNode, RelationshipNode } from "../types";
 
 import {
   DAGRE_LAYOUT,
@@ -51,9 +51,13 @@ export function applyTreeLayout(
 export function updateRelationshipNodes(nodes: GraphNode[]): GraphNode[] {
   const result = [...nodes];
 
-  const persons = result.filter((node) => node.type === "person");
+  const persons = result.filter(
+    (node): node is PersonNode => node.type === "person",
+  );
 
-  const relationships = result.filter((node) => node.type === "relationship");
+  const relationships = result.filter(
+    (node): node is RelationshipNode => node.type === "relationship",
+  );
 
   for (const relationshipNode of relationships) {
     const relationship = relationshipNode.data.relationship;

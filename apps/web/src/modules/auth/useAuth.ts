@@ -5,6 +5,7 @@ import {
 } from "@/api/authApi";
 
 import { useAuthStore } from "@/stores/authStore";
+import { useTreeStore } from "@/stores/treeStore";
 
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +15,8 @@ export function useAuth() {
   const { setUser, setInitialized } = useAuthStore();
 
   const clear = useAuthStore((state) => state.clear);
+  const clearSelectedTree = useTreeStore((state) => state.clearSelectedTree);
+  const setTrees = useTreeStore((state) => state.setTrees);
 
   async function login(email: string, password: string) {
     const result = await loginApi(email, password);
@@ -40,6 +43,8 @@ export function useAuth() {
     await logoutApi();
 
     clear();
+    setTrees([]);
+    clearSelectedTree();
 
     navigate("/login");
   }

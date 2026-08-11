@@ -15,6 +15,13 @@ import { applyTreeLayout, updateRelationshipNodes } from "../layout/treeLayout";
 
 export function useFamilyGraph() {
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
+  const canEdit = useTreeStore((state) => {
+    const role = state.trees.find(
+      (tree) => tree.id === state.selectedTreeId,
+    )?.role;
+
+    return role === "OWNER" || role === "EDITOR";
+  });
 
   const setGraph = useGraphStore((state) => state.setGraph);
 
@@ -56,12 +63,17 @@ export function useFamilyGraph() {
     _event: Parameters<OnNodeDrag>[0],
     node: Node<GraphNode["data"]>,
   ) {
-    if (node.type !== "person") {
+    if (!selectedTreeId || !canEdit || node.type !== "person") {
       return;
     }
 
     try {
-      await updatePersonPosition(node.id, node.position.x, node.position.y);
+      await updatePersonPosition(
+        selectedTreeId,
+        node.id,
+        node.position.x,
+        node.position.y,
+      );
     } catch (error) {
       console.error("Failed to save person position", error);
     }
@@ -143,5 +155,6 @@ export function useFamilyGraph() {
     onEdgesChange,
 
     handleNodeDragStop,
+    canEdit,
   };
 }

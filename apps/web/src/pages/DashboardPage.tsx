@@ -3,7 +3,7 @@ import { useShallow } from "zustand/shallow";
 import { t } from "@/i18n";
 
 import { AppLayout, OverlayLayer } from "@/components/layout";
-import { ConfirmDialog } from "@/components/ui";
+import { Badge, ConfirmDialog } from "@/components/ui";
 
 import FamilyGraph from "@/modules/graph/components/FamilyGraph";
 import PersonFormPanel from "@/modules/people/components/PersonFormPanel";
@@ -15,7 +15,7 @@ import { useRelationshipActions } from "@/modules/relationship/hooks/useRelation
 import type { Relationship, RelationshipType } from "@arbora/shared";
 
 import { useGraphStore, useTreeStore, useUiStore } from "@/stores";
-import TreeSettingsButton from "@/modules/trees/TreeSettingsButton";
+import TreeSettingsButton from "@/modules/trees/components/TreeSettingsButton";
 import { WelcomePage } from "@/pages";
 
 export default function DashboardPage() {
@@ -84,6 +84,8 @@ export default function DashboardPage() {
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
 
   const selectedTree = trees.find((tree) => tree.id === selectedTreeId);
+  const canEdit =
+    selectedTree?.role === "OWNER" || selectedTree?.role === "EDITOR";
 
   //
   // Actions
@@ -99,7 +101,7 @@ export default function DashboardPage() {
   //
 
   function handleEditPerson() {
-    if (!selectedPersonId) {
+    if (!canEdit || !selectedPersonId) {
       return;
     }
 
@@ -107,7 +109,7 @@ export default function DashboardPage() {
   }
 
   function handleCreateRelationship() {
-    if (!selectedTreeId || !selectedPersonId) {
+    if (!canEdit || !selectedTreeId || !selectedPersonId) {
       return;
     }
 
@@ -122,7 +124,16 @@ export default function DashboardPage() {
   }
 
   function handleDeleteRelationship(relationship: Relationship) {
-    return confirmDeleteRelationship(relationship, selectedPersonId, persons);
+    if (!selectedTreeId) {
+      return;
+    }
+
+    return confirmDeleteRelationship(
+      selectedTreeId,
+      relationship,
+      selectedPersonId,
+      persons,
+    );
   }
 
   return (
@@ -134,6 +145,13 @@ export default function DashboardPage() {
             : t("navigation.dashboard")
         }
         actions={<TreeSettingsButton />}
+        topbarBadge={
+          selectedTree?.role ? (
+            <Badge>
+              {t(`settings.roles.${selectedTree.role.toLowerCase()}`)}
+            </Badge>
+          ) : undefined
+        }
       >
         {selectedTreeId ? <FamilyGraph /> : <WelcomePage />}
       </AppLayout>
@@ -156,14 +174,17 @@ export default function DashboardPage() {
             }
             onEdit={handleEditPerson}
             onDelete={() =>
+              selectedTreeId &&
               selectedPerson &&
               confirmDeletePerson(
+                selectedTreeId,
                 selectedPerson.id,
                 `${selectedPerson.firstName} ${selectedPerson.lastName}`,
               )
             }
             onAddRelationship={handleCreateRelationship}
             onDeleteRelationship={handleDeleteRelationship}
+            canEdit={canEdit}
           />
         )}
 

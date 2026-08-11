@@ -1,7 +1,7 @@
 import { SidebarNavigation } from "./SidebarNavigation";
 import { SidebarFooter } from "./SidebarFooter";
 
-import TreeSelector from "@/modules/trees/TreeSelector";
+import TreeSelector from "@/modules/trees/components/TreeSelector";
 
 export function Sidebar() {
   return (

@@ -7,9 +7,11 @@ import { useNavigate } from "react-router-dom";
 export default function TreeSettingsButton() {
   const navigate = useNavigate();
 
-  const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
+  const selectedTree = useTreeStore((state) =>
+    state.trees.find((tree) => tree.id === state.selectedTreeId),
+  );
 
-  if (!selectedTreeId) {
+  if (selectedTree?.role !== "OWNER") {
     return null;
   }
 

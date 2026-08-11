@@ -7,6 +7,8 @@ import { deleteTree, editTree } from "@/api/treesApi";
 import { t } from "@/i18n";
 import { Button } from "@/components/ui";
 import { useNavigate } from "react-router-dom";
+import TreeMembers from "@/modules/trees/components/TreeMembers";
+import { addTreeMember } from "@/api/treeMembersApi";
 
 export default function TreeSettingsPage() {
   const navigate = useNavigate();
@@ -15,11 +17,9 @@ export default function TreeSettingsPage() {
 
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
 
-  const selectedTree = trees.find((tree) => tree.id === selectedTreeId);
-
   const tree = trees.find((tree) => tree.id === selectedTreeId);
 
-  const [treeName, setTreeName] = useState(selectedTree?.name ?? "");
+  const [treeName, setTreeName] = useState(tree?.name ?? "");
   const [isSaving, setIsSaving] = useState(false);
 
   const updateTree = useTreeStore((state) => state.updateTree);
@@ -28,29 +28,72 @@ export default function TreeSettingsPage() {
 
   const removeTree = useTreeStore((state) => state.removeTree);
 
+  const [memberEmail, setMemberEmail] = useState("");
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [membersRefreshKey, setMembersRefreshKey] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string>();
+
   useEffect(() => {
-    if (selectedTree) {
-      setTreeName(selectedTree.name);
+    if (tree) {
+      setTreeName(tree.name);
     }
-  }, [selectedTreeId, selectedTree]);
+  }, [selectedTreeId, tree]);
+
+  if (!tree || tree.role !== "OWNER") {
+    return (
+      <AppLayout title={t("navigation.treeSettings")}>
+        <div className="p-6 text-muted">
+          {tree ? t("settings.ownerOnly") : t("tree.empty")}
+        </div>
+      </AppLayout>
+    );
+  }
 
   async function handleSaveTreeName() {
-    if (!selectedTree) {
-      return;
-    }
-
     try {
       setIsSaving(true);
+      setErrorMessage(undefined);
 
-      const updatedTree = await editTree(selectedTree.id, {
-        name: treeName,
+      const updatedTree = await editTree(tree.id, {
+        name: treeName.trim(),
       });
 
       updateTree(updatedTree);
     } catch (error) {
       console.error("Failed to update tree name", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to update tree",
+      );
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleAddMember() {
+    if (!tree || !memberEmail.trim()) {
+      return;
+    }
+
+    try {
+      setIsAddingMember(true);
+      setErrorMessage(undefined);
+
+      await addTreeMember(tree.id, {
+        email: memberEmail.trim(),
+        role: "VIEWER",
+      });
+
+      setMemberEmail("");
+
+      // Force TreeMembers à recharger
+      setMembersRefreshKey((value) => value + 1);
+    } catch (error) {
+      console.error("Failed to add member", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to add member",
+      );
+    } finally {
+      setIsAddingMember(false);
     }
   }
 
@@ -60,6 +103,7 @@ export default function TreeSettingsPage() {
     }
 
     try {
+      setErrorMessage(undefined);
       await deleteTree(tree.id);
 
       removeTree(tree.id);
@@ -69,6 +113,9 @@ export default function TreeSettingsPage() {
       navigate("/");
     } catch (error) {
       console.error("Failed to delete tree", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "Failed to delete tree",
+      );
     }
   }
 
@@ -83,6 +130,10 @@ export default function TreeSettingsPage() {
               space-y-6
             "
           >
+            {errorMessage && (
+              <p className="text-sm text-red-600">{errorMessage}</p>
+            )}
+
             {/* Tree Name */}
             <section
               className="
@@ -132,8 +183,8 @@ export default function TreeSettingsPage() {
                   type="submit"
                   disabled={
                     isSaving ||
-                    !selectedTree ||
-                    treeName.trim() === selectedTree.name
+                    !treeName.trim() ||
+                    treeName.trim() === tree.name
                   }
                   className="
                     px-4
@@ -150,6 +201,73 @@ export default function TreeSettingsPage() {
                   {t(`actions.save`)}
                 </button>
               </form>
+            </section>
+
+            {/* Members */}
+            <section
+              className="
+                  bg-surface
+
+                  border
+                  border-border
+
+                  rounded-2xl
+
+                  p-6
+
+                  shadow-sm
+                "
+            >
+              <div
+                className="
+                  flex
+                  items-center
+                  justify-between
+
+                  mb-4
+                "
+              >
+                <h2
+                  className="
+                text-lg
+                font-semibold
+                mb-4
+                "
+                >
+                  {t(`settings.members`)}
+                </h2>
+                <div
+                  className="
+                flex
+                gap-2
+              "
+                >
+                  <input
+                    className="
+                      h-10
+                      flex-1
+
+                      rounded-lg
+
+                      border
+                      border-border
+
+                      px-3
+
+                      text-sm
+                      "
+                    placeholder={t("settings.email")}
+                    value={memberEmail}
+                    onChange={(e) => setMemberEmail(e.target.value)}
+                  />
+                  <Button onClick={handleAddMember} disabled={isAddingMember}>
+                    {t("settings.addMember")}
+                  </Button>
+                </div>
+              </div>
+              {tree && (
+                <TreeMembers treeId={tree.id} refreshKey={membersRefreshKey} />
+              )}
             </section>
 
             {/* Delete */}
@@ -177,7 +295,7 @@ export default function TreeSettingsPage() {
                   mb-2
                 "
               >
-                Zone dangereuse
+                {t(`settings.dangerZone`)}
               </h2>
 
               <p
@@ -188,12 +306,11 @@ export default function TreeSettingsPage() {
                   mb-4
                 "
               >
-                Supprimer cet arbre supprimera définitivement toutes les
-                personnes et relations associées.
+                {t(`settings.deleteTreeWarning`)}
               </p>
 
               <Button variant="danger" onClick={() => setShowDelete(true)}>
-                Supprimer l'arbre
+                {t(`confirm.deleteTreeTitle`)}
               </Button>
             </section>
           </div>
@@ -201,15 +318,14 @@ export default function TreeSettingsPage() {
       </div>
       {tree && showDelete && (
         <ConfirmDialog
-          title="Supprimer l'arbre"
-          message="
-            Cette action est définitive.
-            Toutes les données associées seront supprimées.
-
-            Tapez le nom de l'arbre pour confirmer.
-          "
+          title={t(`confirm.deleteTreeTitle`)}
+          message={
+            t(`confirm.deleteTreeMessage`) +
+            "\n\n" +
+            t(`confirm.deleteTypeToConfirm`)
+          }
           confirmationText={tree.name}
-          confirmLabel="Supprimer l'arbre"
+          confirmLabel={t(`actions.delete`)}
           onConfirm={handleDeleteTree}
           onCancel={() => setShowDelete(false)}
         />
