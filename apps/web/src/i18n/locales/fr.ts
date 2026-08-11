@@ -8,6 +8,7 @@ export default {
     tree: "Mon arbre",
     people: "Personnes",
     elements: "Éléments de l'arbre",
+    timeline: "Chronologie",
     settings: "Paramètres",
     treeSettings: "Paramètres de l'arbre",
     account: "Mon compte",
@@ -45,6 +46,22 @@ export default {
     noPersons: "Aucune personne dans cet arbre.",
     noRelationships: "Aucune relation dans cet arbre.",
     unknownPerson: "Personne inconnue",
+  },
+
+  timeline: {
+    title: "Chronologie familiale",
+    description:
+      "Parcourez les naissances et les décès de l'arbre dans l'ordre chronologique.",
+    loading: "Chargement de la chronologie…",
+    loadError: "Impossible de charger la chronologie.",
+    noTree: "Sélectionnez un arbre pour afficher sa chronologie.",
+    empty: "Ajoutez des dates de naissance ou de décès pour construire la chronologie.",
+    eventCount: "{{count}} événements",
+    scrollHint: "Faites défiler horizontalement",
+    events: {
+      birth: "Naissance",
+      death: "Décès",
+    },
   },
 
   person: {
