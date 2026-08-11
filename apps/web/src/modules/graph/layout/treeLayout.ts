@@ -93,7 +93,15 @@ export function applyFamilyLayout(
     registeredEdges.add(edgeId);
   }
 
-  dagre.layout(graph);
+  const siblingOrderConstraints = buildSiblingOrderConstraints(
+    layoutEdges,
+    householdIdByPersonId,
+    personById,
+  );
+
+  dagre.layout(graph, {
+    constraints: siblingOrderConstraints,
+  });
 
   const positionByPersonId = new Map<
     string,
@@ -125,6 +133,90 @@ export function applyFamilyLayout(
 
     return position ? { ...node, position } : node;
   });
+}
+
+function buildSiblingOrderConstraints(
+  layoutEdges: LayoutEdge[],
+  householdIdByPersonId: Map<string, string>,
+  personById: Map<string, PersonNode>,
+) {
+  const childrenByParentHousehold = new Map<
+    string,
+    Map<string, PersonNode>
+  >();
+
+  for (const edge of layoutEdges) {
+    const parentHouseholdId = householdIdByPersonId.get(edge.source);
+    const childHouseholdId = householdIdByPersonId.get(edge.target);
+    const child = personById.get(edge.target);
+
+    if (
+      !parentHouseholdId ||
+      !childHouseholdId ||
+      !child ||
+      parentHouseholdId === childHouseholdId
+    ) {
+      continue;
+    }
+
+    if (!childrenByParentHousehold.has(parentHouseholdId)) {
+      childrenByParentHousehold.set(parentHouseholdId, new Map());
+    }
+
+    const childrenByHousehold = childrenByParentHousehold.get(
+      parentHouseholdId,
+    )!;
+    const registeredChild = childrenByHousehold.get(childHouseholdId);
+
+    if (!registeredChild || compareChildren(child, registeredChild) < 0) {
+      childrenByHousehold.set(childHouseholdId, child);
+    }
+  }
+
+  const constraints: Array<{ left: string; right: string }> = [];
+  const registeredConstraints = new Set<string>();
+
+  for (const childrenByHousehold of childrenByParentHousehold.values()) {
+    const orderedChildren = [...childrenByHousehold.entries()].sort(
+      ([, childA], [, childB]) => compareChildren(childA, childB),
+    );
+
+    for (let index = 0; index < orderedChildren.length - 1; index += 1) {
+      const left = orderedChildren[index][0];
+      const right = orderedChildren[index + 1][0];
+      const constraintId = `${left}:${right}`;
+
+      if (!registeredConstraints.has(constraintId)) {
+        constraints.push({ left, right });
+        registeredConstraints.add(constraintId);
+      }
+    }
+  }
+
+  return constraints;
+}
+
+function compareChildren(a: PersonNode, b: PersonNode) {
+  const dateA = a.data.person.birthDate;
+  const dateB = b.data.person.birthDate;
+
+  if (dateA && dateB && dateA !== dateB) {
+    return dateA.localeCompare(dateB);
+  }
+
+  if (dateA && !dateB) {
+    return -1;
+  }
+
+  if (!dateA && dateB) {
+    return 1;
+  }
+
+  const nameComparison = a.data.person.firstName.localeCompare(
+    b.data.person.firstName,
+  );
+
+  return nameComparison || a.id.localeCompare(b.id);
 }
 
 function buildPartnerAdjacency(
