@@ -30,10 +30,21 @@ export function useRelationshipActions() {
       return;
     }
 
+    const isTargetParent = data.type === "PARENT";
+    const isParentChildRelationship =
+      data.type === "PARENT" || data.type === "CHILD";
+
     await createRelationship(selectedTreeId, {
-      sourcePersonId: selectedPersonId,
-      targetPersonId: data.targetPersonId,
-      type: data.type,
+      // The form describes the selected target relative to the current person.
+      // The API and database store parent/child links canonically as
+      // parent -> child, so both UI choices are normalized before sending.
+      sourcePersonId: isTargetParent
+        ? data.targetPersonId
+        : selectedPersonId,
+      targetPersonId: isTargetParent
+        ? selectedPersonId
+        : data.targetPersonId,
+      type: isParentChildRelationship ? "PARENT" : "PARTNER",
     });
 
     refreshGraph();

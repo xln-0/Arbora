@@ -10,6 +10,7 @@ import {
   SettingsPage,
   TreeSettingsPage,
   AccountPage,
+  TreeElementsPage,
 } from "@/pages";
 
 export const router = createBrowserRouter([
@@ -31,6 +32,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/elements",
+        element: (
+          <ProtectedRoute>
+            <TreeElementsPage />
           </ProtectedRoute>
         ),
       },

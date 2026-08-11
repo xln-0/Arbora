@@ -7,6 +7,7 @@ export default {
     dashboard: "Dashboard",
     tree: "My tree",
     people: "People",
+    elements: "Tree elements",
     settings: "Settings",
     treeSettings: "Tree Settings",
     account: "My account",
@@ -31,6 +32,19 @@ export default {
     name: "Tree name",
     create: "Create a tree",
     empty: "No trees",
+  },
+
+  elements: {
+    title: "Tree contents",
+    description: "Browse the people and relationships in the selected tree.",
+    loading: "Loading elements…",
+    loadError: "Unable to load the tree elements.",
+    noTree: "Select a tree to display its elements.",
+    persons: "People",
+    relationships: "Relationships",
+    noPersons: "No people in this tree.",
+    noRelationships: "No relationships in this tree.",
+    unknownPerson: "Unknown person",
   },
 
   person: {
@@ -61,6 +75,8 @@ export default {
   relationship: {
     add: "Add a relationship",
     selectPerson: "Select a person",
+    thisPerson: "This person",
+    isTheir: "is their",
 
     types: {
       PARENT: "Parent",

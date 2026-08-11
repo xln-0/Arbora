@@ -7,6 +7,7 @@ export default {
     dashboard: "Tableau de bord",
     tree: "Mon arbre",
     people: "Personnes",
+    elements: "Éléments de l'arbre",
     settings: "Paramètres",
     treeSettings: "Paramètres de l'arbre",
     account: "Mon compte",
@@ -31,6 +32,19 @@ export default {
     name: "Nom de l'arbre",
     create: "Créer un arbre",
     empty: "Aucun arbre",
+  },
+
+  elements: {
+    title: "Contenu de l'arbre",
+    description: "Retrouvez les personnes et les relations de l'arbre sélectionné.",
+    loading: "Chargement des éléments…",
+    loadError: "Impossible de charger les éléments de l'arbre.",
+    noTree: "Sélectionnez un arbre pour afficher ses éléments.",
+    persons: "Personnes",
+    relationships: "Relations",
+    noPersons: "Aucune personne dans cet arbre.",
+    noRelationships: "Aucune relation dans cet arbre.",
+    unknownPerson: "Personne inconnue",
   },
 
   person: {
@@ -61,6 +75,8 @@ export default {
   relationship: {
     add: "Ajouter une relation",
     selectPerson: "Selectionner une personne",
+    thisPerson: "Cette personne",
+    isTheir: "est son/sa",
 
     types: {
       PARENT: "Parent",

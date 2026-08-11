@@ -78,45 +78,57 @@ export default function RelationshipFormPanel({
       </div>
 
       <div className="space-y-4">
-        <select
-          className="
-                    w-full
-                    border
-                    border-border
-                    rounded-lg
-                    px-3
-                    py-2
-                  "
-          value={targetPersonId}
-          onChange={(e) => setTargetPersonId(e.target.value)}
-        >
-          <option value="">{t(`relationship.selectPerson`)}</option>
+        <label className="block space-y-2">
+          <span className="text-sm font-medium">
+            {t("relationship.thisPerson")}
+          </span>
 
-          {persons.map((person) => (
-            <option key={person.id} value={person.id}>
-              {person.firstName} {person.lastName}
-            </option>
-          ))}
-        </select>
+          <select
+            className="
+              w-full
+              border
+              border-border
+              rounded-lg
+              px-3
+              py-2
+            "
+            value={targetPersonId}
+            onChange={(e) => setTargetPersonId(e.target.value)}
+          >
+            <option value="">{t(`relationship.selectPerson`)}</option>
 
-        <select
-          className="
-                    w-full
-                    border
-                    border-border
-                    rounded-lg
-                    px-3
-                    py-2
-                  "
-          value={type}
-          onChange={(e) => setType(e.target.value as RelationshipType)}
-        >
-          {RELATIONSHIP_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {t(`relationship.types.${type}`)}
-            </option>
-          ))}
-        </select>
+            {persons.map((person) => (
+              <option key={person.id} value={person.id}>
+                {person.firstName} {person.lastName}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="block space-y-2">
+          <span className="text-sm font-medium">
+            {t("relationship.isTheir")}
+          </span>
+
+          <select
+            className="
+              w-full
+              border
+              border-border
+              rounded-lg
+              px-3
+              py-2
+            "
+            value={type}
+            onChange={(e) => setType(e.target.value as RelationshipType)}
+          >
+            {RELATIONSHIP_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {t(`relationship.types.${type}`)}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div
