@@ -7,6 +7,8 @@ model Relationship {
 
     type RelationshipType
 
+    date DateTime? @db.Date
+
     sourcePersonId String
 
     sourcePerson Person @relation("sourceRelationships", fields: [sourcePersonId], references: [id], onDelete: Cascade)

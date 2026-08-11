@@ -1,5 +1,6 @@
 import { ChevronDown, TreePine } from "lucide-react";
 
+import { t } from "@/i18n";
 import { useTreeStore } from "@/stores/treeStore";
 
 export default function TreeSelector() {
@@ -9,104 +10,36 @@ export default function TreeSelector() {
 
   if (trees.length === 0) {
     return (
-      <div
-        className="
-          flex
-          h-10
-          items-center
-          gap-2
-
-          rounded-lg
-
-          border
-          border-border
-
-          bg-background
-
-          px-3
-        "
-      >
-        <TreePine size={16} />
-        Aucun arbre
+      <div className="flex min-h-11 items-center gap-3 rounded-xl bg-surface px-3 text-sm text-muted shadow-sm">
+        <TreePine size={17} />
+        {t("tree.empty")}
       </div>
     );
   }
 
   return (
-    <div
-      className="
-        relative
+    <div className="relative flex min-h-11 items-center rounded-xl bg-surface shadow-sm ring-1 ring-border transition hover:ring-primary/30 focus-within:ring-2 focus-within:ring-primary/20">
+      <span className="ml-3 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+        <TreePine size={15} />
+      </span>
 
-        flex
-        items-center
-        gap-2
-      "
-    >
-      <div
-        className="
-          flex
-          items-center
-          gap-2
-
-          w-full
-          
-          h-9
-
-          rounded-lg
-
-          border
-          border-border
-
-          bg-surface
-
-          px-3
-
-          shadow-sm
-
-          transition
-
-          hover:bg-surface-muted
-        "
+      <select
+        value={selectedTreeId ?? ""}
+        onChange={(event) => selectTree(event.target.value)}
+        aria-label={t("navigation.currentTree")}
+        className="min-w-0 flex-1 cursor-pointer appearance-none truncate bg-transparent py-2 pl-2 pr-8 text-sm font-semibold outline-none"
       >
-        <select
-          value={selectedTreeId ?? ""}
-          onChange={(event) => selectTree(event.target.value)}
-          className="
-            w-full
-            appearance-none
-            bg-transparent
+        {trees.map((tree) => (
+          <option key={tree.id} value={tree.id}>
+            {tree.name}
+          </option>
+        ))}
+      </select>
 
-            text-sm
-            font-medium
-
-            outline-none
-
-            cursor-pointer
-
-            pr-5
-
-            truncate
-          "
-        >
-          {trees.map((tree) => (
-            <option key={tree.id} value={tree.id}>
-              {tree.name}
-            </option>
-          ))}
-        </select>
-
-        <ChevronDown
-          size={14}
-          className="
-            pointer-events-none
-
-            absolute
-            right-3
-
-            text-muted-foreground
-          "
-        />
-      </div>
+      <ChevronDown
+        size={14}
+        className="pointer-events-none absolute right-3 text-muted"
+      />
     </div>
   );
 }

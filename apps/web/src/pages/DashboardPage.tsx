@@ -33,7 +33,6 @@ export default function DashboardPage() {
     openEditPerson,
     closeConfirmDialog,
 
-    openCreateRelationshipForm,
     closeRelationshipForm,
   } = useUiStore(
     useShallow((state) => ({
@@ -46,8 +45,6 @@ export default function DashboardPage() {
       openEditPerson: state.openEditPerson,
 
       closeConfirmDialog: state.closeConfirmDialog,
-
-      openCreateRelationshipForm: state.openCreateRelationshipForm,
 
       closeRelationshipForm: state.closeRelationshipForm,
     })),
@@ -108,17 +105,10 @@ export default function DashboardPage() {
     openEditPerson(selectedPersonId);
   }
 
-  function handleCreateRelationship() {
-    if (!canEdit || !selectedTreeId || !selectedPersonId) {
-      return;
-    }
-
-    openCreateRelationshipForm();
-  }
-
   function handleSaveRelationship(data: {
     targetPersonId: string;
     type: RelationshipType;
+    date?: string;
   }) {
     return saveRelationship(selectedTreeId, selectedPersonId, data);
   }
@@ -182,7 +172,6 @@ export default function DashboardPage() {
                 `${selectedPerson.firstName} ${selectedPerson.lastName}`,
               )
             }
-            onAddRelationship={handleCreateRelationship}
             onDeleteRelationship={handleDeleteRelationship}
             canEdit={canEdit}
           />
@@ -190,7 +179,7 @@ export default function DashboardPage() {
 
         {isRelationshipFormOpen && (
           <RelationshipFormPanel
-            persons={persons}
+            persons={persons.filter((person) => person.id !== selectedPersonId)}
             onClose={closeRelationshipForm}
             onSave={handleSaveRelationship}
           />

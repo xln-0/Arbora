@@ -7,7 +7,10 @@ import { useUiStore } from "@/stores/uiStore";
 
 import type { Relationship, RelationshipType } from "@arbora/shared";
 
-import { getRelatedPersonName } from "../relationshipUtils";
+import {
+  buildRelationshipInput,
+  getRelatedPersonName,
+} from "../relationshipUtils";
 
 export function useRelationshipActions() {
   const refreshGraph = useGraphStore((state) => state.refresh);
@@ -24,17 +27,17 @@ export function useRelationshipActions() {
     data: {
       targetPersonId: string;
       type: RelationshipType;
+      date?: string;
     },
   ) {
     if (!selectedTreeId || !selectedPersonId) {
       return;
     }
 
-    await createRelationship(selectedTreeId, {
-      sourcePersonId: selectedPersonId,
-      targetPersonId: data.targetPersonId,
-      type: data.type,
-    });
+    await createRelationship(
+      selectedTreeId,
+      buildRelationshipInput(selectedPersonId, data),
+    );
 
     refreshGraph();
 
