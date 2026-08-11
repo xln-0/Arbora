@@ -1,5 +1,5 @@
 import { t } from "@/i18n";
-import { Network } from "lucide-react";
+import { List, Network } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const items = [
@@ -8,11 +8,11 @@ const items = [
     icon: Network,
     to: "/",
   },
-  // {
-  //   label: "Liste des éléments",
-  //   icon: Users,
-  //   to: "/people",
-  // },
+  {
+    key: "elements",
+    icon: List,
+    to: "/elements",
+  },
 ];
 
 export function SidebarNavigation() {

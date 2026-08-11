@@ -5,3 +5,4 @@ export { default as SettingsPage } from "@/pages/SettingsPage";
 export { default as TreeSettingsPage } from "@/pages/TreeSettingsPage";
 export { default as AccountPage } from "@/pages/AccountPage";
 export { default as WelcomePage } from "@/pages/WelcomePage";
+export { default as TreeElementsPage } from "@/pages/TreeElementsPage";
