@@ -8,6 +8,7 @@ export default {
     tree: "My tree",
     people: "People",
     elements: "Tree elements",
+    timeline: "Timeline",
     settings: "Settings",
     treeSettings: "Tree Settings",
     account: "My account",
@@ -45,6 +46,22 @@ export default {
     noPersons: "No people in this tree.",
     noRelationships: "No relationships in this tree.",
     unknownPerson: "Unknown person",
+  },
+
+  timeline: {
+    title: "Family timeline",
+    description:
+      "Browse births and deaths in the tree in chronological order.",
+    loading: "Loading the timeline…",
+    loadError: "Unable to load the timeline.",
+    noTree: "Select a tree to display its timeline.",
+    empty: "Add birth or death dates to build the timeline.",
+    eventCount: "{{count}} events",
+    scrollHint: "Scroll horizontally",
+    events: {
+      birth: "Birth",
+      death: "Death",
+    },
   },
 
   person: {

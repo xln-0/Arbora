@@ -1,5 +1,5 @@
 import { t } from "@/i18n";
-import { List, Network } from "lucide-react";
+import { History, List, Network } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const items = [
@@ -12,6 +12,11 @@ const items = [
     key: "elements",
     icon: List,
     to: "/elements",
+  },
+  {
+    key: "timeline",
+    icon: History,
+    to: "/timeline",
   },
 ];
 

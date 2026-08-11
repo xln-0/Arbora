@@ -11,6 +11,7 @@ import {
   TreeSettingsPage,
   AccountPage,
   TreeElementsPage,
+  TreeTimelinePage,
 } from "@/pages";
 
 export const router = createBrowserRouter([
@@ -32,6 +33,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/timeline",
+        element: (
+          <ProtectedRoute>
+            <TreeTimelinePage />
           </ProtectedRoute>
         ),
       },
