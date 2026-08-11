@@ -3,6 +3,7 @@ import type { PrismaClient } from "@arbora/database";
 import type { CreateTreeInput, UpdateTreeInput } from "@arbora/shared";
 import { createAppError } from "../errors/createAppError.js";
 import { mapPerson } from "../mappers/personMapper.js";
+import { mapRelationship } from "../mappers/relationshipMapper.js";
 
 const TREE_NAME_MAX_LENGTH = 120;
 
@@ -133,7 +134,7 @@ export async function getTree(
   return {
     ...mapTreeSummary(tree, role),
     persons: tree.persons.map(mapPerson),
-    relationships: tree.relationships,
+    relationships: tree.relationships.map(mapRelationship),
   };
 }
 

@@ -132,6 +132,11 @@ export const ERROR_CODES = {
     message: "Invalid relationship",
   },
 
+  INVALID_RELATIONSHIP_DATE: {
+    statusCode: 400,
+    message: "Invalid relationship date",
+  },
+
   SELF_RELATIONSHIP: {
     statusCode: 400,
     message: "A person cannot be related to itself",

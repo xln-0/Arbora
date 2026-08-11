@@ -22,7 +22,8 @@ const relationshipsRoutes: FastifyPluginAsync = async (app) => {
    * {
    *   sourcePersonId: string,
    *   targetPersonId: string,
-   *   type: RelationshipType
+   *   type: RelationshipType,
+   *   date?: string
    * }
    */
   app.post(

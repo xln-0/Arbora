@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { CalendarDays } from "lucide-react";
 
@@ -196,7 +197,10 @@ function TimelineItem({
   const isBirth = event.type === "birth";
 
   const card = (
-    <article className="w-64 rounded-2xl border border-border bg-surface p-4 shadow-md">
+    <Link
+      to={`/people/${event.person.id}`}
+      className="block w-64 rounded-2xl border border-border bg-surface p-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
+    >
       <div className="flex items-center gap-3">
         <Avatar
           name={name}
@@ -220,7 +224,7 @@ function TimelineItem({
       >
         {t(`timeline.events.${event.type}`)}
       </p>
-    </article>
+    </Link>
   );
 
   return (

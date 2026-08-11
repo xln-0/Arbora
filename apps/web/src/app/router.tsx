@@ -12,6 +12,7 @@ import {
   AccountPage,
   TreeElementsPage,
   TreeTimelinePage,
+  PersonDetailsPage,
 } from "@/pages";
 
 export const router = createBrowserRouter([
@@ -51,6 +52,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <TreeElementsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/people/:personId",
+        element: (
+          <ProtectedRoute>
+            <PersonDetailsPage />
           </ProtectedRoute>
         ),
       },

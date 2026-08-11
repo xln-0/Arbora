@@ -14,6 +14,8 @@ export interface CreateRelationshipInput {
   targetPersonId: string;
 
   type: RelationshipType;
+
+  date?: string;
 }
 
 /**
@@ -25,6 +27,8 @@ export interface Relationship {
   treeId: string;
 
   type: RelationshipType;
+
+  date?: string | null;
 
   sourcePersonId: string;
 

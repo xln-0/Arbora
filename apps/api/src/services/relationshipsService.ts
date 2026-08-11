@@ -5,6 +5,10 @@ import {
   type CreateRelationshipInput,
 } from "@arbora/shared";
 import { createAppError } from "../errors/createAppError.js";
+import {
+  mapRelationship,
+  mapRelationshipDate,
+} from "../mappers/relationshipMapper.js";
 
 /**
  * Crée une relation entre deux personnes.
@@ -47,9 +51,10 @@ export async function createRelationship(
 
   const isChildRelationship = data.type === "CHILD";
 
-  return prisma.relationship.create({
+  const relationship = await prisma.relationship.create({
     data: {
       treeId,
+      date: mapRelationshipDate(data),
 
       // CHILD is an input convenience. Relationships are stored canonically
       // as parent -> child so the graph only has one direction to handle.
@@ -64,6 +69,8 @@ export async function createRelationship(
       type: data.type === "PARTNER" ? "PARTNER" : "PARENT",
     },
   });
+
+  return mapRelationship(relationship);
 }
 
 /**
@@ -73,7 +80,7 @@ export async function getRelationshipsByTree(
   prisma: PrismaClient,
   treeId: string,
 ) {
-  return prisma.relationship.findMany({
+  const relationships = await prisma.relationship.findMany({
     where: {
       treeId,
     },
@@ -82,6 +89,8 @@ export async function getRelationshipsByTree(
       createdAt: "asc",
     },
   });
+
+  return relationships.map(mapRelationship);
 }
 
 /**
