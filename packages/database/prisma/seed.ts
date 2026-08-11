@@ -8,7 +8,7 @@ const prisma = createPrismaClient();
 async function main() {
   const passwordHash = await argon2.hash("demo123");
 
-  const user = await prisma.user.upsert({
+  const demoUser = await prisma.user.upsert({
     where: {
       email: "demo@arbora.local",
     },
@@ -23,27 +23,34 @@ async function main() {
     },
   });
 
-  const tree = await prisma.familyTree.upsert({
+  const testUser = await prisma.user.upsert({
     where: {
-      id: "demo-tree",
+      email: "test@arbora.local",
     },
 
-    update: {},
+    update: {
+      passwordHash,
+    },
 
     create: {
-      id: "demo-tree",
-      name: "Demo Tree",
-      ownerId: user.id,
+      email: "test@arbora.local",
+      passwordHash,
     },
   });
 
   console.log("✅ Database seed completed successfully");
 
   console.log({
-    userId: user.id,
-    email: user.email,
-    treeId: tree.id,
-    treeName: tree.name,
+    users: [
+      {
+        id: demoUser.id,
+        email: demoUser.email,
+      },
+      {
+        id: testUser.id,
+        email: testUser.email,
+      },
+    ],
   });
 }
 

@@ -46,7 +46,7 @@ export default function Button({
         gap-2
 
         h-10
-        px-4
+        px-3
 
         rounded-lg
 

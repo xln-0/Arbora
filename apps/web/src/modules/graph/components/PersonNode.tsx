@@ -41,50 +41,78 @@ export default function PersonNode({ id, data }: NodeProps<PersonNodeType>) {
 
   return (
     <>
+      {/* Parent connection */}
       <Handle id="child" type="target" position={Position.Top} />
+
+      {/* Children connection */}
       <Handle id="parent" type="source" position={Position.Bottom} />
+
+      {/* Partner connections */}
       <Handle id="partner-left" type="source" position={Position.Left} />
+
       <Handle id="partner-right" type="source" position={Position.Right} />
+
       <div
         style={{
           width: PERSON_NODE_WIDTH,
           height: PERSON_NODE_HEIGHT,
         }}
         className={`
-        bg-surface
+          bg-surface
 
-        border
+          border
 
-        ${isSelected ? style.selected : style.border}
+          ${isSelected ? style.selected : style.border}
 
-        rounded-xl
+          rounded-xl
 
-        shadow-sm
+          shadow-sm
 
-        p-4
+          p-3
 
-        flex
-        items-center
-        gap-4
+          flex
+          flex-col
+          items-center
+          justify-center
 
-        select-none
-      `}
+          text-center
+
+          select-none
+        `}
       >
-        <Avatar name={person.firstName} className={style.avatar} />
+        <Avatar
+          name={person.firstName}
+          className={`
+            w-12
+            h-12
+            ${style.avatar}
+          `}
+        />
 
-        <div>
+        <div className="mt-2">
           <h3
             className="
-            font-semibold
-          "
+              font-semibold
+              leading-tight
+            "
           >
-            {person.firstName} {person.lastName}
+            {person.firstName}
           </h3>
+
+          <p
+            className="
+              text-sm
+              text-muted
+            "
+          >
+            {person.lastName}
+          </p>
 
           {person.birthDate && (
             <p
               className="
-                text-sm
+                mt-1
+                text-xs
                 text-muted
               "
             >

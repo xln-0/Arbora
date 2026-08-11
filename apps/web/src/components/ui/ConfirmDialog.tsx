@@ -1,6 +1,8 @@
 import { AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui";
+import { useState } from "react";
+import { t } from "@/i18n";
 
 interface ConfirmDialogProps {
   title: string;
@@ -11,6 +13,8 @@ interface ConfirmDialogProps {
 
   cancelLabel?: string;
 
+  confirmationText?: string;
+
   onConfirm: () => void;
 
   onCancel: () => void;
@@ -19,11 +23,16 @@ interface ConfirmDialogProps {
 export default function ConfirmDialog({
   title,
   message,
-  confirmLabel = "Supprimer",
-  cancelLabel = "Annuler",
+  confirmLabel = t(`actions.delete`),
+  cancelLabel = t(`actions.cancel`),
+  confirmationText,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const [validationText, setValidationText] = useState("");
+
+  const canConfirm = !confirmationText || validationText === confirmationText;
+
   return (
     <div
       className="
@@ -107,6 +116,44 @@ export default function ConfirmDialog({
             >
               {message}
             </p>
+
+            {confirmationText && (
+              <div
+                className="
+              mt-4
+              space-y-2
+            "
+              >
+                <p
+                  className="
+                text-sm
+                text-muted
+              "
+                >
+                  {t(`confirm.typeToConfirm`)}
+                  {":"}
+                  <strong className="ml-1">{confirmationText}</strong>
+                </p>
+
+                <input
+                  className="
+                w-full
+
+                border
+                border-border
+
+                rounded-lg
+
+                px-3
+                py-2
+
+                text-sm
+              "
+                  value={validationText}
+                  onChange={(event) => setValidationText(event.target.value)}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -123,7 +170,7 @@ export default function ConfirmDialog({
             {cancelLabel}
           </Button>
 
-          <Button variant="danger" onClick={onConfirm}>
+          <Button variant="danger" disabled={!canConfirm} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>

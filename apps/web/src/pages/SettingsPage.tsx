@@ -1,7 +1,7 @@
-import { AppLayout } from "@/components/layout/AppLayout";
-
 import { locales, type Locale, t } from "@/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
+
+import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function SettingsPage() {
   const locale = useSettingsStore((state) => state.locale);

@@ -1,0 +1,45 @@
+model FamilyTree {
+    id String @id @default(uuid())
+
+    name String
+
+    ownerId String
+
+    owner User @relation("OwnedTrees", fields: [ownerId], references: [id], onDelete: Restrict)
+
+    members TreeMember[]
+
+    persons Person[]
+
+    relationships Relationship[]
+
+    createdAt DateTime @default(now())
+
+    @@index([ownerId])
+}
+
+model TreeMember {
+    id String @id @default(uuid())
+
+    treeId String
+
+    tree FamilyTree @relation(fields: [treeId], references: [id], onDelete: Cascade)
+
+    userId String
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    role TreeMemberRole @default(VIEWER)
+
+    createdAt DateTime @default(now())
+
+    @@unique([treeId, userId])
+    @@index([userId])
+    @@index([treeId])
+}
+
+enum TreeMemberRole {
+    OWNER
+    EDITOR
+    VIEWER
+}

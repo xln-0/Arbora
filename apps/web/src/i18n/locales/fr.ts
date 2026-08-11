@@ -8,9 +8,13 @@ export default {
     tree: "Mon arbre",
     people: "Personnes",
     settings: "Paramètres",
+    treeSettings: "Paramètres de l'arbre",
+    account: "Mon compte",
   },
 
   account: {
+    profile: "Profil",
+    trees: "Mes arbres",
     logout: "Déconnexion",
   },
 
@@ -23,8 +27,13 @@ export default {
     cancel: "Annuler",
   },
 
+  tree: {
+    name: "Nom de l'arbre",
+    create: "Créer un arbre",
+    empty: "Aucun arbre",
+  },
+
   person: {
-    title: "Personne",
     add: "Ajouter une personne",
     edit: "Modifier la personne",
 
@@ -62,6 +71,21 @@ export default {
 
   settings: {
     language: "Langue",
+    treeName: "Nom de l'arbre",
+    members: "Membres",
+    email: "Email",
+    addMember: "Ajouter un membre",
+    dangerZone: "Zone dangereuse",
+    deleteTreeWarning:
+      "Supprimer cet arbre supprimera définitivement toutes les personnes et relations associées.",
+    roles: {
+      owner: "Propriétaire",
+      editor: "Éditeur",
+      viewer: "Lecteur",
+    },
+    removeMember: "Supprimer le membre",
+    unknownUser: "Utilisateur inconnu",
+    ownerOnly: "Seul le propriétaire peut gérer les paramètres de cet arbre.",
   },
 
   confirm: {
@@ -69,5 +93,10 @@ export default {
     deletePersonMessage: "Cette action supprimera également ses relations.",
     deleteRelationshipTitle: "Supprimer la relation ?",
     deleteRelationshipMessage: "Supprimer la relation avec {{name}} ?",
+    deleteTreeTitle: "Supprimer l'arbre",
+    deleteTreeMessage:
+      "Cette action est définitive. Toutes les données associées seront supprimées.",
+    deleteTypeToConfirm: "Tapez le nom de l'arbre pour confirmer.",
+    typeToConfirm: "Tapez",
   },
 };

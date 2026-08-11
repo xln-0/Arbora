@@ -1,6 +1,5 @@
 import { t } from "@/i18n";
-import { Network, Settings } from "lucide-react";
-
+import { Network } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const items = [
@@ -14,18 +13,13 @@ const items = [
   //   icon: Users,
   //   to: "/people",
   // },
-  {
-    key: "settings",
-    icon: Settings,
-    to: "/settings",
-  },
 ];
 
 export function SidebarNavigation() {
   return (
     <nav
       className="
-        mt-8
+        mt-4
         flex
         flex-col
         gap-2

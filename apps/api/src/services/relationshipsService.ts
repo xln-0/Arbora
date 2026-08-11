@@ -1,53 +1,74 @@
 import type { PrismaClient } from "@arbora/database";
-import { RelationshipType } from "@arbora/shared";
 
-type CreateRelationshipInput = {
-  sourcePersonId: string;
-  targetPersonId: string;
-  type: RelationshipType;
-};
+import {
+  RELATIONSHIP_TYPES,
+  type CreateRelationshipInput,
+} from "@arbora/shared";
+import { createAppError } from "../errors/createAppError.js";
 
+/**
+ * Crée une relation entre deux personnes.
+ */
 export async function createRelationship(
   prisma: PrismaClient,
   treeId: string,
   data: CreateRelationshipInput,
 ) {
+  if (
+    !data ||
+    !data.sourcePersonId ||
+    !data.targetPersonId ||
+    !RELATIONSHIP_TYPES.includes(data.type)
+  ) {
+    throw createAppError("INVALID_RELATIONSHIP");
+  }
+
+  if (data.sourcePersonId === data.targetPersonId) {
+    throw createAppError("SELF_RELATIONSHIP");
+  }
+
   const persons = await prisma.person.findMany({
     where: {
       id: {
         in: [data.sourcePersonId, data.targetPersonId],
       },
+
       treeId,
+    },
+
+    select: {
+      id: true,
     },
   });
 
   if (persons.length !== 2) {
-    throw new Error("Persons do not belong to this tree");
+    throw createAppError("INVALID_RELATIONSHIP");
   }
 
-  let sourcePersonId = data.sourcePersonId;
-  let targetPersonId = data.targetPersonId;
-  let type = data.type;
-
-  if (data.type === "PARENT") {
-    sourcePersonId = data.targetPersonId;
-    targetPersonId = data.sourcePersonId;
-  }
-
-  if (data.type === "CHILD") {
-    type = "PARENT";
-  }
+  const isChildRelationship = data.type === "CHILD";
 
   return prisma.relationship.create({
     data: {
       treeId,
-      sourcePersonId: sourcePersonId,
-      targetPersonId: targetPersonId,
-      type: type,
+
+      // CHILD is an input convenience. Relationships are stored canonically
+      // as parent -> child so the graph only has one direction to handle.
+      sourcePersonId: isChildRelationship
+        ? data.targetPersonId
+        : data.sourcePersonId,
+
+      targetPersonId: isChildRelationship
+        ? data.sourcePersonId
+        : data.targetPersonId,
+
+      type: data.type === "PARTNER" ? "PARTNER" : "PARENT",
     },
   });
 }
 
+/**
+ * Retourne toutes les relations d'un arbre.
+ */
 export async function getRelationshipsByTree(
   prisma: PrismaClient,
   treeId: string,
@@ -57,18 +78,30 @@ export async function getRelationshipsByTree(
       treeId,
     },
 
-    include: {
-      sourcePerson: true,
-
-      targetPerson: true,
+    orderBy: {
+      createdAt: "asc",
     },
   });
 }
 
-export async function deleteRelationship(prisma: PrismaClient, id: string) {
-  return prisma.relationship.delete({
+/**
+ * Supprime une relation d'un arbre.
+ */
+export async function deleteRelationship(
+  prisma: PrismaClient,
+  treeId: string,
+  relationshipId: string,
+) {
+  const result = await prisma.relationship.deleteMany({
     where: {
-      id,
+      id: relationshipId,
+      treeId,
     },
   });
+
+  if (result.count === 0) {
+    throw createAppError("RELATIONSHIP_NOT_FOUND");
+  }
+
+  return { success: true };
 }

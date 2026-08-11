@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui";
 import {
-  relationships,
+  RELATIONSHIP_TYPES,
   type Person,
   type RelationshipType,
 } from "@arbora/shared";
@@ -111,9 +111,9 @@ export default function RelationshipFormPanel({
           value={type}
           onChange={(e) => setType(e.target.value as RelationshipType)}
         >
-          {relationships.map((relationship) => (
-            <option key={relationship} value={relationship}>
-              {t(`relationship.types.${relationship}`)}
+          {RELATIONSHIP_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t(`relationship.types.${type}`)}
             </option>
           ))}
         </select>

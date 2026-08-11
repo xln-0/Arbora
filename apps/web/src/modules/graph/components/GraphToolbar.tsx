@@ -14,7 +14,7 @@ export default function GraphToolbar() {
         z-20
       "
     >
-      <Button onClick={() => openPersonForm()}>{t(`person.add`)}</Button>
+      <Button onClick={() => openPersonForm()}>{t("person.add")}</Button>
     </div>
   );
 }

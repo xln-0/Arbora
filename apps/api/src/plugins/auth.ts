@@ -26,7 +26,13 @@ const authPlugin: FastifyPluginAsync = async (app) => {
         },
       });
 
-      if (!session) {
+      if (!session || session.expiresAt <= new Date()) {
+        if (session) {
+          await app.prisma.session.delete({ where: { id: session.id } });
+        }
+
+        reply.clearCookie("arbora_session", { path: "/" });
+
         return reply.code(401).send({
           message: "Invalid session",
         });

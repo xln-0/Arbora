@@ -1,15 +1,19 @@
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import sensible from "@fastify/sensible";
 
 import prismaPlugin from "./plugins/prisma.js";
 import authPlugin from "./plugins/auth.js";
+import treePermissionsPlugin from "./plugins/tree.js";
 
 import healthRoutes from "./routes/health.js";
 import treesRoutes from "./routes/trees.js";
 import personsRoutes from "./routes/persons.js";
 import relationshipsRoutes from "./routes/relationships.js";
 import authRoutes from "./routes/auth.js";
+import treeMembersRoutes from "./routes/treeMembers.js";
+import { errorHandler } from "./errors/errorHandler.js";
 
 export function buildApp() {
   const app = Fastify({
@@ -41,9 +45,13 @@ export function buildApp() {
 
   app.register(cookie);
 
+  app.register(sensible);
+
   app.register(prismaPlugin);
 
   app.register(authPlugin);
+
+  app.register(treePermissionsPlugin);
 
   app.register(healthRoutes);
 
@@ -56,6 +64,10 @@ export function buildApp() {
   app.register(personsRoutes);
 
   app.register(relationshipsRoutes);
+
+  app.register(treeMembersRoutes);
+
+  app.setErrorHandler(errorHandler);
 
   return app;
 }

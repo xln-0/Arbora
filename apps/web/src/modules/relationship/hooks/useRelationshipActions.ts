@@ -42,6 +42,7 @@ export function useRelationshipActions() {
   }
 
   function confirmDeleteRelationship(
+    treeId: string,
     relationship: Relationship,
     selectedPersonId: string | undefined,
     persons: Parameters<typeof getRelatedPersonName>[2],
@@ -58,7 +59,7 @@ export function useRelationshipActions() {
       }),
 
       onConfirm: async () => {
-        await deleteRelationship(relationship.id);
+        await deleteRelationship(treeId, relationship.id);
 
         refreshGraph();
       },

@@ -1,74 +1,95 @@
 import type { FastifyPluginAsync } from "fastify";
 
+import type { CreateRelationshipInput } from "@arbora/shared";
+
 import {
   createRelationship,
   getRelationshipsByTree,
   deleteRelationship,
 } from "../services/relationshipsService.js";
 
-import { relationships, type RelationshipType } from "@arbora/shared";
-
-interface CreateRelationshipParams {
-  treeId: string;
-}
-
-interface CreateRelationshipBody {
-  sourcePersonId: string;
-  targetPersonId: string;
-  type: RelationshipType;
-}
-
 const relationshipsRoutes: FastifyPluginAsync = async (app) => {
-  app.post<{
-    Params: CreateRelationshipParams;
-    Body: CreateRelationshipBody;
-  }>("/trees/:treeId/relationships", async (request, reply) => {
-    const { treeId } = request.params;
+  /**
+   * Crée une relation entre deux personnes.
+   *
+   * POST /trees/:treeId/relationships
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   *
+   * Body:
+   * {
+   *   sourcePersonId: string,
+   *   targetPersonId: string,
+   *   type: RelationshipType
+   * }
+   */
+  app.post(
+    "/trees/:treeId/relationships",
+    {
+      preHandler: [app.authenticate, app.requireTreeEditor],
+    },
+    async (request, reply) => {
+      const { treeId } = request.params as {
+        treeId: string;
+      };
 
-    const { sourcePersonId, targetPersonId, type } = request.body;
+      const body = request.body as CreateRelationshipInput;
 
-    if (!sourcePersonId || !targetPersonId) {
-      return reply.status(400).send({
-        message: "Source and target persons are required",
-      });
-    }
+      const relationship = await createRelationship(app.prisma, treeId, body);
 
-    if (sourcePersonId === targetPersonId) {
-      return reply.status(400).send({
-        message: "A person cannot be related to itself",
-      });
-    }
+      return reply.status(201).send(relationship);
+    },
+  );
 
-    if (!Object.values(relationships).includes(type)) {
-      return reply.status(400).send({
-        message: "Invalid relationship type",
-      });
-    }
+  /**
+   * Retourne toutes les relations d'un arbre.
+   *
+   * GET /trees/:treeId/relationships
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   * - VIEWER
+   */
+  app.get(
+    "/trees/:treeId/relationships",
+    {
+      preHandler: [app.authenticate, app.requireTreeMember],
+    },
+    async (request) => {
+      const { treeId } = request.params as {
+        treeId: string;
+      };
 
-    const relationship = await createRelationship(app.prisma, treeId, {
-      sourcePersonId,
-      targetPersonId,
-      type,
-    });
+      return getRelationshipsByTree(app.prisma, treeId);
+    },
+  );
 
-    return reply.status(201).send(relationship);
-  });
+  /**
+   * Supprime une relation.
+   *
+   * DELETE /trees/:treeId/relationships/:relationshipId
+   *
+   * Permission:
+   * - OWNER
+   * - EDITOR
+   */
+  app.delete(
+    "/trees/:treeId/relationships/:relationshipId",
+    {
+      preHandler: [app.authenticate, app.requireTreeEditor],
+    },
+    async (request) => {
+      const { treeId, relationshipId } = request.params as {
+        treeId: string;
+        relationshipId: string;
+      };
 
-  app.get("/trees/:treeId/relationships", async (request) => {
-    const { treeId } = request.params as {
-      treeId: string;
-    };
-
-    return getRelationshipsByTree(app.prisma, treeId);
-  });
-
-  app.delete("/relationships/:id", async (request) => {
-    const { id } = request.params as {
-      id: string;
-    };
-
-    return deleteRelationship(app.prisma, id);
-  });
+      return deleteRelationship(app.prisma, treeId, relationshipId);
+    },
+  );
 };
 
 export default relationshipsRoutes;

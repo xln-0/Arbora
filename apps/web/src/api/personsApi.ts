@@ -1,8 +1,17 @@
 import { apiClient } from "./client";
-import type { Person } from "@arbora/shared";
+import type {
+  CreatePersonInput,
+  Person,
+  UpdatePersonInput,
+} from "@arbora/shared";
 
-export function updatePersonPosition(id: string, x: number, y: number) {
-  return apiClient(`/persons/${id}/position`, {
+export function updatePersonPosition(
+  treeId: string,
+  personId: string,
+  x: number,
+  y: number,
+) {
+  return apiClient(`/trees/${treeId}/persons/${personId}/position`, {
     method: "PATCH",
 
     body: JSON.stringify({
@@ -14,13 +23,7 @@ export function updatePersonPosition(id: string, x: number, y: number) {
 
 export function createPerson(
   treeId: string,
-  data: {
-    firstName: string;
-    lastName?: string;
-    gender?: string;
-    birthDate?: string;
-    deathDate?: string;
-  },
+  data: CreatePersonInput,
 ) {
   return apiClient<Person>(`/trees/${treeId}/persons`, {
     method: "POST",
@@ -30,23 +33,18 @@ export function createPerson(
 }
 
 export function editPerson(
-  id: string,
-  data: {
-    firstName: string;
-    lastName?: string;
-    gender?: string;
-    birthDate?: string;
-    deathDate?: string;
-  },
+  treeId: string,
+  personId: string,
+  data: UpdatePersonInput,
 ) {
-  return apiClient<Person>(`/persons/${id}`, {
+  return apiClient<Person>(`/trees/${treeId}/persons/${personId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
-export function deletePerson(id: string) {
-  return apiClient(`/persons/${id}`, {
+export function deletePerson(treeId: string, personId: string) {
+  return apiClient(`/trees/${treeId}/persons/${personId}`, {
     method: "DELETE",
   });
 }

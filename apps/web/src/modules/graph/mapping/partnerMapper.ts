@@ -27,7 +27,7 @@ export function mapPartnerRelationships(
     }
 
     // Homme à gauche, femme à droite
-    if (source.gender === "FEMALE" && target.gender === "MALE") {
+    if (source.gender === "MALE" && target.gender === "FEMALE") {
       [source, target] = [target, source];
     }
 

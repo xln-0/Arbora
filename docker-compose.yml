@@ -56,5 +56,8 @@ services:
     volumes:
       - arbora_pgdata:/var/lib/postgresql/data
 
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+
 volumes:
   arbora_pgdata:
