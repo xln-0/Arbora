@@ -14,7 +14,9 @@ import { t } from "@/i18n";
 export interface RelationshipFormData {
   targetPersonId: string;
   type: RelationshipType;
-  date?: string;
+  unionDate?: string;
+  marriageDate?: string;
+  divorceDate?: string;
 }
 
 interface RelationshipFormPanelProps {
@@ -42,13 +44,27 @@ export default function RelationshipFormPanel({
   const [type, setType] = useState<RelationshipType>(
     initialData?.type ?? "PARENT",
   );
-  const [date, setDate] = useState(initialData?.date ?? "");
+  const [unionDate, setUnionDate] = useState(initialData?.unionDate ?? "");
+  const [marriageDate, setMarriageDate] = useState(
+    initialData?.marriageDate ?? "",
+  );
+  const [divorceDate, setDivorceDate] = useState(
+    initialData?.divorceDate ?? "",
+  );
 
   useEffect(() => {
     setTargetPersonId(initialData?.targetPersonId ?? "");
     setType(initialData?.type ?? "PARENT");
-    setDate(initialData?.date ?? "");
-  }, [initialData?.date, initialData?.targetPersonId, initialData?.type]);
+    setUnionDate(initialData?.unionDate ?? "");
+    setMarriageDate(initialData?.marriageDate ?? "");
+    setDivorceDate(initialData?.divorceDate ?? "");
+  }, [
+    initialData?.divorceDate,
+    initialData?.marriageDate,
+    initialData?.targetPersonId,
+    initialData?.type,
+    initialData?.unionDate,
+  ]);
 
   const selectedPerson = persons.find((person) => person.id === targetPersonId);
   const selectedPersonName = selectedPerson
@@ -68,7 +84,11 @@ export default function RelationshipFormPanel({
     onSave({
       targetPersonId,
       type,
-      ...(isCoupleRelationshipType(type) && date ? { date } : {}),
+      ...(isCoupleRelationshipType(type) && unionDate ? { unionDate } : {}),
+      ...((type === "MARRIAGE" || type === "DIVORCE") && marriageDate
+        ? { marriageDate }
+        : {}),
+      ...(type === "DIVORCE" && divorceDate ? { divorceDate } : {}),
     });
   }
 
@@ -168,21 +188,39 @@ export default function RelationshipFormPanel({
             </div>
 
             {isCoupleRelationshipType(type) && (
-              <label className="block rounded-2xl border border-border bg-surface-muted/60 p-4">
+              <section className="rounded-2xl border border-border bg-surface-muted/60 p-4">
                 <span className="flex items-center gap-2 text-sm font-semibold">
                   <CalendarDays size={17} className="text-primary" />
-                  {t(`relationship.dateLabels.${type}`)}
+                  {t("relationship.historyTitle")}
                 </span>
-                <input
-                  className={`${inputClassName} mt-3`}
-                  type="date"
-                  value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                />
-                <span className="mt-2 block text-xs leading-relaxed text-muted">
-                  {t(`relationship.dateHints.${type}`)}
-                </span>
-              </label>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  {t("relationship.historyHint")}
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  <MilestoneDateField
+                    label={t("relationship.dateLabels.FREE_UNION")}
+                    value={unionDate}
+                    onChange={setUnionDate}
+                  />
+
+                  {(type === "MARRIAGE" || type === "DIVORCE") && (
+                    <MilestoneDateField
+                      label={t("relationship.dateLabels.MARRIAGE")}
+                      value={marriageDate}
+                      onChange={setMarriageDate}
+                    />
+                  )}
+
+                  {type === "DIVORCE" && (
+                    <MilestoneDateField
+                      label={t("relationship.dateLabels.DIVORCE")}
+                      value={divorceDate}
+                      onChange={setDivorceDate}
+                    />
+                  )}
+                </div>
+              </section>
             )}
 
             {selectedPerson && (
@@ -216,6 +254,28 @@ export default function RelationshipFormPanel({
         </Button>
       </footer>
     </form>
+  );
+}
+
+function MilestoneDateField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium text-muted">{label}</span>
+      <input
+        className={`${inputClassName} mt-1.5`}
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
   );
 }
 

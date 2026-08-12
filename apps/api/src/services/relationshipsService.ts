@@ -17,7 +17,9 @@ interface CanonicalRelationshipInput {
   sourcePersonId: string;
   targetPersonId: string;
   type: "PARENT" | CoupleRelationshipType;
-  date?: Date;
+  unionDate?: Date;
+  marriageDate?: Date;
+  divorceDate?: Date;
 }
 
 export async function createRelationship(
@@ -66,8 +68,10 @@ export async function updateRelationship(
     },
     data: {
       ...normalized,
-      // An omitted date explicitly clears it during a full replacement.
-      date: normalized.date ?? null,
+      // Omitted milestones are explicitly cleared during a full replacement.
+      unionDate: normalized.unionDate ?? null,
+      marriageDate: normalized.marriageDate ?? null,
+      divorceDate: normalized.divorceDate ?? null,
     },
   });
 
@@ -127,9 +131,19 @@ function normalizeRelationshipInput(
 
   const isChildRelationship = data.type === "CHILD";
   const type = isCoupleRelationshipType(data.type) ? data.type : "PARENT";
-  const date = isCoupleRelationshipType(type)
-    ? mapRelationshipDate(data)
+  const unionDate = isCoupleRelationshipType(type)
+    ? mapRelationshipDate(data.unionDate)
     : undefined;
+  const marriageDate =
+    type === "MARRIAGE" || type === "DIVORCE"
+      ? mapRelationshipDate(data.marriageDate)
+      : undefined;
+  const divorceDate =
+    type === "DIVORCE"
+      ? mapRelationshipDate(data.divorceDate)
+      : undefined;
+
+  validateRelationshipDateOrder([unionDate, marriageDate, divorceDate]);
 
   return {
     sourcePersonId: isChildRelationship
@@ -139,8 +153,20 @@ function normalizeRelationshipInput(
       ? data.sourcePersonId
       : data.targetPersonId,
     type,
-    ...(date ? { date } : {}),
+    ...(unionDate ? { unionDate } : {}),
+    ...(marriageDate ? { marriageDate } : {}),
+    ...(divorceDate ? { divorceDate } : {}),
   };
+}
+
+function validateRelationshipDateOrder(dates: Array<Date | undefined>) {
+  const knownDates = dates.filter((date): date is Date => date !== undefined);
+
+  for (let index = 1; index < knownDates.length; index += 1) {
+    if (knownDates[index].getTime() < knownDates[index - 1].getTime()) {
+      throw createAppError("INVALID_RELATIONSHIP_DATE_ORDER");
+    }
+  }
 }
 
 async function validateRelationship(

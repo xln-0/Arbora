@@ -22,6 +22,7 @@ import { getTreeGraph } from "@/api/treesApi";
 import { AppLayout } from "@/components/layout";
 import { Avatar } from "@/components/ui";
 import { t } from "@/i18n";
+import { getRelationshipCurrentDate } from "@/modules/relationship/relationshipUtils";
 import { useTreeStore } from "@/stores/treeStore";
 import { formatDate, formatPersonLifespan } from "@/utils/dateUtils";
 
@@ -259,6 +260,7 @@ function RelationshipCard({
   const coupleStyle = isCoupleRelationshipType(relationship.type)
     ? getCoupleCardStyle(relationship.type)
     : undefined;
+  const currentDate = getRelationshipCurrentDate(relationship);
   const CoupleIcon = coupleStyle?.icon;
 
   return (
@@ -272,9 +274,9 @@ function RelationshipCard({
         {t(`relationship.types.${relationship.type}`)}
       </span>
 
-      {coupleStyle && relationship.date && (
+      {coupleStyle && currentDate && (
         <span className="ml-2 text-xs text-muted">
-          {formatDate(relationship.date)}
+          {formatDate(currentDate)}
         </span>
       )}
 

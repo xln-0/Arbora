@@ -137,6 +137,11 @@ export const ERROR_CODES = {
     message: "Invalid relationship date",
   },
 
+  INVALID_RELATIONSHIP_DATE_ORDER: {
+    statusCode: 400,
+    message: "Relationship dates are not in chronological order",
+  },
+
   DUPLICATE_RELATIONSHIP: {
     statusCode: 409,
     message: "This relationship already exists",
