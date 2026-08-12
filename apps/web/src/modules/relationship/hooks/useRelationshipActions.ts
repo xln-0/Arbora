@@ -7,7 +7,8 @@ import { createRelationship, deleteRelationship } from "@/api/relationshipsApi";
 import { useGraphStore } from "@/stores/graphStore";
 import { useUiStore } from "@/stores/uiStore";
 
-import type { Relationship, RelationshipType } from "@arbora/shared";
+import type { Relationship } from "@arbora/shared";
+import type { RelationshipFormData } from "../components/RelationshipFormPanel";
 
 import {
   buildRelationshipInput,
@@ -28,11 +29,7 @@ export function useRelationshipActions() {
   async function saveRelationship(
     selectedTreeId: string | undefined,
     selectedPersonId: string | undefined,
-    data: {
-      targetPersonId: string;
-      type: RelationshipType;
-      date?: string;
-    },
+    data: RelationshipFormData,
   ) {
     if (!selectedTreeId || !selectedPersonId) {
       return;

@@ -145,15 +145,12 @@ export default {
     editSummaryTitle: "Relation mise à jour",
     summary: "{{name}} · {{relation}}",
     selectSource: "Sélectionnez d’abord une personne dans l’arbre.",
+    historyTitle: "Historique du couple",
+    historyHint: "Renseignez les étapes connues dans leur ordre chronologique.",
     dateLabels: {
       FREE_UNION: "Date de début de l’union",
       MARRIAGE: "Date du mariage",
       DIVORCE: "Date du divorce",
-    },
-    dateHints: {
-      FREE_UNION: "Optionnelle, elle marquera le début de l’union dans la frise.",
-      MARRIAGE: "Optionnelle, elle ajoutera le mariage à la frise.",
-      DIVORCE: "Optionnelle, elle ajoutera le divorce à la frise.",
     },
     errors: {
       duplicate: "Cette relation existe déjà.",
@@ -161,6 +158,7 @@ export default {
       cycle: "Cette relation créerait une boucle parent-enfant.",
       invalid: "La relation n’est pas valide.",
       invalidDate: "La date de la relation n’est pas valide.",
+      dateOrder: "Les dates doivent respecter l’ordre union, mariage puis divorce.",
       generic: "Impossible d’enregistrer cette relation.",
     },
 

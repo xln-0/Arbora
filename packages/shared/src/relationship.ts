@@ -34,7 +34,11 @@ export interface CreateRelationshipInput {
 
   type: RelationshipType;
 
-  date?: string;
+  unionDate?: string;
+
+  marriageDate?: string;
+
+  divorceDate?: string;
 }
 
 /**
@@ -52,7 +56,11 @@ export interface Relationship {
 
   type: RelationshipType;
 
-  date?: string | null;
+  unionDate?: string | null;
+
+  marriageDate?: string | null;
+
+  divorceDate?: string | null;
 
   sourcePersonId: string;
 

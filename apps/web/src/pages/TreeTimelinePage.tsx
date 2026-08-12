@@ -5,7 +5,6 @@ import { CalendarDays, Heart, HeartCrack, HeartHandshake } from "lucide-react";
 
 import {
   isCoupleRelationshipType,
-  type CoupleRelationshipType,
   type Person,
   type Relationship,
 } from "@arbora/shared";
@@ -109,7 +108,7 @@ export default function TreeTimelinePage() {
     const knownCoupleEvents = new Set<string>();
 
     for (const relationship of relationships) {
-      if (!isCoupleRelationshipType(relationship.type) || !relationship.date) {
+      if (!isCoupleRelationshipType(relationship.type)) {
         continue;
       }
 
@@ -121,20 +120,34 @@ export default function TreeTimelinePage() {
       }
 
       const coupleKey = [person.id, relatedPerson.id].sort().join(":");
-      const eventKey = `${coupleKey}:${relationship.type}:${relationship.date}`;
 
-      if (knownCoupleEvents.has(eventKey)) {
-        continue;
+      function addCoupleEvent(
+        type: CoupleTimelineEventType,
+        date: string | null | undefined,
+      ) {
+        if (!date) {
+          return;
+        }
+
+        const eventKey = `${coupleKey}:${type}:${date}`;
+
+        if (knownCoupleEvents.has(eventKey)) {
+          return;
+        }
+
+        knownCoupleEvents.add(eventKey);
+        timelineEvents.push({
+          id: `${relationship.id}-${type}`,
+          date,
+          person,
+          relatedPerson,
+          type,
+        });
       }
 
-      knownCoupleEvents.add(eventKey);
-      timelineEvents.push({
-        id: `${relationship.id}-${relationship.type.toLowerCase()}`,
-        date: relationship.date,
-        person,
-        relatedPerson,
-        type: getCoupleTimelineEventType(relationship.type),
-      });
+      addCoupleEvent("freeUnion", relationship.unionDate);
+      addCoupleEvent("marriage", relationship.marriageDate);
+      addCoupleEvent("divorce", relationship.divorceDate);
     }
 
     return timelineEvents.sort(
@@ -341,16 +354,6 @@ function TimelineItem({
       </div>
     </div>
   );
-}
-
-function getCoupleTimelineEventType(
-  type: CoupleRelationshipType,
-): CoupleTimelineEventType {
-  if (type === "FREE_UNION") {
-    return "freeUnion";
-  }
-
-  return type === "MARRIAGE" ? "marriage" : "divorce";
 }
 
 function isCoupleTimelineEventType(

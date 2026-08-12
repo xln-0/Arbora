@@ -33,7 +33,10 @@ import { t } from "@/i18n";
 import RelationshipFormPanel, {
   type RelationshipFormData,
 } from "@/modules/relationship/components/RelationshipFormPanel";
-import { buildRelationshipInput } from "@/modules/relationship/relationshipUtils";
+import {
+  buildRelationshipInput,
+  getRelationshipCurrentDate,
+} from "@/modules/relationship/relationshipUtils";
 import { getRelationshipErrorMessage } from "@/modules/relationship/relationshipErrorUtils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
@@ -170,7 +173,6 @@ export default function PersonDetailsPage() {
     for (const relationship of graph.relationships) {
       if (
         isCoupleRelationshipType(relationship.type) &&
-        relationship.date &&
         (relationship.sourcePersonId === person.id ||
           relationship.targetPersonId === person.id)
       ) {
@@ -179,12 +181,34 @@ export default function PersonDetailsPage() {
             ? relationship.targetPersonId
             : relationship.sourcePersonId;
 
-        events.push({
-          id: `${relationship.id}-union`,
-          date: relationship.date,
-          type: getCoupleTimelineEventType(relationship.type),
-          relatedPerson: personById.get(relatedId),
-        });
+        const relatedPerson = personById.get(relatedId);
+
+        if (relationship.unionDate) {
+          events.push({
+            id: `${relationship.id}-free-union`,
+            date: relationship.unionDate,
+            type: "freeUnion",
+            relatedPerson,
+          });
+        }
+
+        if (relationship.marriageDate) {
+          events.push({
+            id: `${relationship.id}-marriage`,
+            date: relationship.marriageDate,
+            type: "marriage",
+            relatedPerson,
+          });
+        }
+
+        if (relationship.divorceDate) {
+          events.push({
+            id: `${relationship.id}-divorce`,
+            date: relationship.divorceDate,
+            type: "divorce",
+            relatedPerson,
+          });
+        }
       }
 
       if (
@@ -563,6 +587,7 @@ function RelationGroup({
             const coupleType = isCoupleRelationshipType(relationship.type)
               ? relationship.type
               : undefined;
+            const currentDate = getRelationshipCurrentDate(relationship);
 
             return (
               <div
@@ -619,9 +644,9 @@ function RelationGroup({
                     >
                       {t(`relationship.types.${coupleType}`)}
                     </span>
-                    {relationship.date && (
+                    {currentDate && (
                       <time className="text-[0.65rem] leading-4 text-muted">
-                        {formatDate(relationship.date)}
+                        {formatDate(currentDate)}
                       </time>
                     )}
                   </div>
@@ -757,18 +782,10 @@ function toRelationshipFormData(
   return {
     targetPersonId,
     type,
-    date: relationship.date ?? undefined,
+    unionDate: relationship.unionDate ?? undefined,
+    marriageDate: relationship.marriageDate ?? undefined,
+    divorceDate: relationship.divorceDate ?? undefined,
   };
-}
-
-function getCoupleTimelineEventType(
-  type: CoupleRelationshipType,
-): "freeUnion" | "marriage" | "divorce" {
-  if (type === "FREE_UNION") {
-    return "freeUnion";
-  }
-
-  return type === "MARRIAGE" ? "marriage" : "divorce";
 }
 
 function getCoupleBadgeClassName(type: CoupleRelationshipType) {

@@ -21,7 +21,9 @@ export function buildRelationshipInput(
       ? currentPersonId
       : data.targetPersonId,
     type: isParentChildRelationship ? "PARENT" : data.type,
-    ...(data.date ? { date: data.date } : {}),
+    ...(data.unionDate ? { unionDate: data.unionDate } : {}),
+    ...(data.marriageDate ? { marriageDate: data.marriageDate } : {}),
+    ...(data.divorceDate ? { divorceDate: data.divorceDate } : {}),
   };
 }
 
@@ -50,4 +52,23 @@ export function getRelatedPersonName(
   }
 
   return `${person.firstName} ${person.lastName}`;
+}
+
+export function getRelationshipCurrentDate(relationship: Relationship) {
+  if (relationship.type === "DIVORCE") {
+    return (
+      relationship.divorceDate ??
+      relationship.marriageDate ??
+      relationship.unionDate ??
+      null
+    );
+  }
+
+  if (relationship.type === "MARRIAGE") {
+    return relationship.marriageDate ?? relationship.unionDate ?? null;
+  }
+
+  return relationship.type === "FREE_UNION"
+    ? (relationship.unionDate ?? null)
+    : null;
 }

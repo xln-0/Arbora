@@ -12,6 +12,7 @@ export function getRelationshipErrorMessage(error: unknown) {
     RELATIONSHIP_CYCLE: "cycle",
     INVALID_RELATIONSHIP: "invalid",
     INVALID_RELATIONSHIP_DATE: "invalidDate",
+    INVALID_RELATIONSHIP_DATE_ORDER: "dateOrder",
     SELF_RELATIONSHIP: "invalid",
   };
   const key = error.code ? errorKeys[error.code] : undefined;

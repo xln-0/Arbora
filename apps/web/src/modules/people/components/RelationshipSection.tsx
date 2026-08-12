@@ -9,7 +9,10 @@ import {
 } from "@arbora/shared";
 
 import { Avatar } from "@/components/ui";
-import { getRelatedPerson } from "@/modules/relationship/relationshipUtils";
+import {
+  getRelatedPerson,
+  getRelationshipCurrentDate,
+} from "@/modules/relationship/relationshipUtils";
 import { t } from "@/i18n";
 import { formatDate } from "@/utils/dateUtils";
 
@@ -45,6 +48,7 @@ export function RelationshipSection({
 
       <div className="space-y-2">
         {relationships.map((relationship) => {
+          const currentDate = getRelationshipCurrentDate(relationship);
           const otherPerson = getRelatedPerson(
             relationship,
             currentPersonId,
@@ -82,8 +86,8 @@ export function RelationshipSection({
                       className={`mt-0.5 block w-fit max-w-full truncate rounded-full px-2 py-0.5 text-[0.65rem] font-medium ${getCoupleBadgeClassName(relationship.type)}`}
                     >
                       {t(`relationship.types.${relationship.type}`)}
-                      {relationship.date
-                        ? ` · ${formatDate(relationship.date)}`
+                      {currentDate
+                        ? ` · ${formatDate(currentDate)}`
                         : ""}
                     </span>
                   )}

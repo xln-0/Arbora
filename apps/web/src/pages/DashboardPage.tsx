@@ -7,12 +7,14 @@ import { Badge, ConfirmDialog } from "@/components/ui";
 
 import FamilyGraph from "@/modules/graph/components/FamilyGraph";
 import PersonFormPanel from "@/modules/people/components/PersonFormPanel";
-import RelationshipFormPanel from "@/modules/relationship/components/RelationshipFormPanel";
+import RelationshipFormPanel, {
+  type RelationshipFormData,
+} from "@/modules/relationship/components/RelationshipFormPanel";
 
 import { usePersonActions } from "@/modules/people/hooks/usePersonActions";
 import { useRelationshipActions } from "@/modules/relationship/hooks/useRelationshipActions";
 
-import type { Relationship, RelationshipType } from "@arbora/shared";
+import type { Relationship } from "@arbora/shared";
 
 import { useGraphStore, useTreeStore, useUiStore } from "@/stores";
 import TreeSettingsButton from "@/modules/trees/components/TreeSettingsButton";
@@ -109,11 +111,7 @@ export default function DashboardPage() {
     openEditPerson(selectedPersonId);
   }
 
-  function handleSaveRelationship(data: {
-    targetPersonId: string;
-    type: RelationshipType;
-    date?: string;
-  }) {
+  function handleSaveRelationship(data: RelationshipFormData) {
     return saveRelationship(selectedTreeId, selectedPersonId, data);
   }
 

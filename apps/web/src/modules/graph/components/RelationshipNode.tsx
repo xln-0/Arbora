@@ -4,6 +4,7 @@ import { Heart, HeartCrack, HeartHandshake } from "lucide-react";
 import type { RelationshipType } from "@arbora/shared";
 
 import { t } from "@/i18n";
+import { getRelationshipCurrentDate } from "@/modules/relationship/relationshipUtils";
 
 import { RELATIONSHIP_NODE_SIZE } from "../constants";
 import type { RelationshipNode as RelationshipNodeType } from "../types";
@@ -14,8 +15,9 @@ export default function RelationshipNode({
   const { relationship } = data;
   const style = getRelationshipStyle(relationship.type);
   const Icon = style.icon;
-  const title = relationship.date
-    ? `${t(`relationship.types.${relationship.type}`)} · ${relationship.date}`
+  const currentDate = getRelationshipCurrentDate(relationship);
+  const title = currentDate
+    ? `${t(`relationship.types.${relationship.type}`)} · ${currentDate}`
     : t(`relationship.types.${relationship.type}`);
 
   return (

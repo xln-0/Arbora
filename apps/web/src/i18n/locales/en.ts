@@ -145,15 +145,12 @@ export default {
     editSummaryTitle: "Updated relationship",
     summary: "{{name}} · {{relation}}",
     selectSource: "Select a person in the tree first.",
+    historyTitle: "Couple history",
+    historyHint: "Enter the known milestones in chronological order.",
     dateLabels: {
       FREE_UNION: "Union start date",
       MARRIAGE: "Marriage date",
       DIVORCE: "Divorce date",
-    },
-    dateHints: {
-      FREE_UNION: "Optional, it will mark the start of the union in the timeline.",
-      MARRIAGE: "Optional, it will add the marriage to the timeline.",
-      DIVORCE: "Optional, it will add the divorce to the timeline.",
     },
     errors: {
       duplicate: "This relationship already exists.",
@@ -161,6 +158,7 @@ export default {
       cycle: "This relationship would create a parent-child cycle.",
       invalid: "This relationship is invalid.",
       invalidDate: "The relationship date is invalid.",
+      dateOrder: "Dates must follow the union, marriage, then divorce order.",
       generic: "Unable to save this relationship.",
     },
 
