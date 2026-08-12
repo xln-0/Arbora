@@ -2,16 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-import { ArrowRight, GitFork, UsersRound } from "lucide-react";
+import {
+  ArrowRight,
+  GitFork,
+  Heart,
+  HeartCrack,
+  HeartHandshake,
+  UsersRound,
+} from "lucide-react";
 
-import type { Person, Relationship } from "@arbora/shared";
+import {
+  isCoupleRelationshipType,
+  type CoupleRelationshipType,
+  type Person,
+  type Relationship,
+} from "@arbora/shared";
 
 import { getTreeGraph } from "@/api/treesApi";
 import { AppLayout } from "@/components/layout";
 import { Avatar } from "@/components/ui";
 import { t } from "@/i18n";
 import { useTreeStore } from "@/stores/treeStore";
-import { formatPersonLifespan } from "@/utils/dateUtils";
+import { formatDate, formatPersonLifespan } from "@/utils/dateUtils";
 
 interface TreeElements {
   persons: Person[];
@@ -244,17 +256,37 @@ function RelationshipCard({
   sourceName: string;
   targetName: string;
 }) {
+  const coupleStyle = isCoupleRelationshipType(relationship.type)
+    ? getCoupleCardStyle(relationship.type)
+    : undefined;
+  const CoupleIcon = coupleStyle?.icon;
+
   return (
-    <article className="min-h-28 rounded-2xl border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+    <article
+      className={`min-h-28 rounded-2xl border bg-surface p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${coupleStyle?.border ?? "border-border"}`}
+    >
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${coupleStyle?.badge ?? "bg-primary/10 text-primary"}`}
+      >
+        {CoupleIcon && <CoupleIcon size={13} />}
         {t(`relationship.types.${relationship.type}`)}
       </span>
+
+      {coupleStyle && relationship.date && (
+        <span className="ml-2 text-xs text-muted">
+          {formatDate(relationship.date)}
+        </span>
+      )}
 
       <div className="mt-4 flex items-center gap-3">
         <span className="min-w-0 flex-1 truncate font-medium" title={sourceName}>
           {sourceName}
         </span>
-        <ArrowRight className="shrink-0 text-muted" size={16} />
+        {CoupleIcon ? (
+          <CoupleIcon className={coupleStyle.text} size={16} />
+        ) : (
+          <ArrowRight className="shrink-0 text-muted" size={16} />
+        )}
         <span
           className="min-w-0 flex-1 truncate text-right font-medium"
           title={targetName}
@@ -264,4 +296,31 @@ function RelationshipCard({
       </div>
     </article>
   );
+}
+
+function getCoupleCardStyle(type: CoupleRelationshipType) {
+  if (type === "FREE_UNION") {
+    return {
+      icon: HeartHandshake,
+      border: "border-cyan-100",
+      badge: "bg-cyan-50 text-cyan-700",
+      text: "shrink-0 text-cyan-600",
+    };
+  }
+
+  if (type === "DIVORCE") {
+    return {
+      icon: HeartCrack,
+      border: "border-amber-100",
+      badge: "bg-amber-50 text-amber-700",
+      text: "shrink-0 text-amber-600",
+    };
+  }
+
+  return {
+    icon: Heart,
+    border: "border-rose-100",
+    badge: "bg-rose-50 text-rose-700",
+    text: "shrink-0 text-rose-500",
+  };
 }

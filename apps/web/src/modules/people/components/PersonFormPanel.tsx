@@ -11,6 +11,7 @@ import {
 
 import {
   GENDERS,
+  isCoupleRelationshipType,
   type Gender,
   type Person,
   type Relationship,
@@ -72,7 +73,7 @@ export default function PersonFormPanel({
   );
   const partners = relationships.filter(
     (relationship) =>
-      relationship.type === "PARTNER" &&
+      isCoupleRelationshipType(relationship.type) &&
       (relationship.sourcePersonId === person?.id ||
         relationship.targetPersonId === person?.id),
   );

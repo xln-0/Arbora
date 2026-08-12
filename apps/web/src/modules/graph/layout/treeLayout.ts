@@ -1,4 +1,5 @@
 import dagre from "@dagrejs/dagre";
+import { isCoupleRelationshipType } from "@arbora/shared";
 import type { Edge } from "@xyflow/react";
 
 import type { GraphNode, PersonNode, RelationshipNode } from "../types";
@@ -118,7 +119,7 @@ export function applyFamilyLayout(
       positionByPersonId.set(person.id, {
         x:
           startX +
-          index * (PERSON_NODE_WIDTH + DAGRE_LAYOUT.PARTNER_SEPARATION),
+          index * (PERSON_NODE_WIDTH + DAGRE_LAYOUT.COUPLE_SEPARATION),
         y,
       });
     });
@@ -364,7 +365,7 @@ function getHouseholdWidth(household: Household) {
   return (
     household.persons.length * PERSON_NODE_WIDTH +
     Math.max(0, household.persons.length - 1) *
-      DAGRE_LAYOUT.PARTNER_SEPARATION
+      DAGRE_LAYOUT.COUPLE_SEPARATION
   );
 }
 
@@ -412,7 +413,8 @@ export function updatePartnerEdgeHandles(edges: Edge[], nodes: GraphNode[]) {
 
   return edges.map((edge) => {
     if (
-      edge.data?.relationshipType !== "PARTNER" ||
+      edge.data?.relationshipType === undefined ||
+      !isCoupleRelationshipType(edge.data.relationshipType) ||
       !edge.target.startsWith("relationship-")
     ) {
       return edge;

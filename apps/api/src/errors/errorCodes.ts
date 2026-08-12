@@ -137,6 +137,21 @@ export const ERROR_CODES = {
     message: "Invalid relationship date",
   },
 
+  DUPLICATE_RELATIONSHIP: {
+    statusCode: 409,
+    message: "This relationship already exists",
+  },
+
+  RELATIONSHIP_CONFLICT: {
+    statusCode: 409,
+    message: "These people already have an incompatible relationship",
+  },
+
+  RELATIONSHIP_CYCLE: {
+    statusCode: 409,
+    message: "This parent relationship would create a cycle",
+  },
+
   SELF_RELATIONSHIP: {
     statusCode: 400,
     message: "A person cannot be related to itself",

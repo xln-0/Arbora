@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Heart, HeartCrack, HeartHandshake } from "lucide-react";
 
-import type { Person } from "@arbora/shared";
+import {
+  isCoupleRelationshipType,
+  type CoupleRelationshipType,
+  type Person,
+  type Relationship,
+} from "@arbora/shared";
 
 import { getTreeGraph } from "@/api/treesApi";
 import { AppLayout } from "@/components/layout";
@@ -12,12 +17,14 @@ import { t } from "@/i18n";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
 
-type TimelineEventType = "birth" | "death";
+type CoupleTimelineEventType = "freeUnion" | "marriage" | "divorce";
+type TimelineEventType = "birth" | "death" | CoupleTimelineEventType;
 
 interface TimelineEvent {
   id: string;
   date: string;
   person: Person;
+  relatedPerson?: Person;
   type: TimelineEventType;
 }
 
@@ -29,12 +36,14 @@ export default function TreeTimelinePage() {
   const locale = useSettingsStore((state) => state.locale);
 
   const [persons, setPersons] = useState<Person[]>([]);
+  const [relationships, setRelationships] = useState<Relationship[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>();
 
   useEffect(() => {
     if (!selectedTreeId) {
       setPersons([]);
+      setRelationships([]);
       setErrorMessage(undefined);
       return;
     }
@@ -51,6 +60,7 @@ export default function TreeTimelinePage() {
 
         if (!cancelled) {
           setPersons(graph.persons);
+          setRelationships(graph.relationships);
         }
       } catch (error) {
         if (!cancelled) {
@@ -95,13 +105,45 @@ export default function TreeTimelinePage() {
       }
     }
 
+    const personById = new Map(persons.map((person) => [person.id, person]));
+    const knownCoupleEvents = new Set<string>();
+
+    for (const relationship of relationships) {
+      if (!isCoupleRelationshipType(relationship.type) || !relationship.date) {
+        continue;
+      }
+
+      const person = personById.get(relationship.sourcePersonId);
+      const relatedPerson = personById.get(relationship.targetPersonId);
+
+      if (!person || !relatedPerson) {
+        continue;
+      }
+
+      const coupleKey = [person.id, relatedPerson.id].sort().join(":");
+      const eventKey = `${coupleKey}:${relationship.type}:${relationship.date}`;
+
+      if (knownCoupleEvents.has(eventKey)) {
+        continue;
+      }
+
+      knownCoupleEvents.add(eventKey);
+      timelineEvents.push({
+        id: `${relationship.id}-${relationship.type.toLowerCase()}`,
+        date: relationship.date,
+        person,
+        relatedPerson,
+        type: getCoupleTimelineEventType(relationship.type),
+      });
+    }
+
     return timelineEvents.sort(
       (a, b) =>
         a.date.localeCompare(b.date) ||
-        a.person.id.localeCompare(b.person.id) ||
-        a.type.localeCompare(b.type),
+        a.type.localeCompare(b.type) ||
+        a.id.localeCompare(b.id),
     );
-  }, [persons]);
+  }, [persons, relationships]);
 
   const dateFormatter = useMemo(
     () =>
@@ -195,8 +237,17 @@ function TimelineItem({
     .filter(Boolean)
     .join(" ");
   const isBirth = event.type === "birth";
+  const coupleStyle = isCoupleTimelineEventType(event.type)
+    ? getCoupleTimelineStyle(event.type)
+    : undefined;
+  const isCoupleEvent = coupleStyle !== undefined;
+  const relatedName = event.relatedPerson
+    ? [event.relatedPerson.firstName, event.relatedPerson.lastName]
+        .filter(Boolean)
+        .join(" ")
+    : "";
 
-  const card = (
+  const personCard = (
     <Link
       to={`/people/${event.person.id}`}
       className="block w-64 rounded-2xl border border-border bg-surface p-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
@@ -227,6 +278,52 @@ function TimelineItem({
     </Link>
   );
 
+  const coupleCard = event.relatedPerson && coupleStyle ? (
+    <div
+      className={`w-64 rounded-2xl border bg-surface p-4 shadow-md transition hover:-translate-y-0.5 hover:shadow-lg ${coupleStyle.border}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex shrink-0 -space-x-3">
+          <Avatar
+            name={name}
+            className={`h-10 w-10 border-2 border-surface ${coupleStyle.avatar}`}
+          />
+          <Avatar
+            name={relatedName}
+            className={`h-10 w-10 border-2 border-surface ${coupleStyle.secondAvatar}`}
+          />
+        </div>
+
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">
+            <Link
+              to={`/people/${event.person.id}`}
+              className={coupleStyle.link}
+            >
+              {name}
+            </Link>
+            <span className="mx-1 text-muted">&amp;</span>
+            <Link
+              to={`/people/${event.relatedPerson.id}`}
+              className={coupleStyle.link}
+            >
+              {relatedName}
+            </Link>
+          </p>
+          <p className="text-xs text-muted">{formattedDate}</p>
+        </div>
+      </div>
+
+      <p
+        className={`mt-4 flex items-center gap-2 text-sm font-medium ${coupleStyle.text}`}
+      >
+        <coupleStyle.icon size={15} />
+        {t(`timeline.events.${event.type}`)}
+      </p>
+    </div>
+  ) : null;
+  const card = isCoupleEvent ? coupleCard : personCard;
+
   return (
     <div className="relative grid w-64 shrink-0 grid-rows-[1fr_auto_1fr]">
       <div className="flex items-end pb-7">{position === "top" && card}</div>
@@ -234,7 +331,7 @@ function TimelineItem({
       <div className="relative flex h-5 items-center justify-center">
         <span
           className={`z-10 h-4 w-4 rounded-full border-4 border-surface shadow-sm ${
-            isBirth ? "bg-primary" : "bg-muted"
+            coupleStyle?.dot ?? (isBirth ? "bg-primary" : "bg-muted")
           }`}
         />
       </div>
@@ -244,6 +341,58 @@ function TimelineItem({
       </div>
     </div>
   );
+}
+
+function getCoupleTimelineEventType(
+  type: CoupleRelationshipType,
+): CoupleTimelineEventType {
+  if (type === "FREE_UNION") {
+    return "freeUnion";
+  }
+
+  return type === "MARRIAGE" ? "marriage" : "divorce";
+}
+
+function isCoupleTimelineEventType(
+  type: TimelineEventType,
+): type is CoupleTimelineEventType {
+  return type === "freeUnion" || type === "marriage" || type === "divorce";
+}
+
+function getCoupleTimelineStyle(type: CoupleTimelineEventType) {
+  if (type === "freeUnion") {
+    return {
+      icon: HeartHandshake,
+      border: "border-cyan-100",
+      avatar: "bg-cyan-50 text-cyan-600",
+      secondAvatar: "bg-cyan-100 text-cyan-700",
+      link: "hover:text-cyan-600",
+      text: "text-cyan-700",
+      dot: "bg-cyan-500",
+    };
+  }
+
+  if (type === "divorce") {
+    return {
+      icon: HeartCrack,
+      border: "border-amber-100",
+      avatar: "bg-amber-50 text-amber-600",
+      secondAvatar: "bg-amber-100 text-amber-700",
+      link: "hover:text-amber-600",
+      text: "text-amber-700",
+      dot: "bg-amber-500",
+    };
+  }
+
+  return {
+    icon: Heart,
+    border: "border-rose-100",
+    avatar: "bg-rose-50 text-rose-600",
+    secondAvatar: "bg-rose-100 text-rose-700",
+    link: "hover:text-rose-600",
+    text: "text-rose-600",
+    dot: "bg-rose-400",
+  };
 }
 
 function EmptyState({ message }: { message: string }) {

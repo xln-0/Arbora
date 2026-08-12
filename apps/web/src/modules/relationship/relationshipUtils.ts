@@ -20,7 +20,7 @@ export function buildRelationshipInput(
     targetPersonId: isTargetParent
       ? currentPersonId
       : data.targetPersonId,
-    type: isParentChildRelationship ? "PARENT" : "PARTNER",
+    type: isParentChildRelationship ? "PARENT" : data.type,
     ...(data.date ? { date: data.date } : {}),
   };
 }

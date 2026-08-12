@@ -54,15 +54,18 @@ export default {
   timeline: {
     title: "Chronologie familiale",
     description:
-      "Parcourez les naissances et les décès de l'arbre dans l'ordre chronologique.",
+      "Parcourez les naissances, les unions, les mariages, les divorces et les décès de l'arbre dans l'ordre chronologique.",
     loading: "Chargement de la chronologie…",
     loadError: "Impossible de charger la chronologie.",
     noTree: "Sélectionnez un arbre pour afficher sa chronologie.",
-    empty: "Ajoutez des dates de naissance ou de décès pour construire la chronologie.",
+    empty: "Ajoutez des dates de naissance, de relation ou de décès pour construire la chronologie.",
     eventCount: "{{count}} événements",
     scrollHint: "Faites défiler horizontalement",
     events: {
       birth: "Naissance",
+      freeUnion: "Union libre",
+      marriage: "Mariage",
+      divorce: "Divorce",
       death: "Décès",
     },
   },
@@ -106,7 +109,7 @@ export default {
     family: "Relations familiales",
     familyDescription: "Naviguez directement vers les proches de cette personne.",
     noParents: "Aucun parent renseigné.",
-    noPartners: "Aucun conjoint renseigné.",
+    noPartners: "Aucune relation de couple renseignée.",
     noChildren: "Aucun enfant renseigné.",
     timeline: {
       title: "Frise chronologique",
@@ -114,7 +117,9 @@ export default {
       empty: "Ajoutez des dates et des relations pour construire cette frise.",
       events: {
         birth: "Naissance",
-        union: "Mariage ou union",
+        freeUnion: "Union libre",
+        marriage: "Mariage",
+        divorce: "Divorce",
         childBirth: "Naissance d’un enfant",
         death: "Décès",
       },
@@ -129,21 +134,42 @@ export default {
 
   relationship: {
     add: "Ajouter une relation",
+    edit: "Modifier la relation",
     description: "Reliez cette personne à un autre membre de l’arbre.",
+    editDescription: "Corrigez la personne, le lien familial ou sa date.",
     selectPerson: "Sélectionner une personne",
     thisPerson: "Cette personne",
     isTheir: "est son/sa",
     noAvailablePersons: "Aucune autre personne n’est disponible dans cet arbre.",
     summaryTitle: "Relation à créer",
+    editSummaryTitle: "Relation mise à jour",
     summary: "{{name}} · {{relation}}",
     selectSource: "Sélectionnez d’abord une personne dans l’arbre.",
-    unionDate: "Date du mariage ou de l’union",
-    unionDateHint: "Optionnelle, elle apparaîtra dans la frise chronologique.",
+    dateLabels: {
+      FREE_UNION: "Date de début de l’union",
+      MARRIAGE: "Date du mariage",
+      DIVORCE: "Date du divorce",
+    },
+    dateHints: {
+      FREE_UNION: "Optionnelle, elle marquera le début de l’union dans la frise.",
+      MARRIAGE: "Optionnelle, elle ajoutera le mariage à la frise.",
+      DIVORCE: "Optionnelle, elle ajoutera le divorce à la frise.",
+    },
+    errors: {
+      duplicate: "Cette relation existe déjà.",
+      conflict: "Ces deux personnes ont déjà une relation incompatible.",
+      cycle: "Cette relation créerait une boucle parent-enfant.",
+      invalid: "La relation n’est pas valide.",
+      invalidDate: "La date de la relation n’est pas valide.",
+      generic: "Impossible d’enregistrer cette relation.",
+    },
 
     types: {
       PARENT: "Parent",
-      PARTNER: "Conjoint(e)",
       CHILD: "Enfant",
+      FREE_UNION: "Partenaire (union libre)",
+      MARRIAGE: "Époux / Épouse (mariage)",
+      DIVORCE: "Ex-conjoint(e) (divorce)",
     },
   },
 

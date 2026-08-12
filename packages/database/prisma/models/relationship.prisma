@@ -26,5 +26,7 @@ model Relationship {
 
 enum RelationshipType {
     PARENT
-    PARTNER
+    FREE_UNION
+    MARRIAGE
+    DIVORCE
 }
