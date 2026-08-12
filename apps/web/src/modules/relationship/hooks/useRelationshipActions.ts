@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { t } from "@/i18n";
 
 import { createRelationship, deleteRelationship } from "@/api/relationshipsApi";
@@ -11,8 +13,10 @@ import {
   buildRelationshipInput,
   getRelatedPersonName,
 } from "../relationshipUtils";
+import { getRelationshipErrorMessage } from "../relationshipErrorUtils";
 
 export function useRelationshipActions() {
+  const [relationshipError, setRelationshipError] = useState<string>();
   const refreshGraph = useGraphStore((state) => state.refresh);
 
   const openConfirmDialog = useUiStore((state) => state.openConfirmDialog);
@@ -34,14 +38,17 @@ export function useRelationshipActions() {
       return;
     }
 
-    await createRelationship(
-      selectedTreeId,
-      buildRelationshipInput(selectedPersonId, data),
-    );
-
-    refreshGraph();
-
-    closeRelationshipForm();
+    try {
+      setRelationshipError(undefined);
+      await createRelationship(
+        selectedTreeId,
+        buildRelationshipInput(selectedPersonId, data),
+      );
+      refreshGraph();
+      closeRelationshipForm();
+    } catch (error) {
+      setRelationshipError(getRelationshipErrorMessage(error));
+    }
   }
 
   function confirmDeleteRelationship(
@@ -72,5 +79,7 @@ export function useRelationshipActions() {
   return {
     saveRelationship,
     confirmDeleteRelationship,
+    relationshipError,
+    clearRelationshipError: () => setRelationshipError(undefined),
   };
 }

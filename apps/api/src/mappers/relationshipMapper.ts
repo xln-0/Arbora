@@ -1,7 +1,5 @@
 import type { Prisma } from "@prisma/client";
 
-import type { CreateRelationshipInput } from "@arbora/shared";
-
 import { createAppError } from "../errors/createAppError.js";
 
 type RelationshipEntity = Prisma.RelationshipGetPayload<{}>;
@@ -19,7 +17,7 @@ export function mapRelationship(relationship: RelationshipEntity) {
   };
 }
 
-export function mapRelationshipDate(data: CreateRelationshipInput) {
+export function mapRelationshipDate(data: { date?: string }) {
   if (data.date === undefined || data.date === "") {
     return undefined;
   }

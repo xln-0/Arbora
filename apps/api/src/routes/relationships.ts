@@ -1,11 +1,15 @@
 import type { FastifyPluginAsync } from "fastify";
 
-import type { CreateRelationshipInput } from "@arbora/shared";
+import type {
+  CreateRelationshipInput,
+  UpdateRelationshipInput,
+} from "@arbora/shared";
 
 import {
   createRelationship,
   getRelationshipsByTree,
   deleteRelationship,
+  updateRelationship,
 } from "../services/relationshipsService.js";
 
 const relationshipsRoutes: FastifyPluginAsync = async (app) => {
@@ -65,6 +69,27 @@ const relationshipsRoutes: FastifyPluginAsync = async (app) => {
       };
 
       return getRelationshipsByTree(app.prisma, treeId);
+    },
+  );
+
+  app.patch(
+    "/trees/:treeId/relationships/:relationshipId",
+    {
+      preHandler: [app.authenticate, app.requireTreeEditor],
+    },
+    async (request) => {
+      const { treeId, relationshipId } = request.params as {
+        treeId: string;
+        relationshipId: string;
+      };
+      const body = request.body as UpdateRelationshipInput;
+
+      return updateRelationship(
+        app.prisma,
+        treeId,
+        relationshipId,
+        body,
+      );
     },
   );
 

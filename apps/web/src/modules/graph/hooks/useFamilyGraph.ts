@@ -2,6 +2,7 @@ import { useEffect } from "react";
 
 import type { Edge, Node, OnNodeDrag } from "@xyflow/react";
 import { useEdgesState, useNodesState } from "@xyflow/react";
+import { isCoupleRelationshipType } from "@arbora/shared";
 
 import { getTreeGraph } from "@/api/treesApi";
 import { updatePersonPosition } from "@/api/personsApi";
@@ -120,7 +121,8 @@ export function useFamilyGraph() {
       const partnerEdges = edges.filter(
         (partnerEdge) =>
           partnerEdge.target === relationshipNodeId &&
-          partnerEdge.data?.relationshipType === "PARTNER",
+          partnerEdge.data?.relationshipType !== undefined &&
+          isCoupleRelationshipType(partnerEdge.data.relationshipType),
       );
 
       for (const partnerEdge of partnerEdges) {

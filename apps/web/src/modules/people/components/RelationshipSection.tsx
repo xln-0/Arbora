@@ -1,11 +1,17 @@
 import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 
-import type { Person, Relationship } from "@arbora/shared";
+import {
+  isCoupleRelationshipType,
+  type CoupleRelationshipType,
+  type Person,
+  type Relationship,
+} from "@arbora/shared";
 
 import { Avatar } from "@/components/ui";
 import { getRelatedPerson } from "@/modules/relationship/relationshipUtils";
 import { t } from "@/i18n";
+import { formatDate } from "@/utils/dateUtils";
 
 export function RelationshipSection({
   title,
@@ -66,7 +72,22 @@ export function RelationshipSection({
                   name={name}
                   className="h-9 w-9 shrink-0 bg-primary-soft text-sm text-primary"
                 />
-                <span className="truncate text-sm font-medium">{name}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium">
+                    {name}
+                  </span>
+                  {isCoupleRelationshipType(relationship.type) && (
+                    <span
+                      title={t(`relationship.types.${relationship.type}`)}
+                      className={`mt-0.5 block w-fit max-w-full truncate rounded-full px-2 py-0.5 text-[0.65rem] font-medium ${getCoupleBadgeClassName(relationship.type)}`}
+                    >
+                      {t(`relationship.types.${relationship.type}`)}
+                      {relationship.date
+                        ? ` · ${formatDate(relationship.date)}`
+                        : ""}
+                    </span>
+                  )}
+                </span>
               </Link>
 
               {canEdit && (
@@ -85,4 +106,16 @@ export function RelationshipSection({
       </div>
     </section>
   );
+}
+
+function getCoupleBadgeClassName(type: CoupleRelationshipType) {
+  if (type === "FREE_UNION") {
+    return "bg-cyan-50 text-cyan-700";
+  }
+
+  if (type === "DIVORCE") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-rose-50 text-rose-700";
 }

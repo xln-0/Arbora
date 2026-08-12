@@ -1,7 +1,8 @@
-import { useState, type FormEvent, type ReactNode } from "react";
-import { CalendarDays, GitFork, UserRound, X } from "lucide-react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { CalendarDays, GitFork, Pencil, UserRound, X } from "lucide-react";
 
 import {
+  isCoupleRelationshipType,
   RELATIONSHIP_TYPES,
   type Person,
   type RelationshipType,
@@ -21,6 +22,9 @@ interface RelationshipFormPanelProps {
   onSave: (data: RelationshipFormData) => void;
   onClose: () => void;
   placement?: "besidePerson" | "right";
+  mode?: "create" | "edit";
+  initialData?: RelationshipFormData;
+  errorMessage?: string;
 }
 
 export default function RelationshipFormPanel({
@@ -28,10 +32,23 @@ export default function RelationshipFormPanel({
   onSave,
   onClose,
   placement = "besidePerson",
+  mode = "create",
+  initialData,
+  errorMessage,
 }: RelationshipFormPanelProps) {
-  const [targetPersonId, setTargetPersonId] = useState("");
-  const [type, setType] = useState<RelationshipType>("PARENT");
-  const [date, setDate] = useState("");
+  const [targetPersonId, setTargetPersonId] = useState(
+    initialData?.targetPersonId ?? "",
+  );
+  const [type, setType] = useState<RelationshipType>(
+    initialData?.type ?? "PARENT",
+  );
+  const [date, setDate] = useState(initialData?.date ?? "");
+
+  useEffect(() => {
+    setTargetPersonId(initialData?.targetPersonId ?? "");
+    setType(initialData?.type ?? "PARENT");
+    setDate(initialData?.date ?? "");
+  }, [initialData?.date, initialData?.targetPersonId, initialData?.type]);
 
   const selectedPerson = persons.find((person) => person.id === targetPersonId);
   const selectedPersonName = selectedPerson
@@ -39,6 +56,7 @@ export default function RelationshipFormPanel({
         .filter(Boolean)
         .join(" ")
     : "";
+  const isEditing = mode === "edit";
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,7 +68,7 @@ export default function RelationshipFormPanel({
     onSave({
       targetPersonId,
       type,
-      ...(type === "PARTNER" && date ? { date } : {}),
+      ...(isCoupleRelationshipType(type) && date ? { date } : {}),
     });
   }
 
@@ -76,18 +94,33 @@ export default function RelationshipFormPanel({
 
         <div className="flex items-center gap-4 pr-9">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground shadow-sm">
-            <GitFork size={22} />
+            {isEditing ? <Pencil size={21} /> : <GitFork size={22} />}
           </span>
           <div>
-            <h2 className="text-xl font-semibold">{t("relationship.add")}</h2>
+            <h2 className="text-xl font-semibold">
+              {t(isEditing ? "relationship.edit" : "relationship.add")}
+            </h2>
             <p className="mt-1 text-sm text-muted">
-              {t("relationship.description")}
+              {t(
+                isEditing
+                  ? "relationship.editDescription"
+                  : "relationship.description",
+              )}
             </p>
           </div>
         </div>
       </header>
 
       <div className="flex-1 overflow-y-auto px-6 py-5">
+        {errorMessage && (
+          <p
+            role="alert"
+            className="mb-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {errorMessage}
+          </p>
+        )}
+
         {persons.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border px-5 py-8 text-center">
             <UserRound className="mx-auto text-muted" size={24} />
@@ -134,11 +167,11 @@ export default function RelationshipFormPanel({
               </RelationField>
             </div>
 
-            {type === "PARTNER" && (
+            {isCoupleRelationshipType(type) && (
               <label className="block rounded-2xl border border-border bg-surface-muted/60 p-4">
                 <span className="flex items-center gap-2 text-sm font-semibold">
                   <CalendarDays size={17} className="text-primary" />
-                  {t("relationship.unionDate")}
+                  {t(`relationship.dateLabels.${type}`)}
                 </span>
                 <input
                   className={`${inputClassName} mt-3`}
@@ -147,7 +180,7 @@ export default function RelationshipFormPanel({
                   onChange={(event) => setDate(event.target.value)}
                 />
                 <span className="mt-2 block text-xs leading-relaxed text-muted">
-                  {t("relationship.unionDateHint")}
+                  {t(`relationship.dateHints.${type}`)}
                 </span>
               </label>
             )}
@@ -155,7 +188,11 @@ export default function RelationshipFormPanel({
             {selectedPerson && (
               <div className="rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3">
                 <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                  {t("relationship.summaryTitle")}
+                  {t(
+                    isEditing
+                      ? "relationship.editSummaryTitle"
+                      : "relationship.summaryTitle",
+                  )}
                 </p>
                 <p className="mt-1 text-sm font-semibold">
                   {t("relationship.summary", {
@@ -174,8 +211,8 @@ export default function RelationshipFormPanel({
           {t("actions.cancel")}
         </Button>
         <Button type="submit" disabled={!targetPersonId}>
-          <GitFork size={16} />
-          {t("actions.create")}
+          {isEditing ? <Pencil size={16} /> : <GitFork size={16} />}
+          {t(isEditing ? "actions.save" : "actions.create")}
         </Button>
       </footer>
     </form>

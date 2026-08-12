@@ -90,8 +90,12 @@ export default function DashboardPage() {
 
   const { savePerson, confirmDeletePerson } = usePersonActions();
 
-  const { saveRelationship, confirmDeleteRelationship } =
-    useRelationshipActions();
+  const {
+    saveRelationship,
+    confirmDeleteRelationship,
+    relationshipError,
+    clearRelationshipError,
+  } = useRelationshipActions();
 
   //
   // Handlers
@@ -124,6 +128,11 @@ export default function DashboardPage() {
       selectedPersonId,
       persons,
     );
+  }
+
+  function handleCloseRelationshipForm() {
+    clearRelationshipError();
+    closeRelationshipForm();
   }
 
   return (
@@ -180,8 +189,9 @@ export default function DashboardPage() {
         {isRelationshipFormOpen && (
           <RelationshipFormPanel
             persons={persons.filter((person) => person.id !== selectedPersonId)}
-            onClose={closeRelationshipForm}
+            onClose={handleCloseRelationshipForm}
             onSave={handleSaveRelationship}
+            errorMessage={relationshipError}
           />
         )}
 

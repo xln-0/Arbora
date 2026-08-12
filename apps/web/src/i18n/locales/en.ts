@@ -54,15 +54,18 @@ export default {
   timeline: {
     title: "Family timeline",
     description:
-      "Browse births and deaths in the tree in chronological order.",
+      "Browse births, unions, marriages, divorces, and deaths in chronological order.",
     loading: "Loading the timeline…",
     loadError: "Unable to load the timeline.",
     noTree: "Select a tree to display its timeline.",
-    empty: "Add birth or death dates to build the timeline.",
+    empty: "Add birth, relationship, or death dates to build the timeline.",
     eventCount: "{{count}} events",
     scrollHint: "Scroll horizontally",
     events: {
       birth: "Birth",
+      freeUnion: "Domestic partnership",
+      marriage: "Marriage",
+      divorce: "Divorce",
       death: "Death",
     },
   },
@@ -106,7 +109,7 @@ export default {
     family: "Family relationships",
     familyDescription: "Navigate directly to this person's relatives.",
     noParents: "No parents provided.",
-    noPartners: "No partner provided.",
+    noPartners: "No couple relationship provided.",
     noChildren: "No children provided.",
     timeline: {
       title: "Timeline",
@@ -114,7 +117,9 @@ export default {
       empty: "Add dates and relationships to build this timeline.",
       events: {
         birth: "Birth",
-        union: "Marriage or union",
+        freeUnion: "Domestic partnership",
+        marriage: "Marriage",
+        divorce: "Divorce",
         childBirth: "Birth of a child",
         death: "Death",
       },
@@ -129,21 +134,42 @@ export default {
 
   relationship: {
     add: "Add a relationship",
+    edit: "Edit relationship",
     description: "Connect this person to another member of the tree.",
+    editDescription: "Update the person, family link, or its date.",
     selectPerson: "Select a person",
     thisPerson: "This person",
     isTheir: "is their",
     noAvailablePersons: "No other person is available in this tree.",
     summaryTitle: "Relationship to create",
+    editSummaryTitle: "Updated relationship",
     summary: "{{name}} · {{relation}}",
     selectSource: "Select a person in the tree first.",
-    unionDate: "Marriage or union date",
-    unionDateHint: "Optional, it will appear in the timeline.",
+    dateLabels: {
+      FREE_UNION: "Union start date",
+      MARRIAGE: "Marriage date",
+      DIVORCE: "Divorce date",
+    },
+    dateHints: {
+      FREE_UNION: "Optional, it will mark the start of the union in the timeline.",
+      MARRIAGE: "Optional, it will add the marriage to the timeline.",
+      DIVORCE: "Optional, it will add the divorce to the timeline.",
+    },
+    errors: {
+      duplicate: "This relationship already exists.",
+      conflict: "These people already have an incompatible relationship.",
+      cycle: "This relationship would create a parent-child cycle.",
+      invalid: "This relationship is invalid.",
+      invalidDate: "The relationship date is invalid.",
+      generic: "Unable to save this relationship.",
+    },
 
     types: {
       PARENT: "Parent",
-      PARTNER: "Partner",
       CHILD: "Child",
+      FREE_UNION: "Partner (domestic union)",
+      MARRIAGE: "Spouse (marriage)",
+      DIVORCE: "Former spouse (divorce)",
     },
   },
 
