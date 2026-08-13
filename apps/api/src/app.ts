@@ -16,9 +16,9 @@ import treeMembersRoutes from "./routes/treeMembers.js";
 import adminRoutes from "./routes/admin.js";
 import { errorHandler } from "./errors/errorHandler.js";
 
-export function buildApp() {
+export function buildApp({ logger = true }: { logger?: boolean } = {}) {
   const app = Fastify({
-    logger: true,
+    logger,
   });
 
   const allowedOrigins = process.env.CORS_ORIGINS?.split(",") ?? [];

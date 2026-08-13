@@ -55,29 +55,6 @@ interface GraphState {
   setGraph(persons: Person[], relationships: Relationship[]): void;
 
   /**
-   * Ajoute ou met à jour une personne dans le graphe.
-   */
-  updatePerson(person: Person): void;
-
-  /**
-   * Supprime une personne du graphe.
-   *
-   * Les relations associées à cette personne
-   * sont également supprimées.
-   */
-  deletePerson(personId: string): void;
-
-  /**
-   * Ajoute une nouvelle relation au graphe.
-   */
-  addRelationship(relationship: Relationship): void;
-
-  /**
-   * Supprime une relation du graphe.
-   */
-  deleteRelationship(relationshipId: string): void;
-
-  /**
    * Incrémente la révision du graphe.
    *
    * Permet de notifier les composants nécessitant
@@ -127,86 +104,6 @@ export const useGraphStore = create<GraphState>((set) => ({
         relationships.map((relationship) => [relationship.id, relationship]),
       ),
 
-      /**
-       * Nouveau chargement du graphe :
-       * on force les consommateurs à se mettre à jour.
-       */
-      revision: 0,
-    });
-  },
-
-  //
-  // Persons
-  //
-
-  updatePerson(person) {
-    set((state) => ({
-      persons: {
-        ...state.persons,
-
-        /**
-         * Remplace l'ancienne version
-         * ou ajoute une nouvelle personne.
-         */
-        [person.id]: person,
-      },
-    }));
-  },
-
-  deletePerson(personId) {
-    set((state) => {
-      const persons = {
-        ...state.persons,
-      };
-
-      delete persons[personId];
-
-      /**
-       * Suppression automatique des relations
-       * qui utilisent cette personne.
-       *
-       * Cela évite de conserver des relations orphelines.
-       */
-      const relationships = Object.fromEntries(
-        Object.entries(state.relationships).filter(
-          ([, relationship]) =>
-            relationship.sourcePersonId !== personId &&
-            relationship.targetPersonId !== personId,
-        ),
-      );
-
-      return {
-        persons,
-        relationships,
-      };
-    });
-  },
-
-  //
-  // Relationships
-  //
-
-  addRelationship(relationship) {
-    set((state) => ({
-      relationships: {
-        ...state.relationships,
-
-        [relationship.id]: relationship,
-      },
-    }));
-  },
-
-  deleteRelationship(relationshipId) {
-    set((state) => {
-      const relationships = {
-        ...state.relationships,
-      };
-
-      delete relationships[relationshipId];
-
-      return {
-        relationships,
-      };
     });
   },
 

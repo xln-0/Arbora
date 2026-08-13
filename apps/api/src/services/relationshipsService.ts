@@ -175,21 +175,33 @@ async function validateRelationship(
   data: CanonicalRelationshipInput,
   excludedRelationshipId?: string,
 ) {
-  const [persons, relationships] = await Promise.all([
-    prisma.person.findMany({
+  const relationshipPairFilters = [
+    {
+      sourcePersonId: data.sourcePersonId,
+      targetPersonId: data.targetPersonId,
+    },
+    {
+      sourcePersonId: data.targetPersonId,
+      targetPersonId: data.sourcePersonId,
+    },
+  ];
+
+  const [personCount, relationships] = await Promise.all([
+    prisma.person.count({
       where: {
         id: {
           in: [data.sourcePersonId, data.targetPersonId],
         },
         treeId,
       },
-      select: {
-        id: true,
-      },
     }),
     prisma.relationship.findMany({
       where: {
         treeId,
+        OR:
+          data.type === "PARENT"
+            ? [{ type: "PARENT" }, ...relationshipPairFilters]
+            : relationshipPairFilters,
         ...(excludedRelationshipId && {
           id: {
             not: excludedRelationshipId,
@@ -205,7 +217,7 @@ async function validateRelationship(
     }),
   ]);
 
-  if (persons.length !== 2) {
+  if (personCount !== 2) {
     throw createAppError("INVALID_RELATIONSHIP");
   }
 

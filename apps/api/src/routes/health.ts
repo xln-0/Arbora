@@ -36,6 +36,8 @@ const healthRoutes: FastifyPluginAsync = async (app) => {
    * }
    */
   app.get("/health/database", async () => {
+    await app.prisma.$queryRaw`SELECT 1`;
+
     return {
       database: "connected",
     };

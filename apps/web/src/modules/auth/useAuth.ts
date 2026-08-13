@@ -6,6 +6,7 @@ import {
   setupAdmin as setupAdminApi,
 } from "@/api/authApi";
 import { ApiError } from "@/api/client";
+import { clearTreeGraphCache } from "@/api/treesApi";
 
 import { useAuthStore } from "@/stores/authStore";
 import { useTreeStore } from "@/stores/treeStore";
@@ -17,19 +18,19 @@ export function useAuth() {
 
   const {
     setUser,
-    setInitialized,
+    setReady,
     setSetupRequired,
     setInitializing,
     setBackendUnavailable,
   } = useAuthStore();
 
   const clear = useAuthStore((state) => state.clear);
-  const clearSelectedTree = useTreeStore((state) => state.clearSelectedTree);
   const resetTrees = useTreeStore((state) => state.resetTrees);
 
   async function login(email: string, password: string) {
     const result = await loginApi(email, password);
 
+    clearTreeGraphCache();
     setUser(result.user);
 
     navigate("/");
@@ -43,8 +44,9 @@ export function useAuth() {
       setSetupRequired(setup.setupRequired);
 
       if (setup.setupRequired) {
+        clearTreeGraphCache();
         clear();
-        setInitialized();
+        setReady();
         return true;
       }
 
@@ -54,13 +56,14 @@ export function useAuth() {
         setUser(result.user);
       } catch (error) {
         if (error instanceof ApiError && error.status === 401) {
+          clearTreeGraphCache();
           clear();
         } else {
           throw error;
         }
       }
 
-      setInitialized();
+      setReady();
       return true;
     } catch {
       setBackendUnavailable();
@@ -71,6 +74,7 @@ export function useAuth() {
   async function setupAdmin(email: string, password: string) {
     const result = await setupAdminApi(email, password);
 
+    clearTreeGraphCache();
     setUser(result.user);
     setSetupRequired(false);
     navigate("/");
@@ -79,9 +83,9 @@ export function useAuth() {
   async function logout() {
     await logoutApi();
 
+    clearTreeGraphCache();
     clear();
     resetTrees();
-    clearSelectedTree();
 
     navigate("/login");
   }

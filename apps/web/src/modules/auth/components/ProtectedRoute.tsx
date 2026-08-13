@@ -6,10 +6,10 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, initialized, setupRequired } = useAuthStore();
+  const { user, startupStatus, setupRequired } = useAuthStore();
 
-  if (!initialized) {
-    return null; // ou loader
+  if (startupStatus !== "ready") {
+    return null;
   }
 
   if (setupRequired) {

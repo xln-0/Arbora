@@ -1,3 +1,4 @@
+import { lazy, Suspense, type ReactNode } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
@@ -8,19 +9,35 @@ import {
   ProtectedRoute,
   SetupRoute,
 } from "@/modules/auth/components";
-import {
-  LoginPage,
-  DashboardPage,
-  PeoplePage,
-  SettingsPage,
-  TreeSettingsPage,
-  AccountPage,
-  TreeElementsPage,
-  TreeTimelinePage,
-  PersonDetailsPage,
-  SetupPage,
-  AdministrationPage,
-} from "@/pages";
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
+const PeoplePage = lazy(() => import("@/pages/PeoplePage"));
+const SettingsPage = lazy(() => import("@/pages/SettingsPage"));
+const TreeSettingsPage = lazy(() => import("@/pages/TreeSettingsPage"));
+const AccountPage = lazy(() => import("@/pages/AccountPage"));
+const TreeElementsPage = lazy(() => import("@/pages/TreeElementsPage"));
+const TreeTimelinePage = lazy(() => import("@/pages/TreeTimelinePage"));
+const PersonDetailsPage = lazy(() => import("@/pages/PersonDetailsPage"));
+const SetupPage = lazy(() => import("@/pages/SetupPage"));
+const AdministrationPage = lazy(() => import("@/pages/AdministrationPage"));
+
+function lazyPage(page: ReactNode) {
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="flex min-h-screen items-center justify-center bg-background"
+          role="status"
+          aria-label="Chargement de la page"
+        >
+          <span className="h-8 w-8 animate-spin rounded-full border-2 border-primary/20 border-t-primary" />
+        </div>
+      }
+    >
+      {page}
+    </Suspense>
+  );
+}
 
 export const router = createBrowserRouter([
   {
@@ -31,7 +48,7 @@ export const router = createBrowserRouter([
         path: "/setup",
         element: (
           <SetupRoute>
-            <SetupPage />
+            {lazyPage(<SetupPage />)}
           </SetupRoute>
         ),
       },
@@ -40,7 +57,7 @@ export const router = createBrowserRouter([
         path: "/login",
         element: (
           <GuestRoute>
-            <LoginPage />
+            {lazyPage(<LoginPage />)}
           </GuestRoute>
         ),
       },
@@ -49,7 +66,7 @@ export const router = createBrowserRouter([
         path: "/",
         element: (
           <ProtectedRoute>
-            <DashboardPage />
+            {lazyPage(<DashboardPage />)}
           </ProtectedRoute>
         ),
       },
@@ -58,7 +75,7 @@ export const router = createBrowserRouter([
         path: "/timeline",
         element: (
           <ProtectedRoute>
-            <TreeTimelinePage />
+            {lazyPage(<TreeTimelinePage />)}
           </ProtectedRoute>
         ),
       },
@@ -67,7 +84,7 @@ export const router = createBrowserRouter([
         path: "/elements",
         element: (
           <ProtectedRoute>
-            <TreeElementsPage />
+            {lazyPage(<TreeElementsPage />)}
           </ProtectedRoute>
         ),
       },
@@ -76,7 +93,7 @@ export const router = createBrowserRouter([
         path: "/people/:personId",
         element: (
           <ProtectedRoute>
-            <PersonDetailsPage />
+            {lazyPage(<PersonDetailsPage />)}
           </ProtectedRoute>
         ),
       },
@@ -85,7 +102,7 @@ export const router = createBrowserRouter([
         path: "/people",
         element: (
           <ProtectedRoute>
-            <PeoplePage />
+            {lazyPage(<PeoplePage />)}
           </ProtectedRoute>
         ),
       },
@@ -94,7 +111,7 @@ export const router = createBrowserRouter([
         path: "/settings",
         element: (
           <ProtectedRoute>
-            <SettingsPage />
+            {lazyPage(<SettingsPage />)}
           </ProtectedRoute>
         ),
       },
@@ -103,7 +120,7 @@ export const router = createBrowserRouter([
         path: "/tree-settings",
         element: (
           <ProtectedRoute>
-            <TreeSettingsPage />
+            {lazyPage(<TreeSettingsPage />)}
           </ProtectedRoute>
         ),
       },
@@ -113,7 +130,7 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <AdminRoute>
-              <AdministrationPage />
+              {lazyPage(<AdministrationPage />)}
             </AdminRoute>
           </ProtectedRoute>
         ),
@@ -123,7 +140,7 @@ export const router = createBrowserRouter([
         path: "/account",
         element: (
           <ProtectedRoute>
-            <AccountPage />
+            {lazyPage(<AccountPage />)}
           </ProtectedRoute>
         ),
       },

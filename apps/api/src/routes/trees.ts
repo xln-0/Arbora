@@ -62,7 +62,7 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
   app.get(
     "/:treeId",
     {
-      preHandler: [app.authenticate, app.requireTreeMember],
+      preHandler: [app.authenticate],
     },
     async (request) => {
       const { treeId } = request.params as {
@@ -132,7 +132,7 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
   app.get(
     "/:treeId/graph",
     {
-      preHandler: [app.authenticate, app.requireTreeMember],
+      preHandler: [app.authenticate],
     },
     async (request) => {
       const { treeId } = request.params as {

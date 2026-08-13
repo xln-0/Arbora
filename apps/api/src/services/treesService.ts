@@ -107,9 +107,17 @@ export async function getTree(
   treeId: string,
   userId: string,
 ) {
-  const tree = await prisma.familyTree.findUnique({
+  const tree = await prisma.familyTree.findFirst({
     where: {
       id: treeId,
+      OR: [
+        { ownerId: userId },
+        {
+          members: {
+            some: { userId },
+          },
+        },
+      ],
     },
     include: {
       persons: true,
@@ -122,7 +130,7 @@ export async function getTree(
   });
 
   if (!tree) {
-    throw createAppError("TREE_NOT_FOUND");
+    throw createAppError("FORBIDDEN");
   }
 
   const role = tree.ownerId === userId ? "OWNER" : tree.members[0]?.role;

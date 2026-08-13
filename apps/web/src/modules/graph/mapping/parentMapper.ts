@@ -9,26 +9,36 @@ export function mapParentRelationships(
   const edges: RelationshipEdge[] = [];
 
   const parentRelationships = relationships.filter((r) => r.type === "PARENT");
+  const parentsByChild = new Map<string, Relationship[]>();
+  const coupleByPair = new Map<string, Relationship>();
+
+  for (const relationship of parentRelationships) {
+    const parents = parentsByChild.get(relationship.targetPersonId) ?? [];
+    parents.push(relationship);
+    parentsByChild.set(relationship.targetPersonId, parents);
+  }
+
+  for (const relationship of partnerRelationships) {
+    coupleByPair.set(
+      personPairKey(
+        relationship.sourcePersonId,
+        relationship.targetPersonId,
+      ),
+      relationship,
+    );
+  }
 
   const processedRelationshipChildren = new Set<string>();
 
   for (const relationship of parentRelationships) {
     const childId = relationship.targetPersonId;
 
-    const childParents = parentRelationships.filter(
-      (r) => r.targetPersonId === childId,
-    );
+    const childParents = parentsByChild.get(childId) ?? [];
 
     const hasTwoParents = childParents.length >= 2;
 
     if (hasTwoParents) {
-      const parentIds = childParents.map((r) => r.sourcePersonId);
-
-      const couple = partnerRelationships.find(
-        (r) =>
-          parentIds.includes(r.sourcePersonId) &&
-          parentIds.includes(r.targetPersonId),
-      );
+      const couple = findParentCouple(childParents, coupleByPair);
 
       if (couple) {
         const relationshipNodeId = `relationship-${couple.id}`;
@@ -81,4 +91,34 @@ export function mapParentRelationships(
   }
 
   return edges;
+}
+
+function findParentCouple(
+  parents: Relationship[],
+  coupleByPair: Map<string, Relationship>,
+) {
+  for (let leftIndex = 0; leftIndex < parents.length; leftIndex += 1) {
+    for (
+      let rightIndex = leftIndex + 1;
+      rightIndex < parents.length;
+      rightIndex += 1
+    ) {
+      const couple = coupleByPair.get(
+        personPairKey(
+          parents[leftIndex].sourcePersonId,
+          parents[rightIndex].sourcePersonId,
+        ),
+      );
+
+      if (couple) return couple;
+    }
+  }
+
+  return undefined;
+}
+
+function personPairKey(firstPersonId: string, secondPersonId: string) {
+  return firstPersonId < secondPersonId
+    ? `${firstPersonId}:${secondPersonId}`
+    : `${secondPersonId}:${firstPersonId}`;
 }
