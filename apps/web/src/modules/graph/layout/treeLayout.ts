@@ -373,6 +373,7 @@ export function updateRelationshipNodes(nodes: GraphNode[]): GraphNode[] {
   const persons = nodes.filter(
     (node): node is PersonNode => node.type === "person",
   );
+  const personById = new Map(persons.map((person) => [person.id, person]));
 
   return nodes.map((node) => {
     if (node.type !== "relationship") {
@@ -381,12 +382,8 @@ export function updateRelationshipNodes(nodes: GraphNode[]): GraphNode[] {
 
     const relationshipNode = node as RelationshipNode;
     const relationship = relationshipNode.data.relationship;
-    const personA = persons.find(
-      (person) => person.id === relationship.sourcePersonId,
-    );
-    const personB = persons.find(
-      (person) => person.id === relationship.targetPersonId,
-    );
+    const personA = personById.get(relationship.sourcePersonId);
+    const personB = personById.get(relationship.targetPersonId);
 
     if (!personA || !personB) {
       return relationshipNode;

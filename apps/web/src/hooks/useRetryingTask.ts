@@ -20,7 +20,9 @@ export function useRetryingTask(
   const runningRef = useRef(false);
   const [attempt, setAttempt] = useState(0);
 
-  taskRef.current = task;
+  useEffect(() => {
+    taskRef.current = task;
+  }, [task]);
 
   useEffect(() => {
     if (!enabled) {

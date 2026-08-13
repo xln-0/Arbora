@@ -41,7 +41,7 @@ interface SettingsState {
    *   "common.cancel": "Annuler"
    * }
    */
-  messages: Record<string, any>;
+  messages: Record<string, unknown>;
 
   /**
    * Initialise les paramètres au démarrage.

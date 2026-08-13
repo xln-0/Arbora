@@ -23,7 +23,7 @@ export interface TreeTimelineEvent extends BaseTimelineEvent {
   type: Exclude<TimelineEventType, "childBirth">;
 }
 
-export interface PersonalTimelineEvent extends BaseTimelineEvent {}
+export type PersonalTimelineEvent = BaseTimelineEvent;
 
 function compareEvents(a: BaseTimelineEvent, b: BaseTimelineEvent) {
   return (

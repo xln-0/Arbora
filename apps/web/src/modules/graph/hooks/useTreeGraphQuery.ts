@@ -31,7 +31,7 @@ export function useTreeGraphQuery(
       try {
         setIsLoading(true);
         setErrorMessage(undefined);
-        const result = await getTreeGraph(treeId!);
+        const result = await getTreeGraph(treeId!, { force: revision > 0 });
 
         if (!cancelled) setGraph(result);
       } catch (error) {

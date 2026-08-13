@@ -6,7 +6,7 @@ import { createRelationship } from "../../dist/services/relationshipsService.js"
 function createPrisma(existingRelationships = []) {
   return {
     person: {
-      findMany: async () => [{ id: "person-a" }, { id: "person-b" }],
+      count: async () => 2,
     },
     relationship: {
       findMany: async () => existingRelationships,

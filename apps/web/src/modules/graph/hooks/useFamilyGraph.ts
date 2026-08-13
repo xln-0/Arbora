@@ -1,7 +1,11 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
-import type { Edge, Node, OnNodeDrag } from "@xyflow/react";
-import { useEdgesState, useNodesState } from "@xyflow/react";
+import type { Edge, Node, NodeChange, OnNodeDrag } from "@xyflow/react";
+import {
+  applyNodeChanges,
+  useEdgesState,
+  useNodesState,
+} from "@xyflow/react";
 import { isCoupleRelationshipType } from "@arbora/shared";
 
 import { getTreeGraph } from "@/api/treesApi";
@@ -32,7 +36,7 @@ export function useFamilyGraph() {
 
   const revision = useGraphStore((state) => state.revision);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<GraphNode>([]);
+  const [nodes, setNodes] = useNodesState<GraphNode>([]);
 
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -46,23 +50,43 @@ export function useFamilyGraph() {
 
     const treeId = selectedTreeId;
 
+    let cancelled = false;
+
     async function loadGraph() {
       try {
         const graph = await getTreeGraph(treeId);
 
+        if (cancelled) return;
+
         setGraph(graph.persons, graph.relationships);
 
         const result = buildGraph(graph.persons, graph.relationships);
+        const layoutedNodes = updateRelationshipNodes(
+          applyFamilyLayout(result.nodes, buildFamilyLayoutEdges(result.edges)),
+        );
 
-        setNodes(result.nodes);
+        setNodes(layoutedNodes);
         setEdges(result.edges);
       } catch (error) {
         console.error("Failed to load tree graph", error);
       }
     }
 
-    loadGraph();
-  }, [selectedTreeId, revision]);
+    void loadGraph();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [revision, selectedTreeId, setEdges, setGraph, setNodes]);
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange<GraphNode>[]) => {
+      setNodes((currentNodes) =>
+        updateRelationshipNodes(applyNodeChanges(changes, currentNodes)),
+      );
+    },
+    [setNodes],
+  );
 
   async function handleNodeDragStop(
     _event: Parameters<OnNodeDrag>[0],
@@ -84,69 +108,13 @@ export function useFamilyGraph() {
     }
   }
 
-  function buildDagreGraph() {
-    const dagreNodes = nodes.filter((node) => node.type === "person");
-
-    const dagreEdges: {
-      source: string;
-      target: string;
-    }[] = [];
-
-    for (const edge of edges) {
-      if (edge.data?.relationshipType !== "PARENT") {
-        continue;
-      }
-
-      /**
-       * Cas simple :
-       * parent -> enfant
-       */
-      if (!edge.source.startsWith("relationship-")) {
-        dagreEdges.push({
-          source: edge.source,
-          target: edge.target,
-        });
-
-        continue;
-      }
-
-      /**
-       * Cas couple :
-       * relationship-node -> enfant
-       *
-       * On récupère les deux parents
-       */
-      const relationshipNodeId = edge.source;
-
-      const partnerEdges = edges.filter(
-        (partnerEdge) =>
-          partnerEdge.target === relationshipNodeId &&
-          partnerEdge.data?.relationshipType !== undefined &&
-          isCoupleRelationshipType(partnerEdge.data.relationshipType),
-      );
-
-      for (const partnerEdge of partnerEdges) {
-        dagreEdges.push({
-          source: partnerEdge.source,
-          target: edge.target,
-        });
-      }
-    }
-
-    return {
-      nodes: dagreNodes,
-      edges: dagreEdges,
-    };
-  }
-
-  const dagreGraph = buildDagreGraph();
-
-  const familyLayoutNodes = applyFamilyLayout(nodes, dagreGraph.edges);
-  const layoutedNodes = updateRelationshipNodes(familyLayoutNodes);
-  const layoutedEdges = updatePartnerEdgeHandles(edges, layoutedNodes);
+  const layoutedEdges = useMemo(
+    () => updatePartnerEdgeHandles(edges, nodes),
+    [edges, nodes],
+  );
 
   return {
-    nodes: layoutedNodes,
+    nodes,
     edges: layoutedEdges,
 
     setNodes,
@@ -157,4 +125,39 @@ export function useFamilyGraph() {
     handleNodeDragStop,
     canEdit,
   };
+}
+
+function buildFamilyLayoutEdges(edges: Edge[]) {
+  const partnersByRelationshipNode = new Map<string, string[]>();
+
+  for (const edge of edges) {
+    if (
+      edge.data?.relationshipType !== undefined &&
+      isCoupleRelationshipType(edge.data.relationshipType) &&
+      edge.target.startsWith("relationship-")
+    ) {
+      const partners = partnersByRelationshipNode.get(edge.target) ?? [];
+      partners.push(edge.source);
+      partnersByRelationshipNode.set(edge.target, partners);
+    }
+  }
+
+  const layoutEdges: Array<{ source: string; target: string }> = [];
+
+  for (const edge of edges) {
+    if (edge.data?.relationshipType !== "PARENT") continue;
+
+    const partners = partnersByRelationshipNode.get(edge.source);
+
+    if (!partners) {
+      layoutEdges.push({ source: edge.source, target: edge.target });
+      continue;
+    }
+
+    for (const partnerId of partners) {
+      layoutEdges.push({ source: partnerId, target: edge.target });
+    }
+  }
+
+  return layoutEdges;
 }
