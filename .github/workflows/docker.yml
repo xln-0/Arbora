@@ -18,9 +18,6 @@ concurrency:
   group: docker-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  IMAGE_TAG: ${{ github.ref_name == 'main' && 'latest' || 'beta' }}
-
 permissions:
   contents: read
   packages: write
@@ -58,6 +55,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Prepare image tags
+        id: tags
+        shell: bash
+        run: |
+          image="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
+
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            version="$(node --print "require('./package.json').version")"
+            {
+              echo "value<<EOF"
+              echo "${image}:latest"
+              echo "${image}:${version}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${image}:beta" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push ${{ matrix.name }}
         uses: docker/build-push-action@v6
         with:
@@ -65,7 +80,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           platforms: ${{ github.ref_name == 'main' && 'linux/amd64,linux/arm64' || 'linux/arm64' }}
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
+          tags: ${{ steps.tags.outputs.value }}
           cache-from: type=gha,scope=${{ matrix.image }}-${{ github.ref_name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ github.ref_name }}
           provenance: false
