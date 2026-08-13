@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - develop
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
     paths:
       - "apps/**"
       - "packages/**"
@@ -40,16 +42,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -61,24 +63,20 @@ jobs:
         run: |
           image="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
 
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
-            version="$(node --print "require('./package.json').version")"
-            {
-              echo "value<<EOF"
-              echo "${image}:latest"
-              echo "${image}:${version}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "value=${image}:${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "value=${image}:latest" >> "$GITHUB_OUTPUT"
           else
             echo "value=${image}:beta" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build and push ${{ matrix.name }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          platforms: ${{ github.ref_name == 'main' && 'linux/amd64,linux/arm64' || 'linux/arm64' }}
+          platforms: ${{ github.ref_name == 'develop' && 'linux/arm64' || 'linux/amd64,linux/arm64' }}
           push: true
           tags: ${{ steps.tags.outputs.value }}
           cache-from: type=gha,scope=${{ matrix.image }}-${{ github.ref_name }}
