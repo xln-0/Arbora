@@ -21,6 +21,13 @@ export default {
     profile: "Profil",
     trees: "Mes arbres",
     logout: "Déconnexion",
+    email: "Adresse e-mail",
+    treeCount: "{{count}} arbres",
+    treesDescription: "Créez un nouvel arbre ou changez votre arbre actif.",
+    activeTree: "Actif",
+    noTrees: "Vous n’avez encore créé aucun arbre.",
+    createTreeError: "Impossible de créer l’arbre.",
+    profileUnavailable: "Les informations du profil ne sont pas disponibles.",
   },
 
   actions: {
@@ -36,6 +43,18 @@ export default {
     name: "Nom de l'arbre",
     create: "Créer un arbre",
     empty: "Aucun arbre",
+  },
+
+  graphToolbar: {
+    label: "Outils",
+    description: "Enrichir l’arbre",
+    personHint: "Ajouter une nouvelle personne",
+    relationshipHint: "Relier la personne sélectionnée",
+  },
+
+  sidebar: {
+    collapse: "Réduire la barre latérale",
+    expand: "Déployer la barre latérale",
   },
 
   elements: {
@@ -172,11 +191,27 @@ export default {
   },
 
   settings: {
+    appTitle: "Préférences de l’application",
+    appDescription:
+      "Personnalisez Arbora pour retrouver une expérience adaptée à vos habitudes.",
     language: "Langue",
+    languageDescription:
+      "Choisissez la langue utilisée dans toute l’interface.",
+    treeDescription:
+      "Gérez l’identité de cet arbre, ses accès et ses données sensibles.",
     treeName: "Nom de l'arbre",
+    treeNameDescription:
+      "Ce nom permet d’identifier facilement l’arbre dans votre espace.",
     members: "Membres",
+    membersDescription:
+      "Invitez vos proches et définissez leur niveau d’accès.",
     email: "Email",
     addMember: "Ajouter un membre",
+    noMembers: "Aucun membre à afficher.",
+    loadingMembers: "Chargement des membres…",
+    loadMembersError: "Impossible de charger les membres.",
+    updateMemberError: "Impossible de modifier ce membre.",
+    removeMemberError: "Impossible de supprimer ce membre.",
     dangerZone: "Zone dangereuse",
     deleteTreeWarning:
       "Supprimer cet arbre supprimera définitivement toutes les personnes et relations associées.",
@@ -188,6 +223,10 @@ export default {
     removeMember: "Supprimer le membre",
     unknownUser: "Utilisateur inconnu",
     ownerOnly: "Seul le propriétaire peut gérer les paramètres de cet arbre.",
+    restrictedTitle: "Accès limité",
+    updateTreeError: "Impossible de modifier l’arbre.",
+    addMemberError: "Impossible d’ajouter ce membre.",
+    deleteTreeError: "Impossible de supprimer l’arbre.",
   },
 
   confirm: {

@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/shallow";
+import { Crown } from "lucide-react";
 
 import { t } from "@/i18n";
 
@@ -141,10 +142,23 @@ export default function DashboardPage() {
             ? `${t("navigation.dashboard")} - ${selectedTree.name}`
             : t("navigation.dashboard")
         }
-        actions={<TreeSettingsButton />}
+        actions={
+          selectedTree?.role === "OWNER" ? <TreeSettingsButton /> : undefined
+        }
         topbarBadge={
           selectedTree?.role ? (
-            <Badge>
+            <Badge
+              className={
+                selectedTree.role === "OWNER"
+                  ? "border-amber-200 bg-amber-50/90 text-amber-700 shadow-sm"
+                  : selectedTree.role === "EDITOR"
+                    ? "border-blue-200 bg-blue-50/90 text-blue-700"
+                    : "border-slate-200 bg-slate-50/90 text-slate-600"
+              }
+            >
+              {selectedTree.role === "OWNER" && (
+                <Crown className="mr-1.5 text-amber-500" size={13} />
+              )}
               {t(`settings.roles.${selectedTree.role.toLowerCase()}`)}
             </Badge>
           ) : undefined

@@ -21,6 +21,13 @@ export default {
     profile: "Profile",
     trees: "My trees",
     logout: "Log out",
+    email: "Email address",
+    treeCount: "{{count}} trees",
+    treesDescription: "Create a new tree or switch your active tree.",
+    activeTree: "Active",
+    noTrees: "You have not created any trees yet.",
+    createTreeError: "Unable to create the tree.",
+    profileUnavailable: "Profile information is unavailable.",
   },
 
   actions: {
@@ -36,6 +43,18 @@ export default {
     name: "Tree name",
     create: "Create a tree",
     empty: "No trees",
+  },
+
+  graphToolbar: {
+    label: "Tools",
+    description: "Grow the tree",
+    personHint: "Add a new person",
+    relationshipHint: "Connect the selected person",
+  },
+
+  sidebar: {
+    collapse: "Collapse sidebar",
+    expand: "Expand sidebar",
   },
 
   elements: {
@@ -172,11 +191,25 @@ export default {
   },
 
   settings: {
+    appTitle: "Application preferences",
+    appDescription:
+      "Customize Arbora for an experience that suits your habits.",
     language: "Language",
+    languageDescription: "Choose the language used throughout the interface.",
+    treeDescription:
+      "Manage this tree's identity, access permissions, and sensitive data.",
     treeName: "Tree Name",
+    treeNameDescription:
+      "This name helps you identify the tree in your workspace.",
     members: "Members",
+    membersDescription: "Invite relatives and define their access level.",
     email: "Email",
     addMember: "Add Member",
+    noMembers: "No members to display.",
+    loadingMembers: "Loading members…",
+    loadMembersError: "Unable to load members.",
+    updateMemberError: "Unable to update this member.",
+    removeMemberError: "Unable to remove this member.",
     dangerZone: "Danger Zone",
     deleteTreeWarning:
       "Deleting this tree will permanently remove all associated people and relationships.",
@@ -188,6 +221,10 @@ export default {
     removeMember: "Remove member",
     unknownUser: "Unknown user",
     ownerOnly: "Only the owner can manage this tree's settings.",
+    restrictedTitle: "Restricted access",
+    updateTreeError: "Unable to update the tree.",
+    addMemberError: "Unable to add this member.",
+    deleteTreeError: "Unable to delete the tree.",
   },
 
   confirm: {

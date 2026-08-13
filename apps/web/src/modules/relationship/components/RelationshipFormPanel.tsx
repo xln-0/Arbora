@@ -96,7 +96,7 @@ export default function RelationshipFormPanel({
     <form
       onSubmit={handleSubmit}
       className={`
-        fixed top-20 z-50 flex max-h-[calc(100vh-6rem)]
+        fixed top-20 z-50 flex max-h-[calc(100vh-6.5rem)]
         w-[min(24rem,calc(100vw-3rem))] flex-col overflow-hidden
         rounded-3xl border border-border bg-surface shadow-2xl
         ${placement === "besidePerson" ? "right-6 lg:right-[29rem]" : "right-6"}

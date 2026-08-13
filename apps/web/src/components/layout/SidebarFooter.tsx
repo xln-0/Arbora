@@ -1,4 +1,4 @@
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { t } from "@/i18n";
@@ -7,29 +7,39 @@ import { useAuthStore } from "@/stores/authStore";
 
 const items = [
   { key: "settings", icon: Settings, to: "/settings" },
-  { key: "account", icon: User, to: "/account" },
 ];
 
-export function SidebarFooter() {
+export function SidebarFooter({ compact = false }: { compact?: boolean }) {
   const { logout } = useAuth();
   const user = useAuthStore((state) => state.user);
   const initial = user?.email.charAt(0).toUpperCase() ?? "?";
 
   return (
-    <div className="mt-auto space-y-3 border-t border-border pt-4">
-      <div className="flex items-center gap-3 rounded-2xl bg-surface-muted/70 p-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-sm font-semibold text-primary">
+    <div
+      className={`relative mt-auto border-t border-primary/10 pt-4 ${compact ? "space-y-2" : "space-y-3"}`}
+    >
+      <NavLink
+        to="/account"
+        title={compact ? user?.email : undefined}
+        aria-label={t("account.profile")}
+        className={`group flex items-center rounded-2xl transition-all hover:bg-white hover:shadow-[0_5px_18px_rgba(15,23,42,0.05)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 ${compact ? "justify-center py-2" : "gap-3 p-2.5"}`}
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-soft to-white text-sm font-bold text-primary ring-1 ring-primary/15 transition group-hover:shadow-sm">
           {initial}
         </span>
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-muted">{t("account.profile")}</p>
-          <p className="truncate text-sm font-semibold" title={user?.email}>
-            {user?.email ?? "—"}
-          </p>
-        </div>
-      </div>
+        {!compact && (
+          <div className="min-w-0">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted">
+              {t("account.profile")}
+            </p>
+            <p className="truncate text-sm font-semibold" title={user?.email}>
+              {user?.email ?? "—"}
+            </p>
+          </div>
+        )}
+      </NavLink>
 
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {items.map((item) => {
           const Icon = item.icon;
 
@@ -37,17 +47,23 @@ export function SidebarFooter() {
             <NavLink
               key={item.to}
               to={item.to}
+              title={compact ? t(`navigation.${item.key}`) : undefined}
+              aria-label={t(`navigation.${item.key}`)}
               className={({ isActive }) => `
-                flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition
+                group flex min-h-9 items-center rounded-xl text-sm font-medium transition-all
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25
+                ${compact ? "justify-center px-1" : "gap-3 px-2.5"}
                 ${
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted hover:bg-surface-muted hover:text-foreground"
+                    ? "bg-primary-soft/70 text-primary"
+                    : "text-muted hover:bg-white hover:text-foreground"
                 }
               `}
             >
-              <Icon size={17} />
-              {t(`navigation.${item.key}`)}
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg transition group-hover:text-primary">
+                <Icon size={16} />
+              </span>
+              {!compact && t(`navigation.${item.key}`)}
             </NavLink>
           );
         })}
@@ -55,10 +71,14 @@ export function SidebarFooter() {
         <button
           type="button"
           onClick={logout}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted transition hover:bg-red-50 hover:text-red-600"
+          title={compact ? t("account.logout") : undefined}
+          aria-label={t("account.logout")}
+          className={`group flex min-h-9 w-full items-center rounded-xl text-sm font-medium text-muted transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 ${compact ? "justify-center px-1" : "gap-3 px-2.5"}`}
         >
-          <LogOut size={17} />
-          {t("account.logout")}
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg">
+            <LogOut size={16} />
+          </span>
+          {!compact && t("account.logout")}
         </button>
       </div>
     </div>
