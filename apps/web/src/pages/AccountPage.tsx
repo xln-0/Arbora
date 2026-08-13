@@ -1,199 +1,177 @@
-import { AppLayout } from "@/components/layout/AppLayout";
+import { useState, type FormEvent } from "react";
+import { Crown, Mail, Plus, Sprout, Trees, UserRound } from "lucide-react";
 
+import { createTree } from "@/api/treesApi";
+import { AppLayout } from "@/components/layout";
+import { Avatar, Badge, Button } from "@/components/ui";
 import { t } from "@/i18n";
-
 import { useAuthStore } from "@/stores/authStore";
 import { useTreeStore } from "@/stores/treeStore";
 
-import { Button } from "@/components/ui";
-import { useState } from "react";
-import { createTree } from "@/api/treesApi";
-
 export default function AccountPage() {
   const user = useAuthStore((state) => state.user);
-
   const addTree = useTreeStore((state) => state.addTree);
-
   const selectTree = useTreeStore((state) => state.selectTree);
-
   const trees = useTreeStore((state) => state.trees);
-
+  const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
   const [isCreatingTree, setIsCreatingTree] = useState(false);
   const [newTreeName, setNewTreeName] = useState("");
   const [errorMessage, setErrorMessage] = useState<string>();
 
-  async function handleCreateTree() {
-    if (!newTreeName.trim()) {
-      return;
-    }
+  async function handleCreateTree(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!newTreeName.trim()) return;
 
     try {
       setIsCreatingTree(true);
       setErrorMessage(undefined);
-
       const tree = await createTree({ name: newTreeName.trim() });
-
       addTree(tree);
-
       selectTree(tree.id);
-
       setNewTreeName("");
     } catch (error) {
-      console.error("Failed to create tree", error);
       setErrorMessage(
-        error instanceof Error ? error.message : "Failed to create tree",
+        error instanceof Error ? error.message : t("account.createTreeError"),
       );
     } finally {
       setIsCreatingTree(false);
     }
   }
 
+  const email = user?.email ?? t("settings.unknownUser");
+
   return (
     <AppLayout title={t("navigation.account")}>
-      <div
-        className="
-          p-6
+      <main className="mx-auto max-w-5xl space-y-8 p-6 lg:p-8">
+        <header className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+          <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/50" />
+          <div className="px-6 pb-7 sm:px-8">
+            <Avatar
+              name={email}
+              className="-mt-10 h-20 w-20 border-4 border-surface bg-primary text-2xl text-white shadow-sm"
+            />
+            <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-primary">
+                  {t("account.profile")}
+                </p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                  {email}
+                </h1>
+              </div>
+              <Badge>
+                <Trees className="mr-1.5" size={13} />
+                {t("account.treeCount", { count: String(trees.length) })}
+              </Badge>
+            </div>
 
-          max-w-3xl
-
-          space-y-6
-        "
-      >
-        {/* Profile */}
-        <section
-          className="
-            bg-surface
-
-            border
-            border-border
-
-            rounded-2xl
-
-            p-6
-
-            shadow-sm
-          "
-        >
-          <h2
-            className="
-              text-lg
-              font-semibold
-              mb-4
-            "
-          >
-            {t(`account.profile`)}
-          </h2>
-
-          <div
-            className="
-              space-y-2
-            "
-          >
-            <p>{user?.email}</p>
+            <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-muted px-4 py-3">
+              <Mail size={17} className="text-primary" />
+              <div>
+                <p className="text-xs text-muted">{t("account.email")}</p>
+                <p className="text-sm font-medium">{email}</p>
+              </div>
+            </div>
           </div>
-        </section>
+        </header>
 
-        {/* Trees */}
-        <section
-          className="
-            bg-surface
+        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
+                <Trees size={20} />
+              </span>
+              <div>
+                <h2 className="font-semibold">{t("account.trees")}</h2>
+                <p className="mt-1 text-sm text-muted">
+                  {t("account.treesDescription")}
+                </p>
+              </div>
+            </div>
 
-            border
-            border-border
-
-            rounded-2xl
-
-            p-6
-
-            shadow-sm
-          "
-        >
-          <div
-            className="
-              flex
-              items-center
-              justify-between
-
-              mb-4
-            "
-          >
-            <h2
-              className="
-                text-lg
-                font-semibold
-              "
-            >
-              {t(`account.trees`)}
-            </h2>
-
-            <div
-              className="
-                flex
-                gap-2
-              "
+            <form
+              onSubmit={handleCreateTree}
+              className="flex w-full gap-2 lg:max-w-md"
             >
               <input
-                className="
-                h-10
-                flex-1
-
-                rounded-lg
-
-                border
-                border-border
-
-                px-3
-
-                text-sm
-                "
+                className={inputClassName}
                 placeholder={t("tree.name")}
                 value={newTreeName}
                 onChange={(event) => setNewTreeName(event.target.value)}
               />
-
               <Button
+                type="submit"
                 disabled={!newTreeName.trim() || isCreatingTree}
-                onClick={handleCreateTree}
+                className="shrink-0 rounded-xl px-4"
               >
+                <Plus size={16} />
                 {t("tree.create")}
               </Button>
+            </form>
+          </div>
+
+          {errorMessage && (
+            <p role="alert" className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {errorMessage}
+            </p>
+          )}
+
+          {trees.length === 0 ? (
+            <div className="mt-6 rounded-2xl border border-dashed border-border px-6 py-10 text-center">
+              <Sprout className="mx-auto text-primary" size={24} />
+              <p className="mt-3 text-sm text-muted">{t("account.noTrees")}</p>
             </div>
-          </div>
+          ) : (
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {trees.map((tree) => {
+                const isSelected = tree.id === selectedTreeId;
 
-          <div
-            className="
-              space-y-2
-            "
-          >
-            {errorMessage && (
-              <p className="text-sm text-red-600">{errorMessage}</p>
-            )}
-
-            {trees.map((tree) => (
-              <div
-                key={tree.id}
-                className="
-                  rounded-lg
-                  border
-                  border-border
-
-                  px-4
-                  py-3
-                "
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span>🌳 {tree.name}</span>
-                  {tree.role && (
-                    <span className="text-xs text-muted">
-                      {t(`settings.roles.${tree.role.toLowerCase()}`)}
+                return (
+                  <button
+                    key={tree.id}
+                    type="button"
+                    onClick={() => selectTree(tree.id)}
+                    className={`flex items-center gap-4 rounded-2xl border p-4 text-left transition ${
+                      isSelected
+                        ? "border-primary/30 bg-primary/5 shadow-sm"
+                        : "border-border hover:bg-surface-muted"
+                    }`}
+                  >
+                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${isSelected ? "bg-primary text-white" : "bg-primary-soft text-primary"}`}>
+                      <Trees size={20} />
                     </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">
+                        {tree.name}
+                      </span>
+                      <span className="mt-1 flex items-center gap-1 text-xs text-muted">
+                        {tree.role === "OWNER" && <Crown size={12} />}
+                        {t(`settings.roles.${tree.role.toLowerCase()}`)}
+                      </span>
+                    </span>
+                    {isSelected && (
+                      <span className="rounded-full bg-primary px-2 py-1 text-[0.65rem] font-medium text-white">
+                        {t("account.activeTree")}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
-      </div>
+
+        {!user && (
+          <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
+            <UserRound size={18} />
+            {t("account.profileUnavailable")}
+          </div>
+        )}
+      </main>
     </AppLayout>
   );
 }
+
+const inputClassName =
+  "h-10 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15";

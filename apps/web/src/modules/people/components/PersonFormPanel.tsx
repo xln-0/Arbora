@@ -126,7 +126,7 @@ export default function PersonFormPanel({
   return (
     <form
       onSubmit={handleSubmit}
-      className="fixed right-6 top-20 z-50 flex max-h-[calc(100vh-6rem)] w-[min(26rem,calc(100vw-3rem))] flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl"
+      className="fixed right-6 top-20 z-50 flex max-h-[calc(100vh-6.5rem)] w-[min(26rem,calc(100vw-3rem))] flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl"
     >
       <div className="relative shrink-0 border-b border-border bg-gradient-to-br from-primary/15 via-surface to-secondary/30 px-6 pb-5 pt-6">
         <button

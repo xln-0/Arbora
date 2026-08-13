@@ -175,7 +175,7 @@ export default function TreeTimelinePage() {
 
   return (
     <AppLayout title={title}>
-      <div className="min-w-0 space-y-6 p-6 lg:p-8">
+      <div className="mx-auto min-w-0 max-w-6xl space-y-8 p-6 lg:p-8">
         {!selectedTreeId && (
           <EmptyState message={t("timeline.noTree")} />
         )}
@@ -190,7 +190,7 @@ export default function TreeTimelinePage() {
 
         {selectedTreeId && !isLoading && !errorMessage && (
           <>
-            <header className="mx-auto max-w-6xl">
+            <header>
               <h2 className="text-2xl font-semibold">{t("timeline.title")}</h2>
               <p className="mt-1 text-sm text-muted">
                 {t("timeline.description")}
