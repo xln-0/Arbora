@@ -9,9 +9,9 @@ import type { ReactNode } from "react";
 export default function Providers({ children }: { children: ReactNode }) {
   return (
     <I18nInitializer>
-      <AuthInitializer />
-      <TreeInitializer />
-      {children}
+      <AuthInitializer>
+        <TreeInitializer>{children}</TreeInitializer>
+      </AuthInitializer>
     </I18nInitializer>
   );
 }

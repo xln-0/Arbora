@@ -1,4 +1,4 @@
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, ShieldCheck } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 import { t } from "@/i18n";
@@ -13,6 +13,17 @@ export function SidebarFooter({ compact = false }: { compact?: boolean }) {
   const { logout } = useAuth();
   const user = useAuthStore((state) => state.user);
   const initial = user?.email.charAt(0).toUpperCase() ?? "?";
+  const visibleItems =
+    user?.role === "ADMIN"
+      ? [
+          {
+            key: "administration",
+            icon: ShieldCheck,
+            to: "/administration",
+          },
+          ...items,
+        ]
+      : items;
 
   return (
     <div
@@ -40,7 +51,7 @@ export function SidebarFooter({ compact = false }: { compact?: boolean }) {
       </NavLink>
 
       <div className="space-y-0.5">
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
 
           return (

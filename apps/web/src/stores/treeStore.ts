@@ -18,6 +18,10 @@ interface TreeState {
    */
   trees: FamilyTree[];
 
+  loadStatus: "idle" | "loading" | "ready" | "error";
+
+  loadedForUserId?: string;
+
   /**
    * Identifiant de l'arbre actuellement affiché dans l'application.
    */
@@ -26,7 +30,13 @@ interface TreeState {
   /**
    * Initialise ou remplace la liste des arbres accessibles.
    */
-  setTrees(trees: FamilyTree[]): void;
+  setTrees(trees: FamilyTree[], userId?: string): void;
+
+  beginLoading(userId: string): void;
+
+  setLoadError(): void;
+
+  resetTrees(): void;
 
   /**
    * Sélectionne un arbre comme contexte courant.
@@ -69,20 +79,48 @@ export const useTreeStore = create<TreeState>((set, get) => ({
    */
   trees: [],
 
+  loadStatus: "idle",
+
+  loadedForUserId: undefined,
+
   /**
    * Aucun arbre sélectionné initialement.
    */
   selectedTreeId: undefined,
 
-  setTrees(trees) {
+  setTrees(trees, userId) {
     set((state) => ({
       trees,
+      loadStatus: "ready",
+      loadedForUserId: userId ?? state.loadedForUserId,
       selectedTreeId: trees.some(
         (tree) => tree.id === state.selectedTreeId,
       )
         ? state.selectedTreeId
         : trees[0]?.id,
     }));
+  },
+
+  beginLoading(userId) {
+    set({
+      trees: [],
+      selectedTreeId: undefined,
+      loadStatus: "loading",
+      loadedForUserId: userId,
+    });
+  },
+
+  setLoadError() {
+    set({ loadStatus: "error" });
+  },
+
+  resetTrees() {
+    set({
+      trees: [],
+      selectedTreeId: undefined,
+      loadStatus: "idle",
+      loadedForUserId: undefined,
+    });
   },
 
   selectTree(treeId) {

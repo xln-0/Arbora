@@ -6,10 +6,14 @@ export default function ProtectedRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, initialized } = useAuthStore();
+  const { user, initialized, setupRequired } = useAuthStore();
 
   if (!initialized) {
     return null; // ou loader
+  }
+
+  if (setupRequired) {
+    return <Navigate to="/setup" replace />;
   }
 
   if (!user) {

@@ -60,10 +60,26 @@ export default function AccountPage() {
                   {email}
                 </h1>
               </div>
-              <Badge>
-                <Trees className="mr-1.5" size={13} />
-                {t("account.treeCount", { count: String(trees.length) })}
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                {user && (
+                  <Badge
+                    className={
+                      user.role === "ADMIN"
+                        ? "border-amber-200 bg-amber-50 text-amber-800"
+                        : "border-primary/15 bg-primary-soft text-primary"
+                    }
+                  >
+                    {user.role === "ADMIN" && (
+                      <Crown className="mr-1.5" size={13} />
+                    )}
+                    {t(`administration.roles.${user.role}`)}
+                  </Badge>
+                )}
+                <Badge>
+                  <Trees className="mr-1.5" size={13} />
+                  {t("account.treeCount", { count: String(trees.length) })}
+                </Badge>
+              </div>
             </div>
 
             <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-muted px-4 py-3">

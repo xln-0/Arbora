@@ -7,6 +7,26 @@ export const ERROR_CODES = {
     message: "User not found",
   },
 
+  INVALID_EMAIL: {
+    statusCode: 400,
+    message: "A valid email address is required",
+  },
+
+  PASSWORD_TOO_SHORT: {
+    statusCode: 400,
+    message: "Password must contain at least 12 characters",
+  },
+
+  INVALID_APP_ROLE: {
+    statusCode: 400,
+    message: "Invalid application role",
+  },
+
+  SETUP_ALREADY_COMPLETED: {
+    statusCode: 409,
+    message: "Application setup has already been completed",
+  },
+
   FORBIDDEN: {
     statusCode: 403,
     message: "Forbidden",

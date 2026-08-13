@@ -13,6 +13,7 @@ import personsRoutes from "./routes/persons.js";
 import relationshipsRoutes from "./routes/relationships.js";
 import authRoutes from "./routes/auth.js";
 import treeMembersRoutes from "./routes/treeMembers.js";
+import adminRoutes from "./routes/admin.js";
 import { errorHandler } from "./errors/errorHandler.js";
 
 export function buildApp() {
@@ -56,6 +57,8 @@ export function buildApp() {
   app.register(healthRoutes);
 
   app.register(authRoutes);
+
+  app.register(adminRoutes);
 
   app.register(treesRoutes, {
     prefix: "/trees",

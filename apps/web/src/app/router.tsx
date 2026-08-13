@@ -2,7 +2,12 @@ import { createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
 
-import { GuestRoute, ProtectedRoute } from "@/modules/auth/components";
+import {
+  AdminRoute,
+  GuestRoute,
+  ProtectedRoute,
+  SetupRoute,
+} from "@/modules/auth/components";
 import {
   LoginPage,
   DashboardPage,
@@ -13,6 +18,8 @@ import {
   TreeElementsPage,
   TreeTimelinePage,
   PersonDetailsPage,
+  SetupPage,
+  AdministrationPage,
 } from "@/pages";
 
 export const router = createBrowserRouter([
@@ -20,6 +27,15 @@ export const router = createBrowserRouter([
     element: <App />,
 
     children: [
+      {
+        path: "/setup",
+        element: (
+          <SetupRoute>
+            <SetupPage />
+          </SetupRoute>
+        ),
+      },
+
       {
         path: "/login",
         element: (
@@ -88,6 +104,17 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <TreeSettingsPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "/administration",
+        element: (
+          <ProtectedRoute>
+            <AdminRoute>
+              <AdministrationPage />
+            </AdminRoute>
           </ProtectedRoute>
         ),
       },
