@@ -9,8 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/xln-0/Arbora/releases/latest"><img src="https://img.shields.io/github/v/release/xln-0/Arbora?style=flat-square" alt="Latest release"></a>
-  <a href="https://github.com/xln-0/Arbora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/xln-0/Arbora/ci.yml?style=flat-square&label=build" alt="Build status"></a>
   <img src="https://img.shields.io/badge/Node.js-22-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 22">
   <img src="https://img.shields.io/badge/Docker-amd64%20%7C%20arm64-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker architectures">
 </p>
@@ -30,13 +28,6 @@ Arbora provides an interactive family graph, detailed person records and chronol
 - Run locally or self-host with Docker Compose.
 
 ## Architecture
-
-```mermaid
-flowchart LR
-    Browser[React Web app] -->|HTTP / JSON| API[Fastify API]
-    API --> Prisma[Prisma]
-    Prisma --> DB[(PostgreSQL)]
-```
 
 The project is an npm monorepo:
 
