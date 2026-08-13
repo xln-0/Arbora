@@ -24,9 +24,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "@dagrejs/dagre": "^3.0.0",
-    "@fastify/sensible": "^6.0.4"
-  }
+  ]
 }

@@ -46,7 +46,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        if: github.ref_name == 'main'
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -64,9 +63,9 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          platforms: ${{ github.ref_name == 'main' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          platforms: ${{ github.ref_name == 'main' && 'linux/amd64,linux/arm64' || 'linux/arm64' }}
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:${{ env.IMAGE_TAG }}
-          cache-from: type=gha,scope=${{ matrix.image }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          cache-from: type=gha,scope=${{ matrix.image }}-${{ github.ref_name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ github.ref_name }}
           provenance: false
