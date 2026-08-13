@@ -1,4 +1,4 @@
-FROM node:22-alpine AS builder
+FROM node:26-alpine AS builder
 
 WORKDIR /app
 
@@ -20,7 +20,7 @@ RUN npm run build:shared
 RUN npm run build:api
 
 
-FROM node:22-alpine AS production-dependencies
+FROM node:26-alpine AS production-dependencies
 
 WORKDIR /app
 
@@ -44,7 +44,7 @@ COPY packages/database/prisma.config.ts ./packages/database/prisma.config.ts
 RUN DATABASE_URL="postgresql://arbora:password@localhost:5432/arbora" npm run gen:database
 
 
-FROM node:22-alpine AS runner
+FROM node:26-alpine AS runner
 
 WORKDIR /app
 
