@@ -31,11 +31,17 @@ interface AuthState {
    */
   initialized: boolean;
 
+  startupStatus: "loading" | "ready" | "unavailable";
+
+  setupRequired: boolean;
+
   /**
    * Définit l'utilisateur courant après une authentification
    * réussie ou une restauration de session.
    */
   setUser(user: User): void;
+
+  setSetupRequired(required: boolean): void;
 
   /**
    * Supprime l'utilisateur courant.
@@ -53,6 +59,10 @@ interface AuthState {
    * - la page de connexion.
    */
   setInitialized(): void;
+
+  setInitializing(): void;
+
+  setBackendUnavailable(): void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -69,10 +79,18 @@ export const useAuthStore = create<AuthState>((set) => ({
    */
   initialized: false,
 
+  startupStatus: "loading",
+
+  setupRequired: false,
+
   setUser(user) {
     set({
       user,
     });
+  },
+
+  setSetupRequired(setupRequired) {
+    set({ setupRequired });
   },
 
   clear() {
@@ -84,6 +102,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized() {
     set({
       initialized: true,
+      startupStatus: "ready",
+    });
+  },
+
+  setInitializing() {
+    set({
+      initialized: false,
+      startupStatus: "loading",
+    });
+  },
+
+  setBackendUnavailable() {
+    set({
+      initialized: false,
+      startupStatus: "unavailable",
     });
   },
 }));

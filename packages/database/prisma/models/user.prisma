@@ -5,6 +5,8 @@ model User {
 
     passwordHash String?
 
+    role AppRole @default(USER)
+
     createdAt DateTime @default(now())
 
     trees FamilyTree[] @relation("OwnedTrees")
@@ -12,6 +14,11 @@ model User {
     sessions Session[]
 
     memberships TreeMember[]
+}
+
+enum AppRole {
+    ADMIN
+    USER
 }
 
 model Session {

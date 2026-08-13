@@ -48,5 +48,5 @@ jobs:
       - name: Build application
         run: npm run build
 
-      - name: Test relationship rules
+      - name: Test API rules
         run: npm run test:api

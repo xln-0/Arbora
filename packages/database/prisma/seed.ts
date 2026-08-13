@@ -15,11 +15,13 @@ async function main() {
 
     update: {
       passwordHash,
+      role: "ADMIN",
     },
 
     create: {
       email: "demo@arbora.local",
       passwordHash,
+      role: "ADMIN",
     },
   });
 
@@ -30,11 +32,13 @@ async function main() {
 
     update: {
       passwordHash,
+      role: "USER",
     },
 
     create: {
       email: "test@arbora.local",
       passwordHash,
+      role: "USER",
     },
   });
 

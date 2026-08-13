@@ -8,3 +8,5 @@ export { default as WelcomePage } from "@/pages/WelcomePage";
 export { default as TreeElementsPage } from "@/pages/TreeElementsPage";
 export { default as TreeTimelinePage } from "@/pages/TreeTimelinePage";
 export { default as PersonDetailsPage } from "@/pages/PersonDetailsPage";
+export { default as SetupPage } from "@/pages/SetupPage";
+export { default as AdministrationPage } from "@/pages/AdministrationPage";

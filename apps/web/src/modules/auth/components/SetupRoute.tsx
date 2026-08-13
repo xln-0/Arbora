@@ -2,12 +2,8 @@ import { Navigate } from "react-router-dom";
 
 import { useAuthStore } from "@/stores/authStore";
 
-export default function GuestRoute({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { user, initialized, setupRequired } = useAuthStore();
+export default function SetupRoute({ children }: { children: React.ReactNode }) {
+  const { initialized, setupRequired, user } = useAuthStore();
 
   if (!initialized) {
     return null;
@@ -17,8 +13,8 @@ export default function GuestRoute({
     return <Navigate to="/" replace />;
   }
 
-  if (setupRequired) {
-    return <Navigate to="/setup" replace />;
+  if (!setupRequired) {
+    return <Navigate to="/login" replace />;
   }
 
   return children;

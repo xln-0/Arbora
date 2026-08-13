@@ -12,6 +12,7 @@ declare module "fastify" {
     prisma: PrismaClient;
 
     authenticate: preHandlerHookHandler;
+    requireAdmin: preHandlerHookHandler;
     requireTreeOwner: preHandlerHookHandler;
     requireTreeEditor: preHandlerHookHandler;
     requireTreeMember: preHandlerHookHandler;
