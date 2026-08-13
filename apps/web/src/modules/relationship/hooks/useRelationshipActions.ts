@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { t } from "@/i18n";
 
 import { createRelationship, deleteRelationship } from "@/api/relationshipsApi";
@@ -5,14 +7,17 @@ import { createRelationship, deleteRelationship } from "@/api/relationshipsApi";
 import { useGraphStore } from "@/stores/graphStore";
 import { useUiStore } from "@/stores/uiStore";
 
-import type { Relationship, RelationshipType } from "@arbora/shared";
+import type { Relationship } from "@arbora/shared";
+import type { RelationshipFormData } from "../components/RelationshipFormPanel";
 
 import {
   buildRelationshipInput,
   getRelatedPersonName,
 } from "../relationshipUtils";
+import { getRelationshipErrorMessage } from "../relationshipErrorUtils";
 
 export function useRelationshipActions() {
+  const [relationshipError, setRelationshipError] = useState<string>();
   const refreshGraph = useGraphStore((state) => state.refresh);
 
   const openConfirmDialog = useUiStore((state) => state.openConfirmDialog);
@@ -24,24 +29,23 @@ export function useRelationshipActions() {
   async function saveRelationship(
     selectedTreeId: string | undefined,
     selectedPersonId: string | undefined,
-    data: {
-      targetPersonId: string;
-      type: RelationshipType;
-      date?: string;
-    },
+    data: RelationshipFormData,
   ) {
     if (!selectedTreeId || !selectedPersonId) {
       return;
     }
 
-    await createRelationship(
-      selectedTreeId,
-      buildRelationshipInput(selectedPersonId, data),
-    );
-
-    refreshGraph();
-
-    closeRelationshipForm();
+    try {
+      setRelationshipError(undefined);
+      await createRelationship(
+        selectedTreeId,
+        buildRelationshipInput(selectedPersonId, data),
+      );
+      refreshGraph();
+      closeRelationshipForm();
+    } catch (error) {
+      setRelationshipError(getRelationshipErrorMessage(error));
+    }
   }
 
   function confirmDeleteRelationship(
@@ -72,5 +76,7 @@ export function useRelationshipActions() {
   return {
     saveRelationship,
     confirmDeleteRelationship,
+    relationshipError,
+    clearRelationshipError: () => setRelationshipError(undefined),
   };
 }

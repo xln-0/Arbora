@@ -6,25 +6,48 @@ import {
   CalendarDays,
   GitFork,
   Heart,
+  HeartCrack,
+  HeartHandshake,
+  Pencil,
+  Trash2,
   UserRound,
   UsersRound,
 } from "lucide-react";
 
-import type { Person, Relationship } from "@arbora/shared";
+import {
+  isCoupleRelationshipType,
+  type CoupleRelationshipType,
+  type Person,
+  type Relationship,
+} from "@arbora/shared";
 
-import { createRelationship } from "@/api/relationshipsApi";
+import {
+  createRelationship,
+  deleteRelationship,
+  editRelationship,
+} from "@/api/relationshipsApi";
 import { getTreeGraph, type TreeGraph } from "@/api/treesApi";
 import { AppLayout, OverlayLayer } from "@/components/layout";
-import { Avatar, Button } from "@/components/ui";
+import { Avatar, Button, ConfirmDialog } from "@/components/ui";
 import { t } from "@/i18n";
 import RelationshipFormPanel, {
   type RelationshipFormData,
 } from "@/modules/relationship/components/RelationshipFormPanel";
-import { buildRelationshipInput } from "@/modules/relationship/relationshipUtils";
+import {
+  buildRelationshipInput,
+  getRelationshipCurrentDate,
+} from "@/modules/relationship/relationshipUtils";
+import { getRelationshipErrorMessage } from "@/modules/relationship/relationshipErrorUtils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
 
-type PersonalEventType = "birth" | "union" | "childBirth" | "death";
+type PersonalEventType =
+  | "birth"
+  | "freeUnion"
+  | "marriage"
+  | "divorce"
+  | "childBirth"
+  | "death";
 
 interface PersonalTimelineEvent {
   id: string;
@@ -47,6 +70,10 @@ export default function PersonDetailsPage() {
   const [errorMessage, setErrorMessage] = useState<string>();
   const [actionError, setActionError] = useState<string>();
   const [isRelationshipFormOpen, setIsRelationshipFormOpen] = useState(false);
+  const [editingRelationship, setEditingRelationship] =
+    useState<Relationship>();
+  const [relationshipToDelete, setRelationshipToDelete] =
+    useState<Relationship>();
 
   useEffect(() => {
     if (!selectedTreeId) {
@@ -101,36 +128,24 @@ export default function PersonDetailsPage() {
     }
 
     return {
-      parents: relatedPeople(
-        graph.relationships.filter(
-          (relation) =>
-            relation.type === "PARENT" &&
-            relation.targetPersonId === person.id,
-        ),
-        person.id,
-        personById,
+      parents: graph.relationships.filter(
+        (relation) =>
+          relation.type === "PARENT" &&
+          relation.targetPersonId === person.id,
       ),
-      partners: relatedPeople(
-        graph.relationships.filter(
-          (relation) =>
-            relation.type === "PARTNER" &&
-            (relation.sourcePersonId === person.id ||
-              relation.targetPersonId === person.id),
-        ),
-        person.id,
-        personById,
+      partners: graph.relationships.filter(
+        (relation) =>
+          isCoupleRelationshipType(relation.type) &&
+          (relation.sourcePersonId === person.id ||
+            relation.targetPersonId === person.id),
       ),
-      children: relatedPeople(
-        graph.relationships.filter(
-          (relation) =>
-            relation.type === "PARENT" &&
-            relation.sourcePersonId === person.id,
-        ),
-        person.id,
-        personById,
+      children: graph.relationships.filter(
+        (relation) =>
+          relation.type === "PARENT" &&
+          relation.sourcePersonId === person.id,
       ),
     };
-  }, [graph.relationships, person, personById]);
+  }, [graph.relationships, person]);
 
   const timelineEvents = useMemo(() => {
     if (!person) {
@@ -157,8 +172,7 @@ export default function PersonDetailsPage() {
 
     for (const relationship of graph.relationships) {
       if (
-        relationship.type === "PARTNER" &&
-        relationship.date &&
+        isCoupleRelationshipType(relationship.type) &&
         (relationship.sourcePersonId === person.id ||
           relationship.targetPersonId === person.id)
       ) {
@@ -167,12 +181,34 @@ export default function PersonDetailsPage() {
             ? relationship.targetPersonId
             : relationship.sourcePersonId;
 
-        events.push({
-          id: `${relationship.id}-union`,
-          date: relationship.date,
-          type: "union",
-          relatedPerson: personById.get(relatedId),
-        });
+        const relatedPerson = personById.get(relatedId);
+
+        if (relationship.unionDate) {
+          events.push({
+            id: `${relationship.id}-free-union`,
+            date: relationship.unionDate,
+            type: "freeUnion",
+            relatedPerson,
+          });
+        }
+
+        if (relationship.marriageDate) {
+          events.push({
+            id: `${relationship.id}-marriage`,
+            date: relationship.marriageDate,
+            type: "marriage",
+            relatedPerson,
+          });
+        }
+
+        if (relationship.divorceDate) {
+          events.push({
+            id: `${relationship.id}-divorce`,
+            date: relationship.divorceDate,
+            type: "divorce",
+            relatedPerson,
+          });
+        }
       }
 
       if (
@@ -227,14 +263,63 @@ export default function PersonDetailsPage() {
         buildRelationshipInput(person.id, data),
       );
       setGraph(await getTreeGraph(selectedTreeId));
-      setIsRelationshipFormOpen(false);
+      closeRelationshipForm();
     } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : t("personDetails.relationshipError"),
-      );
+      setActionError(getRelationshipErrorMessage(error));
     }
+  }
+
+  async function handleUpdateRelationship(data: RelationshipFormData) {
+    if (!selectedTreeId || !person || !editingRelationship) {
+      return;
+    }
+
+    try {
+      setActionError(undefined);
+      await editRelationship(
+        selectedTreeId,
+        editingRelationship.id,
+        buildRelationshipInput(person.id, data),
+      );
+      setGraph(await getTreeGraph(selectedTreeId));
+      closeRelationshipForm();
+    } catch (error) {
+      setActionError(getRelationshipErrorMessage(error));
+    }
+  }
+
+  async function handleDeleteRelationship() {
+    if (!selectedTreeId || !relationshipToDelete) {
+      return;
+    }
+
+    try {
+      setActionError(undefined);
+      await deleteRelationship(selectedTreeId, relationshipToDelete.id);
+      setGraph(await getTreeGraph(selectedTreeId));
+      setRelationshipToDelete(undefined);
+    } catch (error) {
+      setRelationshipToDelete(undefined);
+      setActionError(getRelationshipErrorMessage(error));
+    }
+  }
+
+  function openCreateRelationshipForm() {
+    setActionError(undefined);
+    setEditingRelationship(undefined);
+    setIsRelationshipFormOpen(true);
+  }
+
+  function openEditRelationshipForm(relationship: Relationship) {
+    setActionError(undefined);
+    setEditingRelationship(relationship);
+    setIsRelationshipFormOpen(true);
+  }
+
+  function closeRelationshipForm() {
+    setActionError(undefined);
+    setEditingRelationship(undefined);
+    setIsRelationshipFormOpen(false);
   }
 
   return (
@@ -243,7 +328,7 @@ export default function PersonDetailsPage() {
         title={name}
         actions={
           person && canEdit ? (
-            <Button onClick={() => setIsRelationshipFormOpen(true)}>
+            <Button onClick={openCreateRelationshipForm}>
               <GitFork size={17} />
               {t("relationship.add")}
             </Button>
@@ -251,13 +336,13 @@ export default function PersonDetailsPage() {
         }
       >
         <div className="mx-auto max-w-6xl space-y-8 p-6 lg:p-8">
-        <Link
-          to="/elements"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground"
-        >
-          <ArrowLeft size={16} />
-          {t("personDetails.back")}
-        </Link>
+          <Link
+            to="/elements"
+            className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground"
+          >
+            <ArrowLeft size={16} />
+            {t("personDetails.back")}
+          </Link>
 
         {!selectedTreeId && (
           <StatusCard message={t("personDetails.noTree")} />
@@ -298,18 +383,36 @@ export default function PersonDetailsPage() {
               <div className="grid gap-4 lg:grid-cols-3">
                 <RelationGroup
                   title={t("person.relationships.parents")}
-                  persons={relations.parents}
+                  relationships={relations.parents}
                   emptyLabel={t("personDetails.noParents")}
+                  currentPersonId={person.id}
+                  personById={personById}
+                  canEdit={canEdit}
+                  formatDate={formatDate}
+                  onEdit={openEditRelationshipForm}
+                  onDelete={setRelationshipToDelete}
                 />
                 <RelationGroup
                   title={t("person.relationships.partners")}
-                  persons={relations.partners}
+                  relationships={relations.partners}
                   emptyLabel={t("personDetails.noPartners")}
+                  currentPersonId={person.id}
+                  personById={personById}
+                  canEdit={canEdit}
+                  formatDate={formatDate}
+                  onEdit={openEditRelationshipForm}
+                  onDelete={setRelationshipToDelete}
                 />
                 <RelationGroup
                   title={t("person.relationships.children")}
-                  persons={relations.children}
+                  relationships={relations.children}
                   emptyLabel={t("personDetails.noChildren")}
+                  currentPersonId={person.id}
+                  personById={personById}
+                  canEdit={canEdit}
+                  formatDate={formatDate}
+                  onEdit={openEditRelationshipForm}
+                  onDelete={setRelationshipToDelete}
                 />
               </div>
             </section>
@@ -338,16 +441,42 @@ export default function PersonDetailsPage() {
         </div>
       </AppLayout>
 
-      {isRelationshipFormOpen && person && (
-        <OverlayLayer>
+      <OverlayLayer>
+        {isRelationshipFormOpen && person && (
           <RelationshipFormPanel
             persons={graph.persons.filter((item) => item.id !== person.id)}
-            onSave={handleCreateRelationship}
-            onClose={() => setIsRelationshipFormOpen(false)}
+            onSave={
+              editingRelationship
+                ? handleUpdateRelationship
+                : handleCreateRelationship
+            }
+            onClose={closeRelationshipForm}
             placement="right"
+            mode={editingRelationship ? "edit" : "create"}
+            initialData={
+              editingRelationship
+                ? toRelationshipFormData(editingRelationship, person.id)
+                : undefined
+            }
+            errorMessage={actionError}
           />
-        </OverlayLayer>
-      )}
+        )}
+
+        {relationshipToDelete && person && (
+          <ConfirmDialog
+            title={t("confirm.deleteRelationshipTitle")}
+            message={t("confirm.deleteRelationshipMessage", {
+              name: getRelatedPersonName(
+                relationshipToDelete,
+                person.id,
+                personById,
+              ),
+            })}
+            onCancel={() => setRelationshipToDelete(undefined)}
+            onConfirm={handleDeleteRelationship}
+          />
+        )}
+      </OverlayLayer>
     </>
   );
 }
@@ -405,49 +534,129 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 
 function RelationGroup({
   title,
-  persons,
+  relationships,
   emptyLabel,
+  currentPersonId,
+  personById,
+  canEdit,
+  formatDate,
+  onEdit,
+  onDelete,
 }: {
   title: string;
-  persons: Person[];
+  relationships: Relationship[];
   emptyLabel: string;
+  currentPersonId: string;
+  personById: Map<string, Person>;
+  canEdit: boolean;
+  formatDate: (date: string) => string;
+  onEdit: (relationship: Relationship) => void;
+  onDelete: (relationship: Relationship) => void;
 }) {
+  const sortedRelationships = [...relationships].sort((a, b) =>
+    getRelatedPersonName(a, currentPersonId, personById).localeCompare(
+      getRelatedPersonName(b, currentPersonId, personById),
+    ),
+  );
+
   return (
     <article className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-semibold">{title}</h3>
         <span className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-medium text-muted">
-          {persons.length}
+          {relationships.length}
         </span>
       </div>
 
-      {persons.length === 0 ? (
+      {relationships.length === 0 ? (
         <p className="py-4 text-sm text-muted">{emptyLabel}</p>
       ) : (
         <div className="space-y-2">
-          {persons.map((person) => (
-            <PersonLink key={person.id} person={person} />
-          ))}
+          {sortedRelationships.map((relationship) => {
+            const relatedPerson = getRelatedPerson(
+              relationship,
+              currentPersonId,
+              personById,
+            );
+
+            if (!relatedPerson) {
+              return null;
+            }
+
+            const relatedPersonName = getPersonName(relatedPerson);
+            const coupleType = isCoupleRelationshipType(relationship.type)
+              ? relationship.type
+              : undefined;
+            const currentDate = getRelationshipCurrentDate(relationship);
+
+            return (
+              <div
+                key={relationship.id}
+                className="group grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-x-3 gap-y-1.5 rounded-xl border border-transparent p-2.5 transition hover:border-border hover:bg-surface-muted"
+              >
+                <Link
+                  to={`/people/${relatedPerson.id}`}
+                  className={`${coupleType ? "row-span-2" : ""} self-center rounded-full`}
+                  aria-label={relatedPersonName}
+                >
+                  <Avatar
+                    name={relatedPersonName}
+                    className="h-10 w-10 bg-primary-soft text-primary"
+                  />
+                </Link>
+
+                <Link
+                  to={`/people/${relatedPerson.id}`}
+                  className={`min-w-0 truncate text-sm font-medium transition hover:text-primary ${coupleType ? "self-end" : "self-center"}`}
+                >
+                  {relatedPersonName}
+                </Link>
+
+                {canEdit && (
+                  <div
+                    className={`${coupleType ? "row-span-2" : ""} flex shrink-0 self-center opacity-70 transition group-hover:opacity-100`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onEdit(relationship)}
+                      aria-label={t("actions.edit")}
+                      title={t("actions.edit")}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(relationship)}
+                      aria-label={t("actions.delete")}
+                      title={t("actions.delete")}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {coupleType && (
+                  <div className="col-start-2 flex min-w-0 flex-wrap items-center gap-1.5 self-start">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-medium leading-4 ${getCoupleBadgeClassName(coupleType)}`}
+                    >
+                      {t(`relationship.types.${coupleType}`)}
+                    </span>
+                    {currentDate && (
+                      <time className="text-[0.65rem] leading-4 text-muted">
+                        {formatDate(currentDate)}
+                      </time>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </article>
-  );
-}
-
-function PersonLink({ person }: { person: Person }) {
-  const name = getPersonName(person);
-
-  return (
-    <Link
-      to={`/people/${person.id}`}
-      className="flex items-center gap-3 rounded-xl border border-transparent p-2 transition hover:border-border hover:bg-surface-muted"
-    >
-      <Avatar
-        name={name}
-        className="h-10 w-10 shrink-0 bg-primary-soft text-primary"
-      />
-      <span className="min-w-0 truncate text-sm font-medium">{name}</span>
-    </Link>
   );
 }
 
@@ -485,7 +694,9 @@ function TimelineEvent({
 }) {
   const styles = {
     birth: { icon: Baby, color: "bg-primary text-white" },
-    union: { icon: Heart, color: "bg-pink-500 text-white" },
+    freeUnion: { icon: HeartHandshake, color: "bg-cyan-500 text-white" },
+    marriage: { icon: Heart, color: "bg-pink-500 text-white" },
+    divorce: { icon: HeartCrack, color: "bg-amber-500 text-white" },
     childBirth: { icon: UsersRound, color: "bg-orange-400 text-white" },
     death: { icon: UserRound, color: "bg-muted text-white" },
   }[event.type];
@@ -530,22 +741,63 @@ function StatusCard({ message }: { message: string }) {
   );
 }
 
-function relatedPeople(
-  relationships: Relationship[],
+function getRelatedPerson(
+  relationship: Relationship,
   currentPersonId: string,
   personById: Map<string, Person>,
 ) {
-  return relationships
-    .map((relationship) => {
-      const relatedId =
-        relationship.sourcePersonId === currentPersonId
-          ? relationship.targetPersonId
-          : relationship.sourcePersonId;
+  const relatedId =
+    relationship.sourcePersonId === currentPersonId
+      ? relationship.targetPersonId
+      : relationship.sourcePersonId;
 
-      return personById.get(relatedId);
-    })
-    .filter((person): person is Person => Boolean(person))
-    .sort((a, b) => getPersonName(a).localeCompare(getPersonName(b)));
+  return personById.get(relatedId);
+}
+
+function getRelatedPersonName(
+  relationship: Relationship,
+  currentPersonId: string,
+  personById: Map<string, Person>,
+) {
+  const person = getRelatedPerson(relationship, currentPersonId, personById);
+
+  return person ? getPersonName(person) : t("elements.unknownPerson");
+}
+
+function toRelationshipFormData(
+  relationship: Relationship,
+  currentPersonId: string,
+): RelationshipFormData {
+  const targetPersonId =
+    relationship.sourcePersonId === currentPersonId
+      ? relationship.targetPersonId
+      : relationship.sourcePersonId;
+  const type =
+    isCoupleRelationshipType(relationship.type)
+      ? relationship.type
+      : relationship.sourcePersonId === currentPersonId
+        ? "CHILD"
+        : "PARENT";
+
+  return {
+    targetPersonId,
+    type,
+    unionDate: relationship.unionDate ?? undefined,
+    marriageDate: relationship.marriageDate ?? undefined,
+    divorceDate: relationship.divorceDate ?? undefined,
+  };
+}
+
+function getCoupleBadgeClassName(type: CoupleRelationshipType) {
+  if (type === "FREE_UNION") {
+    return "bg-cyan-50 text-cyan-700";
+  }
+
+  if (type === "DIVORCE") {
+    return "bg-amber-50 text-amber-700";
+  }
+
+  return "bg-rose-50 text-rose-700";
 }
 
 function getPersonName(person: Person) {

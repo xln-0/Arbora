@@ -4,10 +4,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY apps ./apps
-COPY packages ./packages
+COPY apps/api/package*.json ./apps/api/
+COPY apps/web/package*.json ./apps/web/
+COPY packages/database/package*.json ./packages/database/
+COPY packages/shared/package*.json ./packages/shared/
 
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
+
+COPY apps/web ./apps/web
+COPY packages/shared ./packages/shared
 
 RUN npm run build:shared
 RUN npm run build:web

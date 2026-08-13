@@ -1,4 +1,5 @@
 import { useShallow } from "zustand/shallow";
+import { Crown } from "lucide-react";
 
 import { t } from "@/i18n";
 
@@ -7,12 +8,14 @@ import { Badge, ConfirmDialog } from "@/components/ui";
 
 import FamilyGraph from "@/modules/graph/components/FamilyGraph";
 import PersonFormPanel from "@/modules/people/components/PersonFormPanel";
-import RelationshipFormPanel from "@/modules/relationship/components/RelationshipFormPanel";
+import RelationshipFormPanel, {
+  type RelationshipFormData,
+} from "@/modules/relationship/components/RelationshipFormPanel";
 
 import { usePersonActions } from "@/modules/people/hooks/usePersonActions";
 import { useRelationshipActions } from "@/modules/relationship/hooks/useRelationshipActions";
 
-import type { Relationship, RelationshipType } from "@arbora/shared";
+import type { Relationship } from "@arbora/shared";
 
 import { useGraphStore, useTreeStore, useUiStore } from "@/stores";
 import TreeSettingsButton from "@/modules/trees/components/TreeSettingsButton";
@@ -90,8 +93,12 @@ export default function DashboardPage() {
 
   const { savePerson, confirmDeletePerson } = usePersonActions();
 
-  const { saveRelationship, confirmDeleteRelationship } =
-    useRelationshipActions();
+  const {
+    saveRelationship,
+    confirmDeleteRelationship,
+    relationshipError,
+    clearRelationshipError,
+  } = useRelationshipActions();
 
   //
   // Handlers
@@ -105,11 +112,7 @@ export default function DashboardPage() {
     openEditPerson(selectedPersonId);
   }
 
-  function handleSaveRelationship(data: {
-    targetPersonId: string;
-    type: RelationshipType;
-    date?: string;
-  }) {
+  function handleSaveRelationship(data: RelationshipFormData) {
     return saveRelationship(selectedTreeId, selectedPersonId, data);
   }
 
@@ -126,6 +129,11 @@ export default function DashboardPage() {
     );
   }
 
+  function handleCloseRelationshipForm() {
+    clearRelationshipError();
+    closeRelationshipForm();
+  }
+
   return (
     <>
       <AppLayout
@@ -134,10 +142,23 @@ export default function DashboardPage() {
             ? `${t("navigation.dashboard")} - ${selectedTree.name}`
             : t("navigation.dashboard")
         }
-        actions={<TreeSettingsButton />}
+        actions={
+          selectedTree?.role === "OWNER" ? <TreeSettingsButton /> : undefined
+        }
         topbarBadge={
           selectedTree?.role ? (
-            <Badge>
+            <Badge
+              className={
+                selectedTree.role === "OWNER"
+                  ? "border-amber-200 bg-amber-50/90 text-amber-700 shadow-sm"
+                  : selectedTree.role === "EDITOR"
+                    ? "border-blue-200 bg-blue-50/90 text-blue-700"
+                    : "border-slate-200 bg-slate-50/90 text-slate-600"
+              }
+            >
+              {selectedTree.role === "OWNER" && (
+                <Crown className="mr-1.5 text-amber-500" size={13} />
+              )}
               {t(`settings.roles.${selectedTree.role.toLowerCase()}`)}
             </Badge>
           ) : undefined
@@ -180,8 +201,9 @@ export default function DashboardPage() {
         {isRelationshipFormOpen && (
           <RelationshipFormPanel
             persons={persons.filter((person) => person.id !== selectedPersonId)}
-            onClose={closeRelationshipForm}
+            onClose={handleCloseRelationshipForm}
             onSave={handleSaveRelationship}
+            errorMessage={relationshipError}
           />
         )}
 

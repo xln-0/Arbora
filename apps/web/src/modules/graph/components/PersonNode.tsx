@@ -28,7 +28,7 @@ const genderStyles = {
     border: "border-border/80",
     selected: "border-primary ring-primary/15",
     avatar: "bg-primary-soft text-primary",
-    cover: "from-emerald-100 via-emerald-50 to-surface",
+    cover: "from-primary-soft via-primary-soft/45 to-surface",
     date: "bg-primary/5 text-primary",
   },
 };

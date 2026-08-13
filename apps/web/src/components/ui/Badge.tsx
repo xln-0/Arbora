@@ -2,12 +2,13 @@ import type { ReactNode } from "react";
 
 interface BadgeProps {
   children: ReactNode;
+  className?: string;
 }
 
-export default function Badge({ children }: BadgeProps) {
+export default function Badge({ children, className = "" }: BadgeProps) {
   return (
     <span
-      className="
+      className={`
         inline-flex
         items-center
 
@@ -25,7 +26,9 @@ export default function Badge({ children }: BadgeProps) {
         font-medium
 
         text-muted
-      "
+
+        ${className}
+      `}
     >
       {children}
     </span>

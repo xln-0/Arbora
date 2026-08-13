@@ -9,14 +9,16 @@ const items = [
   { key: "timeline", icon: History, to: "/timeline" },
 ];
 
-export function SidebarNavigation() {
+export function SidebarNavigation({ compact = false }: { compact?: boolean }) {
   return (
-    <nav className="mt-6">
-      <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-muted">
-        {t("navigation.explore")}
-      </p>
+    <nav className="relative mt-7">
+      {!compact && (
+        <p className="mb-2 px-1 text-[0.625rem] font-bold uppercase tracking-[0.18em] text-muted/80">
+          {t("navigation.explore")}
+        </p>
+      )}
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {items.map((item) => {
           const Icon = item.icon;
 
@@ -24,28 +26,38 @@ export function SidebarNavigation() {
             <NavLink
               key={item.to}
               to={item.to}
+              title={compact ? t(`navigation.${item.key}`) : undefined}
+              aria-label={t(`navigation.${item.key}`)}
               className={({ isActive }) => `
-                group flex items-center gap-3 rounded-xl px-2.5 py-2.5
-                text-sm font-medium transition-all
+                group relative flex min-h-11 items-center rounded-xl text-sm font-semibold transition-all duration-200
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25
+                ${compact ? "justify-center px-1" : "gap-3 px-2.5"}
                 ${
                   isActive
-                    ? "bg-primary/10 text-primary shadow-sm shadow-primary/5"
-                    : "text-muted hover:bg-surface-muted hover:text-foreground"
+                    ? "bg-white text-primary shadow-[0_5px_18px_rgba(15,23,42,0.06)] ring-1 ring-primary/10"
+                    : "text-muted hover:bg-white/80 hover:text-foreground"
                 }
               `}
             >
               {({ isActive }) => (
                 <>
+                  {isActive && !compact && (
+                    <span className="absolute -left-4 h-6 w-1 rounded-r-full bg-primary shadow-md shadow-primary/35" />
+                  )}
                   <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.65rem] transition-all duration-200 ${
                       isActive
-                        ? "bg-primary text-white"
-                        : "bg-surface-muted text-muted group-hover:bg-surface"
+                        ? "bg-gradient-to-br from-primary to-primary-hover text-white shadow-md shadow-primary/20"
+                        : "text-muted group-hover:bg-primary-soft group-hover:text-primary"
                     }`}
                   >
                     <Icon size={17} />
                   </span>
-                  <span className="truncate">{t(`navigation.${item.key}`)}</span>
+                  {!compact && (
+                    <span className="truncate">
+                      {t(`navigation.${item.key}`)}
+                    </span>
+                  )}
                 </>
               )}
             </NavLink>

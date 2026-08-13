@@ -1,4 +1,8 @@
-import type { Person, Relationship } from "@arbora/shared";
+import {
+  isCoupleRelationshipType,
+  type Person,
+  type Relationship,
+} from "@arbora/shared";
 
 import { mapPersonNodes } from "./mapping/personNodeMapper";
 import { mapPartnerRelationships } from "./mapping/partnerMapper";
@@ -12,7 +16,7 @@ export function buildGraph(persons: Person[], relationships: Relationship[]) {
   const edges: RelationshipEdge[] = [];
 
   const partnerRelationships = relationships.filter(
-    (r) => r.type === "PARTNER",
+    (relationship) => isCoupleRelationshipType(relationship.type),
   );
 
   nodes.push(...mapPersonNodes(persons));

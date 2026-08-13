@@ -21,6 +21,13 @@ export default {
     profile: "Profile",
     trees: "My trees",
     logout: "Log out",
+    email: "Email address",
+    treeCount: "{{count}} trees",
+    treesDescription: "Create a new tree or switch your active tree.",
+    activeTree: "Active",
+    noTrees: "You have not created any trees yet.",
+    createTreeError: "Unable to create the tree.",
+    profileUnavailable: "Profile information is unavailable.",
   },
 
   actions: {
@@ -36,6 +43,18 @@ export default {
     name: "Tree name",
     create: "Create a tree",
     empty: "No trees",
+  },
+
+  graphToolbar: {
+    label: "Tools",
+    description: "Grow the tree",
+    personHint: "Add a new person",
+    relationshipHint: "Connect the selected person",
+  },
+
+  sidebar: {
+    collapse: "Collapse sidebar",
+    expand: "Expand sidebar",
   },
 
   elements: {
@@ -54,15 +73,18 @@ export default {
   timeline: {
     title: "Family timeline",
     description:
-      "Browse births and deaths in the tree in chronological order.",
+      "Browse births, unions, marriages, divorces, and deaths in chronological order.",
     loading: "Loading the timeline…",
     loadError: "Unable to load the timeline.",
     noTree: "Select a tree to display its timeline.",
-    empty: "Add birth or death dates to build the timeline.",
+    empty: "Add birth, relationship, or death dates to build the timeline.",
     eventCount: "{{count}} events",
     scrollHint: "Scroll horizontally",
     events: {
       birth: "Birth",
+      freeUnion: "Domestic partnership",
+      marriage: "Marriage",
+      divorce: "Divorce",
       death: "Death",
     },
   },
@@ -106,7 +128,7 @@ export default {
     family: "Family relationships",
     familyDescription: "Navigate directly to this person's relatives.",
     noParents: "No parents provided.",
-    noPartners: "No partner provided.",
+    noPartners: "No couple relationship provided.",
     noChildren: "No children provided.",
     timeline: {
       title: "Timeline",
@@ -114,7 +136,9 @@ export default {
       empty: "Add dates and relationships to build this timeline.",
       events: {
         birth: "Birth",
-        union: "Marriage or union",
+        freeUnion: "Domestic partnership",
+        marriage: "Marriage",
+        divorce: "Divorce",
         childBirth: "Birth of a child",
         death: "Death",
       },
@@ -129,30 +153,63 @@ export default {
 
   relationship: {
     add: "Add a relationship",
+    edit: "Edit relationship",
     description: "Connect this person to another member of the tree.",
+    editDescription: "Update the person, family link, or its date.",
     selectPerson: "Select a person",
     thisPerson: "This person",
     isTheir: "is their",
     noAvailablePersons: "No other person is available in this tree.",
     summaryTitle: "Relationship to create",
+    editSummaryTitle: "Updated relationship",
     summary: "{{name}} · {{relation}}",
     selectSource: "Select a person in the tree first.",
-    unionDate: "Marriage or union date",
-    unionDateHint: "Optional, it will appear in the timeline.",
+    historyTitle: "Couple history",
+    historyHint: "Enter the known milestones in chronological order.",
+    dateLabels: {
+      FREE_UNION: "Union start date",
+      MARRIAGE: "Marriage date",
+      DIVORCE: "Divorce date",
+    },
+    errors: {
+      duplicate: "This relationship already exists.",
+      conflict: "These people already have an incompatible relationship.",
+      cycle: "This relationship would create a parent-child cycle.",
+      invalid: "This relationship is invalid.",
+      invalidDate: "The relationship date is invalid.",
+      dateOrder: "Dates must follow the union, marriage, then divorce order.",
+      generic: "Unable to save this relationship.",
+    },
 
     types: {
       PARENT: "Parent",
-      PARTNER: "Partner",
       CHILD: "Child",
+      FREE_UNION: "Partner (domestic union)",
+      MARRIAGE: "Spouse (marriage)",
+      DIVORCE: "Former spouse (divorce)",
     },
   },
 
   settings: {
+    appTitle: "Application preferences",
+    appDescription:
+      "Customize Arbora for an experience that suits your habits.",
     language: "Language",
+    languageDescription: "Choose the language used throughout the interface.",
+    treeDescription:
+      "Manage this tree's identity, access permissions, and sensitive data.",
     treeName: "Tree Name",
+    treeNameDescription:
+      "This name helps you identify the tree in your workspace.",
     members: "Members",
+    membersDescription: "Invite relatives and define their access level.",
     email: "Email",
     addMember: "Add Member",
+    noMembers: "No members to display.",
+    loadingMembers: "Loading members…",
+    loadMembersError: "Unable to load members.",
+    updateMemberError: "Unable to update this member.",
+    removeMemberError: "Unable to remove this member.",
     dangerZone: "Danger Zone",
     deleteTreeWarning:
       "Deleting this tree will permanently remove all associated people and relationships.",
@@ -164,6 +221,10 @@ export default {
     removeMember: "Remove member",
     unknownUser: "Unknown user",
     ownerOnly: "Only the owner can manage this tree's settings.",
+    restrictedTitle: "Restricted access",
+    updateTreeError: "Unable to update the tree.",
+    addMemberError: "Unable to add this member.",
+    deleteTreeError: "Unable to delete the tree.",
   },
 
   confirm: {

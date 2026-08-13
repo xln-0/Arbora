@@ -7,7 +7,11 @@ model Relationship {
 
     type RelationshipType
 
-    date DateTime? @db.Date
+    unionDate DateTime? @db.Date
+
+    marriageDate DateTime? @db.Date
+
+    divorceDate DateTime? @db.Date
 
     sourcePersonId String
 
@@ -26,5 +30,7 @@ model Relationship {
 
 enum RelationshipType {
     PARENT
-    PARTNER
+    FREE_UNION
+    MARRIAGE
+    DIVORCE
 }

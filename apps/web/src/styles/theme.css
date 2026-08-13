@@ -1,11 +1,9 @@
 :root {
-
   /* Brand */
 
-  --color-primary: #16a34a;
-  --color-primary-hover: #15803d;
-  --color-primary-soft: #dcfce7;
-
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-soft: #d1fae5;
 
   /* Secondary */
 
@@ -13,24 +11,20 @@
   --color-secondary-hover: #fdba74;
   --color-secondary-foreground: #9a3412;
 
-
   /* Background */
 
-  --color-background: #fafaf9;
+  --color-background: #f8faf9;
   --color-surface: #ffffff;
-  --color-surface-muted: #f5f5f4;
-
+  --color-surface-muted: #f1f5f3;
 
   /* Text */
 
-  --color-foreground: #111827;
-  --color-muted: #6b7280;
-
+  --color-foreground: #17211d;
+  --color-muted: #64716a;
 
   /* Border */
 
-  --color-border: #e5e7eb;
-
+  --color-border: #dce7e1;
 
   /* Radius */
 
