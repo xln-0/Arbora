@@ -11,7 +11,9 @@
     "build:api": "npm run build --workspace api",
     "build:web": "npm run build --workspace arbora",
     "build": "npm run build:database && npm run build:shared && npm run build:api && npm run build:web",
-    "test:api": "npm run test --workspace api"
+    "test:api": "npm run test --workspace api",
+    "test:api:integration": "npm run test:integration --workspace api",
+    "test:web": "npm run test --workspace arbora"
   },
   "keywords": [],
   "author": "",

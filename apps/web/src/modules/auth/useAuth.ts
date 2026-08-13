@@ -17,14 +17,13 @@ export function useAuth() {
 
   const {
     setUser,
-    setInitialized,
+    setReady,
     setSetupRequired,
     setInitializing,
     setBackendUnavailable,
   } = useAuthStore();
 
   const clear = useAuthStore((state) => state.clear);
-  const clearSelectedTree = useTreeStore((state) => state.clearSelectedTree);
   const resetTrees = useTreeStore((state) => state.resetTrees);
 
   async function login(email: string, password: string) {
@@ -44,7 +43,7 @@ export function useAuth() {
 
       if (setup.setupRequired) {
         clear();
-        setInitialized();
+        setReady();
         return true;
       }
 
@@ -60,7 +59,7 @@ export function useAuth() {
         }
       }
 
-      setInitialized();
+      setReady();
       return true;
     } catch {
       setBackendUnavailable();
@@ -81,7 +80,6 @@ export function useAuth() {
 
     clear();
     resetTrees();
-    clearSelectedTree();
 
     navigate("/login");
   }

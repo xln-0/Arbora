@@ -10,6 +10,7 @@ on:
       - "packages/**"
       - "package.json"
       - "package-lock.json"
+      - "scripts/**"
       - ".github/workflows/ci.yml"
 
 concurrency:
@@ -25,6 +26,29 @@ jobs:
     # develop has already been validated before its release PR to main.
     if: github.base_ref == 'develop' || github.head_ref != 'develop'
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: arbora
+          POSTGRES_PASSWORD: test-password
+          POSTGRES_DB: arbora_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U arbora -d arbora_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://arbora:test-password@localhost:5432/arbora_test
+      POSTGRES_USER: arbora
+      POSTGRES_PASSWORD: test-password
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: arbora_test
 
     steps:
       - name: Checkout
@@ -42,11 +66,30 @@ jobs:
 
       - name: Generate Prisma client
         run: npm run gen:database
-        env:
-          DATABASE_URL: postgresql://arbora:password@localhost:5432/arbora
 
       - name: Build application
         run: npm run build
 
       - name: Test API rules
         run: npm run test:api
+
+      - name: Apply migrations to integration database
+        run: npm run migrate:deploy --workspace @arbora/database
+
+      - name: Test API with PostgreSQL
+        run: npm run test:api:integration
+
+      - name: Test critical Web forms
+        run: npm run test:web
+
+  docker-smoke:
+    name: Smoke test Docker images
+    if: github.base_ref == 'develop' || github.head_ref != 'develop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Build and start API and Web images
+        run: bash scripts/smoke-docker.sh

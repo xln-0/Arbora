@@ -22,15 +22,6 @@ interface AuthState {
    */
   user?: User;
 
-  /**
-   * Indique si la vérification de la session utilisateur
-   * au démarrage de l'application a été effectuée.
-   *
-   * Permet d'éviter d'afficher l'application avant de savoir
-   * si l'utilisateur possède une session valide.
-   */
-  initialized: boolean;
-
   startupStatus: "loading" | "ready" | "unavailable";
 
   setupRequired: boolean;
@@ -58,7 +49,7 @@ interface AuthState {
    * - les routes authentifiées ;
    * - la page de connexion.
    */
-  setInitialized(): void;
+  setReady(): void;
 
   setInitializing(): void;
 
@@ -73,11 +64,6 @@ export const useAuthStore = create<AuthState>((set) => ({
    * de restauration de session.
    */
   user: undefined,
-
-  /**
-   * L'état d'authentification n'a pas encore été vérifié.
-   */
-  initialized: false,
 
   startupStatus: "loading",
 
@@ -99,23 +85,20 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  setInitialized() {
+  setReady() {
     set({
-      initialized: true,
       startupStatus: "ready",
     });
   },
 
   setInitializing() {
     set({
-      initialized: false,
       startupStatus: "loading",
     });
   },
 
   setBackendUnavailable() {
     set({
-      initialized: false,
       startupStatus: "unavailable",
     });
   },

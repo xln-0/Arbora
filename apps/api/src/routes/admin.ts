@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { CreateAppUserInput } from "@arbora/shared";
 
-import { createAppUser, getAppUsers } from "../services/authService.js";
+import { createAppUser, getAppUsers } from "../services/usersService.js";
 
 const adminRoutes: FastifyPluginAsync = async (app) => {
   app.get(

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createRelationship } from "../dist/services/relationshipsService.js";
+import { createRelationship } from "../../dist/services/relationshipsService.js";
 
 function createPrisma(existingRelationships = []) {
   return {

@@ -3,8 +3,8 @@ import type { FastifyInstance, FastifyReply } from "fastify";
 import {
   createInitialAdmin,
   isSetupRequired,
-  login,
-} from "../services/authService.js";
+} from "../services/applicationSetupService.js";
+import { login } from "../services/authenticationService.js";
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30;
 

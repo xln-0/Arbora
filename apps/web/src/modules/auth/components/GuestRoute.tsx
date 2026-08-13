@@ -7,9 +7,9 @@ export default function GuestRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, initialized, setupRequired } = useAuthStore();
+  const { user, startupStatus, setupRequired } = useAuthStore();
 
-  if (!initialized) {
+  if (startupStatus !== "ready") {
     return null;
   }
 

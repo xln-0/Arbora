@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -21,42 +20,19 @@ import {
   type Relationship,
 } from "@arbora/shared";
 
-import {
-  createRelationship,
-  deleteRelationship,
-  editRelationship,
-} from "@/api/relationshipsApi";
-import { getTreeGraph, type TreeGraph } from "@/api/treesApi";
 import { AppLayout, OverlayLayer } from "@/components/layout";
 import { Avatar, Button, ConfirmDialog } from "@/components/ui";
 import { t } from "@/i18n";
 import RelationshipFormPanel, {
   type RelationshipFormData,
 } from "@/modules/relationship/components/RelationshipFormPanel";
-import {
-  buildRelationshipInput,
-  getRelationshipCurrentDate,
-} from "@/modules/relationship/relationshipUtils";
-import { getRelationshipErrorMessage } from "@/modules/relationship/relationshipErrorUtils";
+import { getRelationshipCurrentDate } from "@/modules/relationship/relationshipUtils";
+import { useTreeGraphQuery } from "@/modules/graph/hooks/useTreeGraphQuery";
+import type { PersonalTimelineEvent } from "@/modules/timeline/timelineUtils";
+import { usePersonDetailsModel } from "@/modules/people/hooks/usePersonDetailsModel";
+import { usePersonRelationshipActions } from "@/modules/people/hooks/usePersonRelationshipActions";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
-
-type PersonalEventType =
-  | "birth"
-  | "freeUnion"
-  | "marriage"
-  | "divorce"
-  | "childBirth"
-  | "death";
-
-interface PersonalTimelineEvent {
-  id: string;
-  date: string;
-  type: PersonalEventType;
-  relatedPerson?: Person;
-}
-
-const emptyGraph: TreeGraph = { persons: [], relationships: [] };
 
 export default function PersonDetailsPage() {
   const { personId } = useParams<{ personId: string }>();
@@ -65,262 +41,21 @@ export default function PersonDetailsPage() {
     state.trees.find((tree) => tree.id === state.selectedTreeId),
   );
   const locale = useSettingsStore((state) => state.locale);
-  const [graph, setGraph] = useState<TreeGraph>(emptyGraph);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>();
-  const [actionError, setActionError] = useState<string>();
-  const [isRelationshipFormOpen, setIsRelationshipFormOpen] = useState(false);
-  const [editingRelationship, setEditingRelationship] =
-    useState<Relationship>();
-  const [relationshipToDelete, setRelationshipToDelete] =
-    useState<Relationship>();
-
-  useEffect(() => {
-    if (!selectedTreeId) {
-      setGraph(emptyGraph);
-      setErrorMessage(undefined);
-      return;
-    }
-
-    const treeId = selectedTreeId;
-    let cancelled = false;
-
-    async function loadPerson() {
-      try {
-        setIsLoading(true);
-        setErrorMessage(undefined);
-        const result = await getTreeGraph(treeId);
-
-        if (!cancelled) {
-          setGraph(result);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : t("personDetails.loadError"),
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadPerson();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTreeId]);
-
-  const person = graph.persons.find((item) => item.id === personId);
-  const personById = useMemo(
-    () => new Map(graph.persons.map((item) => [item.id, item])),
-    [graph.persons],
+  const { graph, isLoading, errorMessage, reload } = useTreeGraphQuery(
+    selectedTreeId,
+    t("personDetails.loadError"),
   );
-
-  const relations = useMemo(() => {
-    if (!person) {
-      return { parents: [], partners: [], children: [] };
-    }
-
-    return {
-      parents: graph.relationships.filter(
-        (relation) =>
-          relation.type === "PARENT" &&
-          relation.targetPersonId === person.id,
-      ),
-      partners: graph.relationships.filter(
-        (relation) =>
-          isCoupleRelationshipType(relation.type) &&
-          (relation.sourcePersonId === person.id ||
-            relation.targetPersonId === person.id),
-      ),
-      children: graph.relationships.filter(
-        (relation) =>
-          relation.type === "PARENT" &&
-          relation.sourcePersonId === person.id,
-      ),
-    };
-  }, [graph.relationships, person]);
-
-  const timelineEvents = useMemo(() => {
-    if (!person) {
-      return [];
-    }
-
-    const events: PersonalTimelineEvent[] = [];
-
-    if (person.birthDate) {
-      events.push({
-        id: `${person.id}-birth`,
-        date: person.birthDate,
-        type: "birth",
-      });
-    }
-
-    if (person.deathDate) {
-      events.push({
-        id: `${person.id}-death`,
-        date: person.deathDate,
-        type: "death",
-      });
-    }
-
-    for (const relationship of graph.relationships) {
-      if (
-        isCoupleRelationshipType(relationship.type) &&
-        (relationship.sourcePersonId === person.id ||
-          relationship.targetPersonId === person.id)
-      ) {
-        const relatedId =
-          relationship.sourcePersonId === person.id
-            ? relationship.targetPersonId
-            : relationship.sourcePersonId;
-
-        const relatedPerson = personById.get(relatedId);
-
-        if (relationship.unionDate) {
-          events.push({
-            id: `${relationship.id}-free-union`,
-            date: relationship.unionDate,
-            type: "freeUnion",
-            relatedPerson,
-          });
-        }
-
-        if (relationship.marriageDate) {
-          events.push({
-            id: `${relationship.id}-marriage`,
-            date: relationship.marriageDate,
-            type: "marriage",
-            relatedPerson,
-          });
-        }
-
-        if (relationship.divorceDate) {
-          events.push({
-            id: `${relationship.id}-divorce`,
-            date: relationship.divorceDate,
-            type: "divorce",
-            relatedPerson,
-          });
-        }
-      }
-
-      if (
-        relationship.type === "PARENT" &&
-        relationship.sourcePersonId === person.id
-      ) {
-        const child = personById.get(relationship.targetPersonId);
-
-        if (child?.birthDate) {
-          events.push({
-            id: `${relationship.id}-child-birth`,
-            date: child.birthDate,
-            type: "childBirth",
-            relatedPerson: child,
-          });
-        }
-      }
-    }
-
-    return events.sort(
-      (a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id),
-    );
-  }, [graph.relationships, person, personById]);
-
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(locale, {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "UTC",
-      }),
-    [locale],
-  );
-
-  const formatDate = (date: string) =>
-    dateFormatter.format(new Date(`${date}T00:00:00.000Z`));
+  const { person, personById, relations, timelineEvents, formatDate } =
+    usePersonDetailsModel(graph, personId, locale);
+  const relationshipActions = usePersonRelationshipActions({
+    treeId: selectedTreeId,
+    person,
+    reload,
+  });
 
   const name = person ? getPersonName(person) : t("personDetails.title");
   const canEdit =
     selectedTree?.role === "OWNER" || selectedTree?.role === "EDITOR";
-
-  async function handleCreateRelationship(data: RelationshipFormData) {
-    if (!selectedTreeId || !person) {
-      return;
-    }
-
-    try {
-      setActionError(undefined);
-      await createRelationship(
-        selectedTreeId,
-        buildRelationshipInput(person.id, data),
-      );
-      setGraph(await getTreeGraph(selectedTreeId));
-      closeRelationshipForm();
-    } catch (error) {
-      setActionError(getRelationshipErrorMessage(error));
-    }
-  }
-
-  async function handleUpdateRelationship(data: RelationshipFormData) {
-    if (!selectedTreeId || !person || !editingRelationship) {
-      return;
-    }
-
-    try {
-      setActionError(undefined);
-      await editRelationship(
-        selectedTreeId,
-        editingRelationship.id,
-        buildRelationshipInput(person.id, data),
-      );
-      setGraph(await getTreeGraph(selectedTreeId));
-      closeRelationshipForm();
-    } catch (error) {
-      setActionError(getRelationshipErrorMessage(error));
-    }
-  }
-
-  async function handleDeleteRelationship() {
-    if (!selectedTreeId || !relationshipToDelete) {
-      return;
-    }
-
-    try {
-      setActionError(undefined);
-      await deleteRelationship(selectedTreeId, relationshipToDelete.id);
-      setGraph(await getTreeGraph(selectedTreeId));
-      setRelationshipToDelete(undefined);
-    } catch (error) {
-      setRelationshipToDelete(undefined);
-      setActionError(getRelationshipErrorMessage(error));
-    }
-  }
-
-  function openCreateRelationshipForm() {
-    setActionError(undefined);
-    setEditingRelationship(undefined);
-    setIsRelationshipFormOpen(true);
-  }
-
-  function openEditRelationshipForm(relationship: Relationship) {
-    setActionError(undefined);
-    setEditingRelationship(relationship);
-    setIsRelationshipFormOpen(true);
-  }
-
-  function closeRelationshipForm() {
-    setActionError(undefined);
-    setEditingRelationship(undefined);
-    setIsRelationshipFormOpen(false);
-  }
 
   return (
     <>
@@ -328,7 +63,7 @@ export default function PersonDetailsPage() {
         title={name}
         actions={
           person && canEdit ? (
-            <Button onClick={openCreateRelationshipForm}>
+            <Button onClick={relationshipActions.openCreateForm}>
               <GitFork size={17} />
               {t("relationship.add")}
             </Button>
@@ -356,9 +91,9 @@ export default function PersonDetailsPage() {
           <p className="text-sm text-red-600">{errorMessage}</p>
         )}
 
-        {actionError && (
+        {relationshipActions.actionError && (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-            {actionError}
+            {relationshipActions.actionError}
           </p>
         )}
 
@@ -389,8 +124,8 @@ export default function PersonDetailsPage() {
                   personById={personById}
                   canEdit={canEdit}
                   formatDate={formatDate}
-                  onEdit={openEditRelationshipForm}
-                  onDelete={setRelationshipToDelete}
+                  onEdit={relationshipActions.openEditForm}
+                  onDelete={relationshipActions.requestDelete}
                 />
                 <RelationGroup
                   title={t("person.relationships.partners")}
@@ -400,8 +135,8 @@ export default function PersonDetailsPage() {
                   personById={personById}
                   canEdit={canEdit}
                   formatDate={formatDate}
-                  onEdit={openEditRelationshipForm}
-                  onDelete={setRelationshipToDelete}
+                  onEdit={relationshipActions.openEditForm}
+                  onDelete={relationshipActions.requestDelete}
                 />
                 <RelationGroup
                   title={t("person.relationships.children")}
@@ -411,8 +146,8 @@ export default function PersonDetailsPage() {
                   personById={personById}
                   canEdit={canEdit}
                   formatDate={formatDate}
-                  onEdit={openEditRelationshipForm}
-                  onDelete={setRelationshipToDelete}
+                  onEdit={relationshipActions.openEditForm}
+                  onDelete={relationshipActions.requestDelete}
                 />
               </div>
             </section>
@@ -442,38 +177,37 @@ export default function PersonDetailsPage() {
       </AppLayout>
 
       <OverlayLayer>
-        {isRelationshipFormOpen && person && (
+        {relationshipActions.isFormOpen && person && (
           <RelationshipFormPanel
             persons={graph.persons.filter((item) => item.id !== person.id)}
-            onSave={
-              editingRelationship
-                ? handleUpdateRelationship
-                : handleCreateRelationship
-            }
-            onClose={closeRelationshipForm}
+            onSave={relationshipActions.save}
+            onClose={relationshipActions.closeForm}
             placement="right"
-            mode={editingRelationship ? "edit" : "create"}
+            mode={relationshipActions.editingRelationship ? "edit" : "create"}
             initialData={
-              editingRelationship
-                ? toRelationshipFormData(editingRelationship, person.id)
+              relationshipActions.editingRelationship
+                ? toRelationshipFormData(
+                    relationshipActions.editingRelationship,
+                    person.id,
+                  )
                 : undefined
             }
-            errorMessage={actionError}
+            errorMessage={relationshipActions.actionError}
           />
         )}
 
-        {relationshipToDelete && person && (
+        {relationshipActions.relationshipToDelete && person && (
           <ConfirmDialog
             title={t("confirm.deleteRelationshipTitle")}
             message={t("confirm.deleteRelationshipMessage", {
               name: getRelatedPersonName(
-                relationshipToDelete,
+                relationshipActions.relationshipToDelete,
                 person.id,
                 personById,
               ),
             })}
-            onCancel={() => setRelationshipToDelete(undefined)}
-            onConfirm={handleDeleteRelationship}
+            onCancel={relationshipActions.cancelDelete}
+            onConfirm={relationshipActions.confirmDelete}
           />
         )}
       </OverlayLayer>

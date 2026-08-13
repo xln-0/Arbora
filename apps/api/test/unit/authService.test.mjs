@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  createAppUser,
-  createInitialAdmin,
   normalizeEmail,
-} from "../dist/services/authService.js";
+} from "../../dist/services/accountValidation.js";
+import { createInitialAdmin } from "../../dist/services/applicationSetupService.js";
+import { createAppUser } from "../../dist/services/usersService.js";
 
 test("normalizes account emails", () => {
   assert.equal(normalizeEmail("  Admin@Arbora.Local "), "admin@arbora.local");

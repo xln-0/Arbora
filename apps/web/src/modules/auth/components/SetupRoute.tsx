@@ -3,9 +3,9 @@ import { Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 
 export default function SetupRoute({ children }: { children: React.ReactNode }) {
-  const { initialized, setupRequired, user } = useAuthStore();
+  const { startupStatus, setupRequired, user } = useAuthStore();
 
-  if (!initialized) {
+  if (startupStatus !== "ready") {
     return null;
   }
 
