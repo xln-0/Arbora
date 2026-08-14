@@ -49,7 +49,7 @@ export default function CreateTreeForm() {
       onSubmit={handleSubmit}
       className="space-y-2"
     >
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         <input
           className="
             flex-1
@@ -67,7 +67,7 @@ export default function CreateTreeForm() {
           onChange={(event) => setName(event.target.value)}
         />
 
-        <Button disabled={loading || !name.trim()}>
+        <Button className="w-full sm:w-auto" disabled={loading || !name.trim()}>
           {loading ? "Création..." : "Créer mon arbre"}
         </Button>
       </div>

@@ -1,29 +1,56 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { getTrees } from "@/api/treesApi";
-import { useTreeStore } from "@/stores/treeStore";
+import StartupScreen from "@/components/feedback/StartupScreen";
+import { useRetryingTask } from "@/hooks/useRetryingTask";
 import { useAuthStore } from "@/stores/authStore";
+import { useTreeStore } from "@/stores/treeStore";
 
-export default function TreeInitializer() {
-  const setTrees = useTreeStore((state) => state.setTrees);
-
+export default function TreeInitializer({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user);
-  const initialized = useAuthStore((state) => state.initialized);
+  const loadStatus = useTreeStore((state) => state.loadStatus);
+  const loadedForUserId = useTreeStore((state) => state.loadedForUserId);
+  const beginLoading = useTreeStore((state) => state.beginLoading);
+  const setTrees = useTreeStore((state) => state.setTrees);
+  const setLoadError = useTreeStore((state) => state.setLoadError);
+  const resetTrees = useTreeStore((state) => state.resetTrees);
 
   useEffect(() => {
-    if (!initialized) {
-      return;
-    }
+    if (!user) resetTrees();
+  }, [user, resetTrees]);
 
-    if (!user) {
-      setTrees([]);
-      return;
-    }
+  const retry = useRetryingTask(
+    async () => {
+      if (!user) return true;
 
-    getTrees()
-      .then(setTrees)
-      .catch((error) => console.error("Failed to load trees", error));
-  }, [initialized, user, setTrees]);
+      beginLoading(user.id);
 
-  return null;
+      try {
+        setTrees(await getTrees(), user.id);
+        return true;
+      } catch {
+        setLoadError();
+        return false;
+      }
+    },
+    { enabled: Boolean(user), taskKey: user?.id },
+  );
+
+  if (!user) {
+    return children;
+  }
+
+  const isReady = loadStatus === "ready" && loadedForUserId === user.id;
+
+  if (!isReady) {
+    return (
+      <StartupScreen
+        scope="trees"
+        unavailable={loadStatus === "error"}
+        onRetry={retry}
+      />
+    );
+  }
+
+  return children;
 }

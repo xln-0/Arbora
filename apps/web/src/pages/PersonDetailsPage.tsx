@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Baby,
   CalendarDays,
+  CalendarPlus,
   GitFork,
   Heart,
   HeartCrack,
@@ -17,46 +17,26 @@ import {
 import {
   isCoupleRelationshipType,
   type CoupleRelationshipType,
+  type Event as StoredEvent,
   type Person,
   type Relationship,
 } from "@arbora/shared";
 
-import {
-  createRelationship,
-  deleteRelationship,
-  editRelationship,
-} from "@/api/relationshipsApi";
-import { getTreeGraph, type TreeGraph } from "@/api/treesApi";
 import { AppLayout, OverlayLayer } from "@/components/layout";
 import { Avatar, Button, ConfirmDialog } from "@/components/ui";
 import { t } from "@/i18n";
 import RelationshipFormPanel, {
   type RelationshipFormData,
 } from "@/modules/relationship/components/RelationshipFormPanel";
-import {
-  buildRelationshipInput,
-  getRelationshipCurrentDate,
-} from "@/modules/relationship/relationshipUtils";
-import { getRelationshipErrorMessage } from "@/modules/relationship/relationshipErrorUtils";
+import { getRelationshipCurrentDate } from "@/modules/relationship/relationshipUtils";
+import { useTreeGraphQuery } from "@/modules/graph/hooks/useTreeGraphQuery";
+import type { PersonalTimelineEvent } from "@/modules/timeline/timelineUtils";
+import { usePersonDetailsModel } from "@/modules/people/hooks/usePersonDetailsModel";
+import { usePersonRelationshipActions } from "@/modules/people/hooks/usePersonRelationshipActions";
+import EventFormPanel from "@/modules/events/components/EventFormPanel";
+import { usePersonEventActions } from "@/modules/events/hooks/usePersonEventActions";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
-
-type PersonalEventType =
-  | "birth"
-  | "freeUnion"
-  | "marriage"
-  | "divorce"
-  | "childBirth"
-  | "death";
-
-interface PersonalTimelineEvent {
-  id: string;
-  date: string;
-  type: PersonalEventType;
-  relatedPerson?: Person;
-}
-
-const emptyGraph: TreeGraph = { persons: [], relationships: [] };
 
 export default function PersonDetailsPage() {
   const { personId } = useParams<{ personId: string }>();
@@ -65,262 +45,26 @@ export default function PersonDetailsPage() {
     state.trees.find((tree) => tree.id === state.selectedTreeId),
   );
   const locale = useSettingsStore((state) => state.locale);
-  const [graph, setGraph] = useState<TreeGraph>(emptyGraph);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>();
-  const [actionError, setActionError] = useState<string>();
-  const [isRelationshipFormOpen, setIsRelationshipFormOpen] = useState(false);
-  const [editingRelationship, setEditingRelationship] =
-    useState<Relationship>();
-  const [relationshipToDelete, setRelationshipToDelete] =
-    useState<Relationship>();
-
-  useEffect(() => {
-    if (!selectedTreeId) {
-      setGraph(emptyGraph);
-      setErrorMessage(undefined);
-      return;
-    }
-
-    const treeId = selectedTreeId;
-    let cancelled = false;
-
-    async function loadPerson() {
-      try {
-        setIsLoading(true);
-        setErrorMessage(undefined);
-        const result = await getTreeGraph(treeId);
-
-        if (!cancelled) {
-          setGraph(result);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : t("personDetails.loadError"),
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadPerson();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTreeId]);
-
-  const person = graph.persons.find((item) => item.id === personId);
-  const personById = useMemo(
-    () => new Map(graph.persons.map((item) => [item.id, item])),
-    [graph.persons],
+  const { graph, isLoading, errorMessage, reload } = useTreeGraphQuery(
+    selectedTreeId,
+    t("personDetails.loadError"),
   );
-
-  const relations = useMemo(() => {
-    if (!person) {
-      return { parents: [], partners: [], children: [] };
-    }
-
-    return {
-      parents: graph.relationships.filter(
-        (relation) =>
-          relation.type === "PARENT" &&
-          relation.targetPersonId === person.id,
-      ),
-      partners: graph.relationships.filter(
-        (relation) =>
-          isCoupleRelationshipType(relation.type) &&
-          (relation.sourcePersonId === person.id ||
-            relation.targetPersonId === person.id),
-      ),
-      children: graph.relationships.filter(
-        (relation) =>
-          relation.type === "PARENT" &&
-          relation.sourcePersonId === person.id,
-      ),
-    };
-  }, [graph.relationships, person]);
-
-  const timelineEvents = useMemo(() => {
-    if (!person) {
-      return [];
-    }
-
-    const events: PersonalTimelineEvent[] = [];
-
-    if (person.birthDate) {
-      events.push({
-        id: `${person.id}-birth`,
-        date: person.birthDate,
-        type: "birth",
-      });
-    }
-
-    if (person.deathDate) {
-      events.push({
-        id: `${person.id}-death`,
-        date: person.deathDate,
-        type: "death",
-      });
-    }
-
-    for (const relationship of graph.relationships) {
-      if (
-        isCoupleRelationshipType(relationship.type) &&
-        (relationship.sourcePersonId === person.id ||
-          relationship.targetPersonId === person.id)
-      ) {
-        const relatedId =
-          relationship.sourcePersonId === person.id
-            ? relationship.targetPersonId
-            : relationship.sourcePersonId;
-
-        const relatedPerson = personById.get(relatedId);
-
-        if (relationship.unionDate) {
-          events.push({
-            id: `${relationship.id}-free-union`,
-            date: relationship.unionDate,
-            type: "freeUnion",
-            relatedPerson,
-          });
-        }
-
-        if (relationship.marriageDate) {
-          events.push({
-            id: `${relationship.id}-marriage`,
-            date: relationship.marriageDate,
-            type: "marriage",
-            relatedPerson,
-          });
-        }
-
-        if (relationship.divorceDate) {
-          events.push({
-            id: `${relationship.id}-divorce`,
-            date: relationship.divorceDate,
-            type: "divorce",
-            relatedPerson,
-          });
-        }
-      }
-
-      if (
-        relationship.type === "PARENT" &&
-        relationship.sourcePersonId === person.id
-      ) {
-        const child = personById.get(relationship.targetPersonId);
-
-        if (child?.birthDate) {
-          events.push({
-            id: `${relationship.id}-child-birth`,
-            date: child.birthDate,
-            type: "childBirth",
-            relatedPerson: child,
-          });
-        }
-      }
-    }
-
-    return events.sort(
-      (a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id),
-    );
-  }, [graph.relationships, person, personById]);
-
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(locale, {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "UTC",
-      }),
-    [locale],
-  );
-
-  const formatDate = (date: string) =>
-    dateFormatter.format(new Date(`${date}T00:00:00.000Z`));
+  const { person, personById, relations, timelineEvents, formatDate } =
+    usePersonDetailsModel(graph, personId, locale);
+  const relationshipActions = usePersonRelationshipActions({
+    treeId: selectedTreeId,
+    person,
+    reload,
+  });
+  const eventActions = usePersonEventActions({
+    treeId: selectedTreeId,
+    personId: person?.id,
+    reload,
+  });
 
   const name = person ? getPersonName(person) : t("personDetails.title");
   const canEdit =
     selectedTree?.role === "OWNER" || selectedTree?.role === "EDITOR";
-
-  async function handleCreateRelationship(data: RelationshipFormData) {
-    if (!selectedTreeId || !person) {
-      return;
-    }
-
-    try {
-      setActionError(undefined);
-      await createRelationship(
-        selectedTreeId,
-        buildRelationshipInput(person.id, data),
-      );
-      setGraph(await getTreeGraph(selectedTreeId));
-      closeRelationshipForm();
-    } catch (error) {
-      setActionError(getRelationshipErrorMessage(error));
-    }
-  }
-
-  async function handleUpdateRelationship(data: RelationshipFormData) {
-    if (!selectedTreeId || !person || !editingRelationship) {
-      return;
-    }
-
-    try {
-      setActionError(undefined);
-      await editRelationship(
-        selectedTreeId,
-        editingRelationship.id,
-        buildRelationshipInput(person.id, data),
-      );
-      setGraph(await getTreeGraph(selectedTreeId));
-      closeRelationshipForm();
-    } catch (error) {
-      setActionError(getRelationshipErrorMessage(error));
-    }
-  }
-
-  async function handleDeleteRelationship() {
-    if (!selectedTreeId || !relationshipToDelete) {
-      return;
-    }
-
-    try {
-      setActionError(undefined);
-      await deleteRelationship(selectedTreeId, relationshipToDelete.id);
-      setGraph(await getTreeGraph(selectedTreeId));
-      setRelationshipToDelete(undefined);
-    } catch (error) {
-      setRelationshipToDelete(undefined);
-      setActionError(getRelationshipErrorMessage(error));
-    }
-  }
-
-  function openCreateRelationshipForm() {
-    setActionError(undefined);
-    setEditingRelationship(undefined);
-    setIsRelationshipFormOpen(true);
-  }
-
-  function openEditRelationshipForm(relationship: Relationship) {
-    setActionError(undefined);
-    setEditingRelationship(relationship);
-    setIsRelationshipFormOpen(true);
-  }
-
-  function closeRelationshipForm() {
-    setActionError(undefined);
-    setEditingRelationship(undefined);
-    setIsRelationshipFormOpen(false);
-  }
 
   return (
     <>
@@ -328,14 +72,35 @@ export default function PersonDetailsPage() {
         title={name}
         actions={
           person && canEdit ? (
-            <Button onClick={openCreateRelationshipForm}>
-              <GitFork size={17} />
-              {t("relationship.add")}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                aria-label={t("event.add")}
+                title={t("event.add")}
+                onClick={() => {
+                  relationshipActions.closeForm();
+                  eventActions.openCreateForm();
+                }}
+              >
+                <CalendarPlus size={17} />
+                <span className="hidden sm:inline">{t("event.add")}</span>
+              </Button>
+              <Button
+                aria-label={t("relationship.add")}
+                title={t("relationship.add")}
+                onClick={() => {
+                  eventActions.closeForm();
+                  relationshipActions.openCreateForm();
+                }}
+              >
+                <GitFork size={17} />
+                <span className="hidden sm:inline">{t("relationship.add")}</span>
+              </Button>
+            </div>
           ) : undefined
         }
       >
-        <div className="mx-auto max-w-6xl space-y-8 p-6 lg:p-8">
+        <div className="mx-auto max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
           <Link
             to="/elements"
             className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground"
@@ -356,9 +121,15 @@ export default function PersonDetailsPage() {
           <p className="text-sm text-red-600">{errorMessage}</p>
         )}
 
-        {actionError && (
+        {relationshipActions.actionError && (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-            {actionError}
+            {relationshipActions.actionError}
+          </p>
+        )}
+
+        {eventActions.errorMessage && !eventActions.isFormOpen && (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            {eventActions.errorMessage}
           </p>
         )}
 
@@ -389,8 +160,8 @@ export default function PersonDetailsPage() {
                   personById={personById}
                   canEdit={canEdit}
                   formatDate={formatDate}
-                  onEdit={openEditRelationshipForm}
-                  onDelete={setRelationshipToDelete}
+                  onEdit={relationshipActions.openEditForm}
+                  onDelete={relationshipActions.requestDelete}
                 />
                 <RelationGroup
                   title={t("person.relationships.partners")}
@@ -400,8 +171,8 @@ export default function PersonDetailsPage() {
                   personById={personById}
                   canEdit={canEdit}
                   formatDate={formatDate}
-                  onEdit={openEditRelationshipForm}
-                  onDelete={setRelationshipToDelete}
+                  onEdit={relationshipActions.openEditForm}
+                  onDelete={relationshipActions.requestDelete}
                 />
                 <RelationGroup
                   title={t("person.relationships.children")}
@@ -411,8 +182,8 @@ export default function PersonDetailsPage() {
                   personById={personById}
                   canEdit={canEdit}
                   formatDate={formatDate}
-                  onEdit={openEditRelationshipForm}
-                  onDelete={setRelationshipToDelete}
+                  onEdit={relationshipActions.openEditForm}
+                  onDelete={relationshipActions.requestDelete}
                 />
               </div>
             </section>
@@ -433,6 +204,9 @@ export default function PersonDetailsPage() {
                 <VerticalTimeline
                   events={timelineEvents}
                   formatDate={formatDate}
+                  canEdit={canEdit}
+                  onEdit={eventActions.openEditForm}
+                  onDelete={eventActions.requestDelete}
                 />
               )}
             </section>
@@ -442,38 +216,61 @@ export default function PersonDetailsPage() {
       </AppLayout>
 
       <OverlayLayer>
-        {isRelationshipFormOpen && person && (
-          <RelationshipFormPanel
-            persons={graph.persons.filter((item) => item.id !== person.id)}
-            onSave={
-              editingRelationship
-                ? handleUpdateRelationship
-                : handleCreateRelationship
-            }
-            onClose={closeRelationshipForm}
-            placement="right"
-            mode={editingRelationship ? "edit" : "create"}
-            initialData={
-              editingRelationship
-                ? toRelationshipFormData(editingRelationship, person.id)
-                : undefined
-            }
-            errorMessage={actionError}
+        {eventActions.isFormOpen && person && (
+          <EventFormPanel
+            key={eventActions.editingEvent?.id ?? "new-event"}
+            personName={getPersonName(person)}
+            personId={person.id}
+            persons={graph.persons}
+            relationships={graph.relationships}
+            mode={eventActions.editingEvent ? "edit" : "create"}
+            initialData={eventActions.editingEvent}
+            onSave={eventActions.save}
+            onClose={eventActions.closeForm}
+            errorMessage={eventActions.errorMessage}
           />
         )}
 
-        {relationshipToDelete && person && (
+        {relationshipActions.isFormOpen && person && (
+          <RelationshipFormPanel
+            persons={graph.persons.filter((item) => item.id !== person.id)}
+            onSave={relationshipActions.save}
+            onClose={relationshipActions.closeForm}
+            placement="right"
+            mode={relationshipActions.editingRelationship ? "edit" : "create"}
+            initialData={
+              relationshipActions.editingRelationship
+                ? toRelationshipFormData(
+                    relationshipActions.editingRelationship,
+                    person.id,
+                  )
+                : undefined
+            }
+            errorMessage={relationshipActions.actionError}
+          />
+        )}
+
+        {relationshipActions.relationshipToDelete && person && (
           <ConfirmDialog
             title={t("confirm.deleteRelationshipTitle")}
             message={t("confirm.deleteRelationshipMessage", {
               name: getRelatedPersonName(
-                relationshipToDelete,
+                relationshipActions.relationshipToDelete,
                 person.id,
                 personById,
               ),
             })}
-            onCancel={() => setRelationshipToDelete(undefined)}
-            onConfirm={handleDeleteRelationship}
+            onCancel={relationshipActions.cancelDelete}
+            onConfirm={relationshipActions.confirmDelete}
+          />
+        )}
+
+        {eventActions.eventToDelete && (
+          <ConfirmDialog
+            title={t("event.deleteTitle")}
+            message={t("event.deleteMessage")}
+            onCancel={eventActions.cancelDelete}
+            onConfirm={eventActions.confirmDelete}
           />
         )}
       </OverlayLayer>
@@ -500,7 +297,7 @@ function PersonHeader({
         />
 
         <div className="mt-4">
-          <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
+          <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">{name}</h1>
           <p className="mt-1 text-sm text-muted">
             {t(`gender.${person.gender}`)}
           </p>
@@ -621,7 +418,7 @@ function RelationGroup({
                       onClick={() => onEdit(relationship)}
                       aria-label={t("actions.edit")}
                       title={t("actions.edit")}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground sm:h-8 sm:w-8"
                     >
                       <Pencil size={14} />
                     </button>
@@ -630,7 +427,7 @@ function RelationGroup({
                       onClick={() => onDelete(relationship)}
                       aria-label={t("actions.delete")}
                       title={t("actions.delete")}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600 sm:h-8 sm:w-8"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -663,12 +460,18 @@ function RelationGroup({
 function VerticalTimeline({
   events,
   formatDate,
+  canEdit,
+  onEdit,
+  onDelete,
 }: {
   events: PersonalTimelineEvent[];
   formatDate: (date: string) => string;
+  canEdit: boolean;
+  onEdit: (event: StoredEvent) => void;
+  onDelete: (event: StoredEvent) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface px-5 py-7 shadow-sm sm:px-8">
+    <div className="rounded-2xl border border-border bg-surface px-3 py-6 shadow-sm sm:px-8 sm:py-7">
       <div className="relative ml-4 border-l-2 border-border">
         {events.map((event, index) => (
           <TimelineEvent
@@ -676,6 +479,9 @@ function VerticalTimeline({
             event={event}
             formatDate={formatDate}
             isLast={index === events.length - 1}
+            canEdit={canEdit}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))}
       </div>
@@ -687,12 +493,21 @@ function TimelineEvent({
   event,
   formatDate,
   isLast,
+  canEdit,
+  onEdit,
+  onDelete,
 }: {
   event: PersonalTimelineEvent;
   formatDate: (date: string) => string;
   isLast: boolean;
+  canEdit: boolean;
+  onEdit: (event: StoredEvent) => void;
+  onDelete: (event: StoredEvent) => void;
 }) {
-  const styles = {
+  const styles = event.type === "customEvent" ? {
+    icon: CalendarDays,
+    color: "bg-primary text-white",
+  } : {
     birth: { icon: Baby, color: "bg-primary text-white" },
     freeUnion: { icon: HeartHandshake, color: "bg-cyan-500 text-white" },
     marriage: { icon: Heart, color: "bg-pink-500 text-white" },
@@ -713,9 +528,22 @@ function TimelineEvent({
       <article className="rounded-2xl bg-surface-muted p-4 sm:flex sm:items-center sm:justify-between sm:gap-6">
         <div className="min-w-0">
           <h3 className="font-semibold">
-            {t(`personDetails.timeline.events.${event.type}`)}
+            {event.type === "customEvent"
+              ? event.storedEvent.title ||
+                t(`event.types.${event.storedEvent.type}`)
+              : t(`personDetails.timeline.events.${event.type}`)}
           </h3>
-          {event.relatedPerson && (
+          {event.type === "customEvent" && (
+            <div className="mt-1 space-y-1 text-sm text-muted">
+              <p>{t(`event.types.${event.storedEvent.type}`)}</p>
+              {event.storedEvent.description && (
+                <p className="whitespace-pre-line">
+                  {event.storedEvent.description}
+                </p>
+              )}
+            </div>
+          )}
+          {event.type !== "customEvent" && event.relatedPerson && (
             <Link
               to={`/people/${event.relatedPerson.id}`}
               className="mt-1 inline-block truncate text-sm text-primary hover:underline"
@@ -724,9 +552,41 @@ function TimelineEvent({
             </Link>
           )}
         </div>
-        <time className="mt-2 block shrink-0 text-sm font-medium text-muted sm:mt-0">
-          {formatDate(event.date)}
-        </time>
+        <div className="mt-2 flex shrink-0 items-center gap-1 sm:mt-0">
+          <time
+            dateTime={event.date}
+            className="mr-1 text-sm font-medium text-muted"
+          >
+            {event.storedEvent?.place
+              ? t("event.dateAtPlace", {
+                  date: formatDate(event.date),
+                  place: event.storedEvent.place,
+                })
+              : formatDate(event.date)}
+          </time>
+          {canEdit && event.storedEvent && (
+            <>
+              <button
+                type="button"
+                onClick={() => onEdit(event.storedEvent!)}
+                aria-label={t("actions.edit")}
+                title={t("actions.edit")}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground sm:h-8 sm:w-8"
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(event.storedEvent!)}
+                aria-label={t("actions.delete")}
+                title={t("actions.delete")}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600 sm:h-8 sm:w-8"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          )}
+        </div>
       </article>
     </div>
   );

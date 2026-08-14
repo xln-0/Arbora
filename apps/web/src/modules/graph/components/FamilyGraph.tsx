@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Background, Controls, ReactFlow } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
@@ -21,8 +22,24 @@ const edgeTypes = {
   family: FamilyEdge,
 };
 
-export default function FamilyGraph() {
+interface FamilyGraphProps {
+  onPaneClick?: () => void;
+}
+
+export default function FamilyGraph({ onPaneClick }: FamilyGraphProps) {
   const openViewPerson = useUiStore((state) => state.openViewPerson);
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia("(max-width: 767px)").matches,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const handleChange = (event: MediaQueryListEvent) =>
+      setIsMobile(event.matches);
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   const {
     nodes,
@@ -34,7 +51,7 @@ export default function FamilyGraph() {
   } = useFamilyGraph();
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full min-h-[calc(100dvh-4rem)] w-full md:min-h-0">
       {canEdit && <GraphToolbar />}
 
       <ReactFlow
@@ -45,19 +62,22 @@ export default function FamilyGraph() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={handleNodeDragStop}
-        nodesDraggable={canEdit}
+        onPaneClick={onPaneClick}
+        nodesDraggable={canEdit && !isMobile}
         onNodeClick={(_, node) => {
           if (node.type === "person") {
             openViewPerson(node.id);
           }
         }}
         fitView
+        fitViewOptions={{ padding: isMobile ? 0.25 : 0.15 }}
+        minZoom={0.2}
         snapToGrid
         snapGrid={[SNAP_DISTANCE, SNAP_DISTANCE]}
       >
         <Background gap={24} size={1} />
 
-        <Controls />
+        <Controls className="mb-3 ml-1 sm:mb-0 sm:ml-0" />
       </ReactFlow>
     </div>
   );

@@ -16,11 +16,11 @@ export function mapPartnerRelationships(
 } {
   const nodes: GraphNode[] = [];
   const edges: RelationshipEdge[] = [];
+  const personById = new Map(persons.map((person) => [person.id, person]));
 
   for (const relationship of relationships) {
-    const source = persons.find((p) => p.id === relationship.sourcePersonId);
-
-    const target = persons.find((p) => p.id === relationship.targetPersonId);
+    const source = personById.get(relationship.sourcePersonId);
+    const target = personById.get(relationship.targetPersonId);
 
     if (!source || !target) {
       continue;

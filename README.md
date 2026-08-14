@@ -101,8 +101,8 @@ docker compose -f docker-compose.prod.yml up -d
 
 | Image | Stable tags | Beta tag |
 | --- | --- | --- |
-| `ghcr.io/xln-0/arbora-api` | `latest`, `1.0.0` | `beta` |
-| `ghcr.io/xln-0/arbora-web` | `latest`, `1.0.0` | `beta` |
+| `ghcr.io/xln-0/arbora-api` | `latest`, `1.1.0` | `beta` |
+| `ghcr.io/xln-0/arbora-web` | `latest`, `1.1.0` | `beta` |
 
 Stable images support `linux/amd64` and `linux/arm64`. Beta images target `linux/arm64` for 64-bit Raspberry Pi installations.
 
@@ -128,6 +128,9 @@ See [.env.example](.env.example) for a complete template. Never commit a populat
 | `npm run dev` | Start the Web and API development servers |
 | `npm run build` | Build the database, shared package, API and Web app |
 | `npm run test:api` | Run the API domain tests |
+| `npm run test:web` | Run the critical React form tests |
+| `npm run test:api:integration` | Run API integration and permission tests against the isolated `arbora_test` PostgreSQL database |
+| `bash scripts/smoke-docker.sh` | Build and smoke test the API and Web Docker images |
 | `npm run gen:database` | Generate the Prisma client |
 | `npm run migrate:deploy --workspace @arbora/database` | Apply database migrations |
 

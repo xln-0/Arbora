@@ -7,6 +7,26 @@ export const ERROR_CODES = {
     message: "User not found",
   },
 
+  INVALID_EMAIL: {
+    statusCode: 400,
+    message: "A valid email address is required",
+  },
+
+  PASSWORD_TOO_SHORT: {
+    statusCode: 400,
+    message: "Password must contain at least 12 characters",
+  },
+
+  INVALID_APP_ROLE: {
+    statusCode: 400,
+    message: "Invalid application role",
+  },
+
+  SETUP_ALREADY_COMPLETED: {
+    statusCode: 409,
+    message: "Application setup has already been completed",
+  },
+
   FORBIDDEN: {
     statusCode: 403,
     message: "Forbidden",
@@ -160,5 +180,53 @@ export const ERROR_CODES = {
   SELF_RELATIONSHIP: {
     statusCode: 400,
     message: "A person cannot be related to itself",
+  },
+
+  /**
+   * Events
+   */
+  EVENT_NOT_FOUND: {
+    statusCode: 404,
+    message: "Event not found",
+  },
+
+  INVALID_EVENT: {
+    statusCode: 400,
+    message: "Invalid event",
+  },
+
+  INVALID_EVENT_TYPE: {
+    statusCode: 400,
+    message: "Invalid event type",
+  },
+
+  INVALID_EVENT_DATE: {
+    statusCode: 400,
+    message: "Invalid event date",
+  },
+
+  INVALID_EVENT_PERSON: {
+    statusCode: 400,
+    message: "The event person must belong to the tree",
+  },
+
+  INVALID_EVENT_RELATIONSHIP: {
+    statusCode: 400,
+    message: "The event relationship is invalid",
+  },
+
+  EVENT_RELATIONSHIP_REQUIRED: {
+    statusCode: 400,
+    message: "A couple event requires a relationship",
+  },
+
+  EVENT_TEXT_TOO_LONG: {
+    statusCode: 400,
+    message: "Event text is too long",
+  },
+
+  DUPLICATE_EVENT: {
+    statusCode: 409,
+    message: "This event already exists for the person or relationship",
   },
 } as const;

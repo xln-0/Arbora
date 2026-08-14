@@ -22,20 +22,17 @@ interface AuthState {
    */
   user?: User;
 
-  /**
-   * Indique si la vérification de la session utilisateur
-   * au démarrage de l'application a été effectuée.
-   *
-   * Permet d'éviter d'afficher l'application avant de savoir
-   * si l'utilisateur possède une session valide.
-   */
-  initialized: boolean;
+  startupStatus: "loading" | "ready" | "unavailable";
+
+  setupRequired: boolean;
 
   /**
    * Définit l'utilisateur courant après une authentification
    * réussie ou une restauration de session.
    */
   setUser(user: User): void;
+
+  setSetupRequired(required: boolean): void;
 
   /**
    * Supprime l'utilisateur courant.
@@ -52,7 +49,11 @@ interface AuthState {
    * - les routes authentifiées ;
    * - la page de connexion.
    */
-  setInitialized(): void;
+  setReady(): void;
+
+  setInitializing(): void;
+
+  setBackendUnavailable(): void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -64,15 +65,18 @@ export const useAuthStore = create<AuthState>((set) => ({
    */
   user: undefined,
 
-  /**
-   * L'état d'authentification n'a pas encore été vérifié.
-   */
-  initialized: false,
+  startupStatus: "loading",
+
+  setupRequired: false,
 
   setUser(user) {
     set({
       user,
     });
+  },
+
+  setSetupRequired(setupRequired) {
+    set({ setupRequired });
   },
 
   clear() {
@@ -81,9 +85,21 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  setInitialized() {
+  setReady() {
     set({
-      initialized: true,
+      startupStatus: "ready",
+    });
+  },
+
+  setInitializing() {
+    set({
+      startupStatus: "loading",
+    });
+  },
+
+  setBackendUnavailable() {
+    set({
+      startupStatus: "unavailable",
     });
   },
 }));

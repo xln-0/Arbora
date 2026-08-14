@@ -1,27 +1,34 @@
 model User {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    email String @unique
+  email String @unique
 
-    passwordHash String?
+  passwordHash String?
 
-    createdAt DateTime @default(now())
+  role AppRole @default(USER)
 
-    trees FamilyTree[] @relation("OwnedTrees")
+  createdAt DateTime @default(now())
 
-    sessions Session[]
+  trees FamilyTree[] @relation("OwnedTrees")
 
-    memberships TreeMember[]
+  sessions Session[]
+
+  memberships TreeMember[]
+}
+
+enum AppRole {
+  ADMIN
+  USER
 }
 
 model Session {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    userId String
+  userId String
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    expiresAt DateTime
+  expiresAt DateTime
 
-    createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
 }

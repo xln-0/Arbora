@@ -1,31 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import { CalendarDays, Heart, HeartCrack, HeartHandshake } from "lucide-react";
 
-import {
-  isCoupleRelationshipType,
-  type Person,
-  type Relationship,
-} from "@arbora/shared";
-
-import { getTreeGraph } from "@/api/treesApi";
 import { AppLayout } from "@/components/layout";
 import { Avatar } from "@/components/ui";
 import { t } from "@/i18n";
+import { useTreeGraphQuery } from "@/modules/graph/hooks/useTreeGraphQuery";
+import {
+  buildTreeTimeline,
+  type CoupleTimelineEventType,
+  type TimelineEventType,
+  type TreeTimelineEvent as TimelineEvent,
+} from "@/modules/timeline/timelineUtils";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
-
-type CoupleTimelineEventType = "freeUnion" | "marriage" | "divorce";
-type TimelineEventType = "birth" | "death" | CoupleTimelineEventType;
-
-interface TimelineEvent {
-  id: string;
-  date: string;
-  person: Person;
-  relatedPerson?: Person;
-  type: TimelineEventType;
-}
 
 export default function TreeTimelinePage() {
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
@@ -34,129 +23,16 @@ export default function TreeTimelinePage() {
   );
   const locale = useSettingsStore((state) => state.locale);
 
-  const [persons, setPersons] = useState<Person[]>([]);
-  const [relationships, setRelationships] = useState<Relationship[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>();
+  const { graph, isLoading, errorMessage } = useTreeGraphQuery(
+    selectedTreeId,
+    t("timeline.loadError"),
+  );
+  const { persons, relationships } = graph;
 
-  useEffect(() => {
-    if (!selectedTreeId) {
-      setPersons([]);
-      setRelationships([]);
-      setErrorMessage(undefined);
-      return;
-    }
-
-    const treeId = selectedTreeId;
-    let cancelled = false;
-
-    async function loadTimeline() {
-      try {
-        setIsLoading(true);
-        setErrorMessage(undefined);
-
-        const graph = await getTreeGraph(treeId);
-
-        if (!cancelled) {
-          setPersons(graph.persons);
-          setRelationships(graph.relationships);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error instanceof Error ? error.message : t("timeline.loadError"),
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadTimeline();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTreeId]);
-
-  const events = useMemo(() => {
-    const timelineEvents: TimelineEvent[] = [];
-
-    for (const person of persons) {
-      if (person.birthDate) {
-        timelineEvents.push({
-          id: `${person.id}-birth`,
-          date: person.birthDate,
-          person,
-          type: "birth",
-        });
-      }
-
-      if (person.deathDate) {
-        timelineEvents.push({
-          id: `${person.id}-death`,
-          date: person.deathDate,
-          person,
-          type: "death",
-        });
-      }
-    }
-
-    const personById = new Map(persons.map((person) => [person.id, person]));
-    const knownCoupleEvents = new Set<string>();
-
-    for (const relationship of relationships) {
-      if (!isCoupleRelationshipType(relationship.type)) {
-        continue;
-      }
-
-      const person = personById.get(relationship.sourcePersonId);
-      const relatedPerson = personById.get(relationship.targetPersonId);
-
-      if (!person || !relatedPerson) {
-        continue;
-      }
-
-      const coupleKey = [person.id, relatedPerson.id].sort().join(":");
-
-      function addCoupleEvent(
-        type: CoupleTimelineEventType,
-        date: string | null | undefined,
-      ) {
-        if (!date) {
-          return;
-        }
-
-        const eventKey = `${coupleKey}:${type}:${date}`;
-
-        if (knownCoupleEvents.has(eventKey)) {
-          return;
-        }
-
-        knownCoupleEvents.add(eventKey);
-        timelineEvents.push({
-          id: `${relationship.id}-${type}`,
-          date,
-          person,
-          relatedPerson,
-          type,
-        });
-      }
-
-      addCoupleEvent("freeUnion", relationship.unionDate);
-      addCoupleEvent("marriage", relationship.marriageDate);
-      addCoupleEvent("divorce", relationship.divorceDate);
-    }
-
-    return timelineEvents.sort(
-      (a, b) =>
-        a.date.localeCompare(b.date) ||
-        a.type.localeCompare(b.type) ||
-        a.id.localeCompare(b.id),
-    );
-  }, [persons, relationships]);
+  const events = useMemo(
+    () => buildTreeTimeline(persons, relationships),
+    [persons, relationships],
+  );
 
   const dateFormatter = useMemo(
     () =>
@@ -175,7 +51,7 @@ export default function TreeTimelinePage() {
 
   return (
     <AppLayout title={title}>
-      <div className="mx-auto min-w-0 max-w-6xl space-y-8 p-6 lg:p-8">
+      <div className="mx-auto min-w-0 max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         {!selectedTreeId && (
           <EmptyState message={t("timeline.noTree")} />
         )}
@@ -201,7 +77,7 @@ export default function TreeTimelinePage() {
               <EmptyState message={t("timeline.empty")} />
             ) : (
               <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-                <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5 sm:py-4">
                   <p className="text-sm text-muted">
                     {t("timeline.eventCount", {
                       count: String(events.length),
@@ -213,7 +89,7 @@ export default function TreeTimelinePage() {
                 </div>
 
                 <div className="max-w-full overflow-x-auto overscroll-x-contain pb-2">
-                  <div className="relative flex h-[28rem] min-w-max items-stretch gap-8 px-10 py-8">
+                  <div className="relative flex h-[25rem] min-w-max items-stretch gap-5 px-5 py-6 sm:h-[28rem] sm:gap-8 sm:px-10 sm:py-8">
                     <div className="absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
 
                     {events.map((event, index) => (

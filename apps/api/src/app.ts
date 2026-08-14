@@ -13,11 +13,13 @@ import personsRoutes from "./routes/persons.js";
 import relationshipsRoutes from "./routes/relationships.js";
 import authRoutes from "./routes/auth.js";
 import treeMembersRoutes from "./routes/treeMembers.js";
+import adminRoutes from "./routes/admin.js";
+import eventsRoutes from "./routes/events.js";
 import { errorHandler } from "./errors/errorHandler.js";
 
-export function buildApp() {
+export function buildApp({ logger = true }: { logger?: boolean } = {}) {
   const app = Fastify({
-    logger: true,
+    logger,
   });
 
   const allowedOrigins = process.env.CORS_ORIGINS?.split(",") ?? [];
@@ -57,6 +59,8 @@ export function buildApp() {
 
   app.register(authRoutes);
 
+  app.register(adminRoutes);
+
   app.register(treesRoutes, {
     prefix: "/trees",
   });
@@ -66,6 +70,8 @@ export function buildApp() {
   app.register(relationshipsRoutes);
 
   app.register(treeMembersRoutes);
+
+  app.register(eventsRoutes);
 
   app.setErrorHandler(errorHandler);
 

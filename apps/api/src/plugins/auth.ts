@@ -41,6 +41,17 @@ const authPlugin: FastifyPluginAsync = async (app) => {
       request.user = session.user;
     },
   );
+
+  app.decorate(
+    "requireAdmin",
+    async function (request: FastifyRequest, reply: FastifyReply) {
+      if (request.user?.role !== "ADMIN") {
+        return reply.code(403).send({
+          message: "Administrator access required",
+        });
+      }
+    },
+  );
 };
 
 export default fp(authPlugin);

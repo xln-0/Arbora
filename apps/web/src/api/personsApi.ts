@@ -1,17 +1,18 @@
 import { apiClient } from "./client";
+import { invalidateTreeGraph } from "./treesApi";
 import type {
   CreatePersonInput,
   Person,
   UpdatePersonInput,
 } from "@arbora/shared";
 
-export function updatePersonPosition(
+export async function updatePersonPosition(
   treeId: string,
   personId: string,
   x: number,
   y: number,
 ) {
-  return apiClient(`/trees/${treeId}/persons/${personId}/position`, {
+  const result = await apiClient(`/trees/${treeId}/persons/${personId}/position`, {
     method: "PATCH",
 
     body: JSON.stringify({
@@ -19,32 +20,44 @@ export function updatePersonPosition(
       y,
     }),
   });
+
+  invalidateTreeGraph(treeId);
+  return result;
 }
 
-export function createPerson(
+export async function createPerson(
   treeId: string,
   data: CreatePersonInput,
 ) {
-  return apiClient<Person>(`/trees/${treeId}/persons`, {
+  const person = await apiClient<Person>(`/trees/${treeId}/persons`, {
     method: "POST",
 
     body: JSON.stringify(data),
   });
+
+  invalidateTreeGraph(treeId);
+  return person;
 }
 
-export function editPerson(
+export async function editPerson(
   treeId: string,
   personId: string,
   data: UpdatePersonInput,
 ) {
-  return apiClient<Person>(`/trees/${treeId}/persons/${personId}`, {
+  const person = await apiClient<Person>(`/trees/${treeId}/persons/${personId}`, {
     method: "PATCH",
     body: JSON.stringify(data),
   });
+
+  invalidateTreeGraph(treeId);
+  return person;
 }
 
-export function deletePerson(treeId: string, personId: string) {
-  return apiClient(`/trees/${treeId}/persons/${personId}`, {
+export async function deletePerson(treeId: string, personId: string) {
+  const result = await apiClient(`/trees/${treeId}/persons/${personId}`, {
     method: "DELETE",
   });
+
+  invalidateTreeGraph(treeId);
+  return result;
 }

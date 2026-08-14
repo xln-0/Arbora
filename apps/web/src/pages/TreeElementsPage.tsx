@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
@@ -18,23 +18,13 @@ import {
   type Relationship,
 } from "@arbora/shared";
 
-import { getTreeGraph } from "@/api/treesApi";
 import { AppLayout } from "@/components/layout";
 import { Avatar } from "@/components/ui";
 import { t } from "@/i18n";
 import { getRelationshipCurrentDate } from "@/modules/relationship/relationshipUtils";
+import { useTreeGraphQuery } from "@/modules/graph/hooks/useTreeGraphQuery";
 import { useTreeStore } from "@/stores/treeStore";
 import { formatDate, formatPersonLifespan } from "@/utils/dateUtils";
-
-interface TreeElements {
-  persons: Person[];
-  relationships: Relationship[];
-}
-
-const emptyElements: TreeElements = {
-  persons: [],
-  relationships: [],
-};
 
 export default function TreeElementsPage() {
   const selectedTreeId = useTreeStore((state) => state.selectedTreeId);
@@ -42,50 +32,10 @@ export default function TreeElementsPage() {
     state.trees.find((tree) => tree.id === state.selectedTreeId),
   );
 
-  const [elements, setElements] = useState<TreeElements>(emptyElements);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>();
-
-  useEffect(() => {
-    if (!selectedTreeId) {
-      setElements(emptyElements);
-      setErrorMessage(undefined);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadElements() {
-      try {
-        setIsLoading(true);
-        setErrorMessage(undefined);
-
-        const graph = await getTreeGraph(selectedTreeId!);
-
-        if (!cancelled) {
-          setElements(graph);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : t("elements.loadError"),
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    loadElements();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedTreeId]);
+  const { graph: elements, isLoading, errorMessage } = useTreeGraphQuery(
+    selectedTreeId,
+    t("elements.loadError"),
+  );
 
   const persons = useMemo(
     () => [...elements.persons].sort((a, b) => a.id.localeCompare(b.id)),
@@ -119,7 +69,7 @@ export default function TreeElementsPage() {
 
   return (
     <AppLayout title={title}>
-      <div className="mx-auto max-w-6xl space-y-8 p-6 lg:p-8">
+      <div className="mx-auto max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         {!selectedTreeId && (
           <p className="text-muted">{t("elements.noTree")}</p>
         )}

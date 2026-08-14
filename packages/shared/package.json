@@ -1,6 +1,6 @@
 {
   "name": "@arbora/shared",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "",
   "main": "./dist/index.js",
@@ -12,6 +12,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^7.0.2"
+    "typescript": "~5.9.3"
   }
 }

@@ -4,6 +4,7 @@ import type { CreateTreeInput, UpdateTreeInput } from "@arbora/shared";
 import { createAppError } from "../errors/createAppError.js";
 import { mapPerson } from "../mappers/personMapper.js";
 import { mapRelationship } from "../mappers/relationshipMapper.js";
+import { mapEvent } from "../mappers/eventMapper.js";
 
 const TREE_NAME_MAX_LENGTH = 120;
 
@@ -107,13 +108,22 @@ export async function getTree(
   treeId: string,
   userId: string,
 ) {
-  const tree = await prisma.familyTree.findUnique({
+  const tree = await prisma.familyTree.findFirst({
     where: {
       id: treeId,
+      OR: [
+        { ownerId: userId },
+        {
+          members: {
+            some: { userId },
+          },
+        },
+      ],
     },
     include: {
-      persons: true,
-      relationships: true,
+      persons: { include: { events: true } },
+      relationships: { include: { events: true } },
+      events: true,
       members: {
         where: { userId },
         select: { role: true },
@@ -122,7 +132,7 @@ export async function getTree(
   });
 
   if (!tree) {
-    throw createAppError("TREE_NOT_FOUND");
+    throw createAppError("FORBIDDEN");
   }
 
   const role = tree.ownerId === userId ? "OWNER" : tree.members[0]?.role;
@@ -135,6 +145,7 @@ export async function getTree(
     ...mapTreeSummary(tree, role),
     persons: tree.persons.map(mapPerson),
     relationships: tree.relationships.map(mapRelationship),
+    events: tree.events.map(mapEvent),
   };
 }
 

@@ -14,7 +14,7 @@ export default function GraphToolbar() {
   return (
     <aside
       aria-label={t("graphToolbar.label")}
-      className="absolute left-4 top-4 z-20"
+      className="absolute left-3 top-3 z-20 sm:left-4 sm:top-4"
     >
       <div className="flex flex-col items-center gap-1 rounded-2xl border border-border/80 bg-surface/90 p-1.5 shadow-[0_14px_38px_rgba(15,23,42,0.16)] backdrop-blur-xl">
         <ToolbarAction

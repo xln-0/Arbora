@@ -31,11 +31,22 @@ export async function createRelationship(
 
   await validateRelationship(prisma, treeId, normalized);
 
-  const relationship = await prisma.relationship.create({
-    data: {
-      treeId,
-      ...normalized,
-    },
+  const relationship = await prisma.$transaction(async (tx) => {
+    const created = await tx.relationship.create({
+      data: {
+        treeId,
+        sourcePersonId: normalized.sourcePersonId,
+        targetPersonId: normalized.targetPersonId,
+        type: normalized.type,
+      },
+    });
+
+    await syncRelationshipEvents(tx, treeId, created, normalized);
+
+    return tx.relationship.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { events: true },
+    });
   });
 
   return mapRelationship(relationship);
@@ -62,17 +73,27 @@ export async function updateRelationship(
 
   await validateRelationship(prisma, treeId, normalized, relationshipId);
 
-  const relationship = await prisma.relationship.update({
-    where: {
-      id: relationshipId,
-    },
-    data: {
+  const relationship = await prisma.$transaction(async (tx) => {
+    const updated = await tx.relationship.update({
+      where: { id: relationshipId },
+      data: {
+        sourcePersonId: normalized.sourcePersonId,
+        targetPersonId: normalized.targetPersonId,
+        type: normalized.type,
+      },
+    });
+
+    await syncRelationshipEvents(tx, treeId, updated, {
       ...normalized,
-      // Omitted milestones are explicitly cleared during a full replacement.
       unionDate: normalized.unionDate ?? null,
       marriageDate: normalized.marriageDate ?? null,
       divorceDate: normalized.divorceDate ?? null,
-    },
+    });
+
+    return tx.relationship.findUniqueOrThrow({
+      where: { id: relationshipId },
+      include: { events: true },
+    });
   });
 
   return mapRelationship(relationship);
@@ -89,6 +110,7 @@ export async function getRelationshipsByTree(
     orderBy: {
       createdAt: "asc",
     },
+    include: { events: true },
   });
 
   return relationships.map(mapRelationship);
@@ -175,21 +197,33 @@ async function validateRelationship(
   data: CanonicalRelationshipInput,
   excludedRelationshipId?: string,
 ) {
-  const [persons, relationships] = await Promise.all([
-    prisma.person.findMany({
+  const relationshipPairFilters = [
+    {
+      sourcePersonId: data.sourcePersonId,
+      targetPersonId: data.targetPersonId,
+    },
+    {
+      sourcePersonId: data.targetPersonId,
+      targetPersonId: data.sourcePersonId,
+    },
+  ];
+
+  const [personCount, relationships] = await Promise.all([
+    prisma.person.count({
       where: {
         id: {
           in: [data.sourcePersonId, data.targetPersonId],
         },
         treeId,
       },
-      select: {
-        id: true,
-      },
     }),
     prisma.relationship.findMany({
       where: {
         treeId,
+        OR:
+          data.type === "PARENT"
+            ? [{ type: "PARENT" }, ...relationshipPairFilters]
+            : relationshipPairFilters,
         ...(excludedRelationshipId && {
           id: {
             not: excludedRelationshipId,
@@ -205,7 +239,7 @@ async function validateRelationship(
     }),
   ]);
 
-  if (persons.length !== 2) {
+  if (personCount !== 2) {
     throw createAppError("INVALID_RELATIONSHIP");
   }
 
@@ -279,4 +313,53 @@ function createsParentCycle(
   }
 
   return false;
+}
+
+async function syncRelationshipEvents(
+  prisma: Pick<PrismaClient, "event">,
+  treeId: string,
+  relationship: {
+    id: string;
+    sourcePersonId: string;
+  },
+  dates: {
+    unionDate?: Date | null;
+    marriageDate?: Date | null;
+    divorceDate?: Date | null;
+  },
+) {
+  for (const [type, date] of [
+    ["FREE_UNION", dates.unionDate],
+    ["MARRIAGE", dates.marriageDate],
+    ["DIVORCE", dates.divorceDate],
+  ] as const) {
+    if (date === undefined) continue;
+
+    const existing = await prisma.event.findFirst({
+      where: { treeId, relationshipId: relationship.id, type },
+      select: { id: true },
+    });
+
+    if (!date) {
+      if (existing) await prisma.event.delete({ where: { id: existing.id } });
+      continue;
+    }
+
+    if (existing) {
+      await prisma.event.update({
+        where: { id: existing.id },
+        data: { date, personId: relationship.sourcePersonId },
+      });
+    } else {
+      await prisma.event.create({
+        data: {
+          treeId,
+          personId: relationship.sourcePersonId,
+          relationshipId: relationship.id,
+          type,
+          date,
+        },
+      });
+    }
+  }
 }

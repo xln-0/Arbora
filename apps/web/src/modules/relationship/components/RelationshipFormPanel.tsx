@@ -96,13 +96,14 @@ export default function RelationshipFormPanel({
     <form
       onSubmit={handleSubmit}
       className={`
-        fixed top-20 z-50 flex max-h-[calc(100vh-6.5rem)]
-        w-[min(24rem,calc(100vw-3rem))] flex-col overflow-hidden
+        fixed inset-x-2 bottom-2 z-50 flex max-h-[calc(100dvh-1rem)]
+        flex-col overflow-hidden sm:inset-x-auto sm:bottom-auto sm:top-20
+        sm:max-h-[calc(100vh-6.5rem)] sm:w-[min(24rem,calc(100vw-3rem))]
         rounded-3xl border border-border bg-surface shadow-2xl
-        ${placement === "besidePerson" ? "right-6 lg:right-[29rem]" : "right-6"}
+        ${placement === "besidePerson" ? "sm:right-6 lg:right-[29rem]" : "sm:right-6"}
       `}
     >
-      <header className="relative shrink-0 border-b border-border bg-gradient-to-br from-secondary/50 via-surface to-primary/10 px-6 pb-5 pt-6">
+      <header className="relative shrink-0 border-b border-border bg-gradient-to-br from-secondary/50 via-surface to-primary/10 px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
         <button
           type="button"
           onClick={onClose}
@@ -131,7 +132,7 @@ export default function RelationshipFormPanel({
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
         {errorMessage && (
           <p
             role="alert"
@@ -244,7 +245,7 @@ export default function RelationshipFormPanel({
         )}
       </div>
 
-      <footer className="flex shrink-0 items-center justify-end gap-3 border-t border-border bg-surface px-6 py-4">
+      <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-surface px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
         <Button type="button" variant="ghost" onClick={onClose}>
           {t("actions.cancel")}
         </Button>

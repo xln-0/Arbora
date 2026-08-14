@@ -7,14 +7,18 @@ export default function GuestRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, initialized } = useAuthStore();
+  const { user, startupStatus, setupRequired } = useAuthStore();
 
-  if (!initialized) {
+  if (startupStatus !== "ready") {
     return null;
   }
 
   if (user) {
     return <Navigate to="/" replace />;
+  }
+
+  if (setupRequired) {
+    return <Navigate to="/setup" replace />;
   }
 
   return children;

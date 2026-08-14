@@ -15,6 +15,87 @@ export default {
     settings: "Settings",
     treeSettings: "Tree Settings",
     account: "My account",
+    administration: "Administration",
+  },
+
+  auth: {
+    welcomeBack: "Welcome back",
+    heroTitle: "Reconnect with your family story.",
+    heroDescription:
+      "Explore your trees, enrich connections across generations, and preserve your family's memories.",
+    privateAccess: "Access is limited to accounts created by an administrator.",
+    loginTitle: "Sign in",
+    loginDescription: "Access your Arbora space.",
+    password: "Password",
+    login: "Sign in",
+    loggingIn: "Signing in…",
+    invalidCredentials: "Incorrect email address or password.",
+    loginError: "Unable to sign in right now.",
+    noSignup: "Need access? Contact your administrator.",
+  },
+
+  startup: {
+    retry: "Retry now",
+    automaticRetry: "Another attempt will be made automatically.",
+    server: {
+      loadingTitle: "Starting Arbora…",
+      loadingDescription:
+        "Connecting to the server. This may take a moment after the containers start.",
+      unavailableTitle: "The server is not available yet",
+      unavailableDescription:
+        "The interface remains on hold to protect your session and data.",
+    },
+    trees: {
+      loadingTitle: "Loading your trees…",
+      loadingDescription:
+        "We are preparing your family space before displaying it.",
+      unavailableTitle: "Unable to load your trees",
+      unavailableDescription:
+        "The server responded, but the data is not accessible yet.",
+    },
+  },
+
+  setup: {
+    firstLaunch: "First-time setup",
+    heroTitle: "Your family space starts here.",
+    heroDescription:
+      "Create the administrator account that will manage Arbora and invite other users.",
+    localSecurity: "Public registration is disabled.",
+    formTitle: "Create the administrator",
+    formDescription:
+      "This first account will have application administration privileges.",
+    confirmPassword: "Confirm password",
+    passwordHint: "At least 12 characters.",
+    passwordMismatch: "Passwords do not match.",
+    invalidEmail: "Enter a valid email address.",
+    genericError: "Unable to initialize Arbora.",
+    createAdmin: "Initialize Arbora",
+    creating: "Initializing…",
+  },
+
+  administration: {
+    title: "Application administration",
+    description:
+      "Create the accounts allowed to sign in and assign their global permissions.",
+    users: "Users",
+    userCount: "{{count}} authorized accounts",
+    loading: "Loading users…",
+    loadError: "Unable to load users.",
+    createUser: "New account",
+    createDescription:
+      "Then share these credentials directly with the relevant person.",
+    email: "Email address",
+    password: "Initial password",
+    passwordHint: "At least 12 characters.",
+    role: "Application role",
+    roles: {
+      ADMIN: "Administrator",
+      USER: "User",
+    },
+    create: "Create account",
+    creating: "Creating…",
+    createError: "Unable to create this account.",
+    emailExists: "An account already uses this email address.",
   },
 
   account: {
@@ -53,6 +134,8 @@ export default {
   },
 
   sidebar: {
+    open: "Open navigation",
+    close: "Close navigation",
     collapse: "Collapse sidebar",
     expand: "Expand sidebar",
   },
@@ -86,6 +169,46 @@ export default {
       marriage: "Marriage",
       divorce: "Divorce",
       death: "Death",
+    },
+  },
+
+  event: {
+    add: "Add an event",
+    edit: "Edit event",
+    description: "Add a meaningful moment to this person's life.",
+    editDescription: "Update this moment in this person's life.",
+    deleteTitle: "Delete event",
+    deleteMessage: "Are you sure you want to delete this event?",
+    dateAtPlace: "{{date}} in {{place}}",
+    person: "Person concerned",
+    titlePlaceholder: "E.g. Moved to London",
+    selectRelatedPerson: "Select the second person",
+    noCoupleRelationship:
+      "Create a couple relationship with this person first.",
+    fields: {
+      type: "Event type",
+      title: "Title (optional)",
+      date: "Date",
+      place: "Place",
+      description: "Description",
+      relatedPerson: "Second person",
+    },
+    types: {
+      BIRTH: "Birth",
+      BAPTISM: "Baptism",
+      EDUCATION: "Education",
+      OCCUPATION: "Occupation",
+      RESIDENCE: "Residence",
+      FREE_UNION: "Domestic partnership",
+      MARRIAGE: "Marriage",
+      DIVORCE: "Divorce",
+      DEATH: "Death",
+      BURIAL: "Burial",
+      OTHER: "Other",
+    },
+    errors: {
+      generic: "Unable to save this event.",
+      delete: "Unable to delete this event.",
     },
   },
 
