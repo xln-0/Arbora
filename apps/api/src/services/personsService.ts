@@ -5,7 +5,11 @@ import {
   type UpdatePersonInput,
 } from "@arbora/shared";
 import { createAppError } from "../errors/createAppError.js";
-import { mapPerson, mapPersonInput } from "../mappers/personMapper.js";
+import {
+  mapPerson,
+  mapPersonInput,
+  mapPersonLifeDates,
+} from "../mappers/personMapper.js";
 
 const PERSON_NAME_MAX_LENGTH = 100;
 
@@ -79,8 +83,9 @@ export async function createPerson(
   }
 
   const personData = mapPersonInput(normalizedData);
+  const lifeDates = mapPersonLifeDates(normalizedData);
 
-  validatePersonDates(personData.birthDate, personData.deathDate);
+  validatePersonDates(lifeDates.birthDate, lifeDates.deathDate);
 
   const tree = await prisma.familyTree.findUnique({
     where: {
@@ -96,12 +101,21 @@ export async function createPerson(
     throw createAppError("TREE_NOT_FOUND");
   }
 
-  const person = await prisma.person.create({
-    data: {
-      treeId,
-      ...personData,
-      firstName: normalizedData.firstName!,
-    },
+  const person = await prisma.$transaction(async (tx) => {
+    const created = await tx.person.create({
+      data: {
+        treeId,
+        ...personData,
+        firstName: normalizedData.firstName!,
+      },
+    });
+
+    await syncLifeEvents(tx, treeId, created.id, lifeDates);
+
+    return tx.person.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { events: true },
+    });
   });
 
   return mapPerson(person);
@@ -119,6 +133,7 @@ export async function getPersonsByTree(prisma: PrismaClient, treeId: string) {
     orderBy: {
       createdAt: "asc",
     },
+    include: { events: true },
   });
 
   return persons.map(mapPerson);
@@ -137,6 +152,7 @@ export async function getPerson(
       id,
       treeId,
     },
+    include: { events: true },
   });
 
   if (!person) {
@@ -169,8 +185,13 @@ export async function updatePerson(
   }
 
   const updateData = mapPersonInput(normalizedData);
+  const lifeDates = mapPersonLifeDates(normalizedData);
 
-  if (Object.keys(updateData).length === 0) {
+  if (
+    Object.keys(updateData).length === 0 &&
+    lifeDates.birthDate === undefined &&
+    lifeDates.deathDate === undefined
+  ) {
     throw createAppError("EMPTY_UPDATE");
   }
 
@@ -179,6 +200,7 @@ export async function updatePerson(
       id,
       treeId,
     },
+    include: { events: true },
   });
 
   if (!person) {
@@ -186,22 +208,64 @@ export async function updatePerson(
   }
 
   validatePersonDates(
-    updateData.birthDate !== undefined
-      ? updateData.birthDate
-      : person.birthDate,
-    updateData.deathDate !== undefined
-      ? updateData.deathDate
-      : person.deathDate,
+    lifeDates.birthDate !== undefined
+      ? lifeDates.birthDate
+      : person.events.find((event) => event.type === "BIRTH")?.date,
+    lifeDates.deathDate !== undefined
+      ? lifeDates.deathDate
+      : person.events.find((event) => event.type === "DEATH")?.date,
   );
 
-  const updatedPerson = await prisma.person.update({
-    where: {
-      id,
-    },
-    data: updateData,
+  const updatedPerson = await prisma.$transaction(async (tx) => {
+    await tx.person.update({
+      where: { id },
+      data: updateData,
+    });
+
+    await syncLifeEvents(tx, treeId, id, lifeDates);
+
+    return tx.person.findUniqueOrThrow({
+      where: { id },
+      include: { events: true },
+    });
   });
 
   return mapPerson(updatedPerson);
+}
+
+async function syncLifeEvents(
+  prisma: Pick<PrismaClient, "event">,
+  treeId: string,
+  personId: string,
+  dates: { birthDate?: Date | null; deathDate?: Date | null },
+) {
+  for (const [type, date] of [
+    ["BIRTH", dates.birthDate],
+    ["DEATH", dates.deathDate],
+  ] as const) {
+    if (date === undefined) continue;
+
+    const existing = await prisma.event.findFirst({
+      where: { treeId, personId, type, relationshipId: null },
+      select: { id: true },
+    });
+
+    if (!date) {
+      if (existing) await prisma.event.delete({ where: { id: existing.id } });
+      continue;
+    }
+
+    if (existing) {
+      await prisma.event.update({
+        where: { id: existing.id },
+        data: { date },
+      });
+    } else {
+      await prisma.event.create({
+        data: { treeId, personId, type, date },
+      });
+    }
+  }
 }
 
 /**

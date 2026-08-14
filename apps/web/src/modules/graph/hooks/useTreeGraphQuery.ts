@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { getTreeGraph, type TreeGraph } from "@/api/treesApi";
 
-const EMPTY_GRAPH: TreeGraph = { persons: [], relationships: [] };
+const EMPTY_GRAPH: TreeGraph = { persons: [], relationships: [], events: [] };
 
 export function useTreeGraphQuery(
   treeId: string | undefined,

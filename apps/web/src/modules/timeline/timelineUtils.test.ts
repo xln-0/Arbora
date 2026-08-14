@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { Person, Relationship } from "@arbora/shared";
+import type { Event, Person, Relationship } from "@arbora/shared";
 
 import { buildPersonalTimeline, buildTreeTimeline } from "./timelineUtils";
 
@@ -60,6 +60,37 @@ const relationships: Relationship[] = [
   },
 ];
 
+const customEvent: Event = {
+  id: "move",
+  treeId: "tree",
+  type: "RESIDENCE",
+  title: "Moved to Lyon",
+  date: "2001-03-12",
+  place: "Lyon",
+  description: null,
+  personId: "parent",
+  relationshipId: null,
+  createdAt: "2026-08-13T00:00:00.000Z",
+  updatedAt: "2026-08-13T00:00:00.000Z",
+};
+
+const birthEvent: Event = {
+  ...customEvent,
+  id: "birth",
+  type: "BIRTH",
+  title: null,
+  date: "1980-01-01",
+};
+
+const marriageEvent: Event = {
+  ...customEvent,
+  id: "marriage",
+  type: "MARRIAGE",
+  title: null,
+  date: "2008-06-14",
+  relationshipId: "couple",
+};
+
 describe("timeline builders", () => {
   it("builds and orders the full tree timeline", () => {
     expect(buildTreeTimeline(people, relationships).map(({ type }) => type)).toEqual([
@@ -77,5 +108,41 @@ describe("timeline builders", () => {
         ({ type }) => type,
       ),
     ).toEqual(["birth", "freeUnion", "marriage", "childBirth"]);
+  });
+
+  it("includes stored events attached to the person", () => {
+    const timeline = buildPersonalTimeline(
+      people[0],
+      people,
+      relationships,
+      [customEvent],
+    );
+
+    expect(timeline.map(({ type }) => type)).toEqual([
+      "birth",
+      "customEvent",
+      "freeUnion",
+      "marriage",
+      "childBirth",
+    ]);
+  });
+
+  it("links life and couple milestones to their stored events", () => {
+    const timeline = buildPersonalTimeline(
+      people[0],
+      people,
+      relationships,
+      [birthEvent, marriageEvent],
+    );
+
+    expect(timeline.find(({ type }) => type === "birth")?.storedEvent).toBe(
+      birthEvent,
+    );
+    expect(timeline.find(({ type }) => type === "marriage")?.storedEvent).toBe(
+      marriageEvent,
+    );
+    expect(
+      timeline.find(({ type }) => type === "childBirth")?.storedEvent,
+    ).toBeUndefined();
   });
 });

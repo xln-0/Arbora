@@ -4,15 +4,32 @@ import test from "node:test";
 import { createRelationship } from "../../dist/services/relationshipsService.js";
 
 function createPrisma(existingRelationships = []) {
-  return {
+  const events = [];
+  let createdRelationship;
+  const prisma = {
     person: {
       count: async () => 2,
     },
     relationship: {
       findMany: async () => existingRelationships,
-      create: async ({ data }) => ({ id: "relationship-id", ...data }),
+      create: async ({ data }) => {
+        createdRelationship = { id: "relationship-id", ...data };
+        return createdRelationship;
+      },
+      findUniqueOrThrow: async () => ({ ...createdRelationship, events }),
     },
+    event: {
+      findFirst: async () => null,
+      create: async ({ data }) => {
+        const event = { id: `event-${events.length}`, ...data };
+        events.push(event);
+        return event;
+      },
+    },
+    $transaction: async (callback) => callback(prisma),
   };
+
+  return prisma;
 }
 
 test("preserves every known couple milestone", async () => {

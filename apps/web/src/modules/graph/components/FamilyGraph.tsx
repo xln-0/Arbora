@@ -21,7 +21,11 @@ const edgeTypes = {
   family: FamilyEdge,
 };
 
-export default function FamilyGraph() {
+interface FamilyGraphProps {
+  onPaneClick?: () => void;
+}
+
+export default function FamilyGraph({ onPaneClick }: FamilyGraphProps) {
   const openViewPerson = useUiStore((state) => state.openViewPerson);
 
   const {
@@ -45,6 +49,7 @@ export default function FamilyGraph() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeDragStop={handleNodeDragStop}
+        onPaneClick={onPaneClick}
         nodesDraggable={canEdit}
         onNodeClick={(_, node) => {
           if (node.type === "person") {

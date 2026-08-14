@@ -1,36 +1,32 @@
 model Relationship {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    treeId String
+  treeId String
 
-    tree FamilyTree @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  tree FamilyTree @relation(fields: [treeId], references: [id], onDelete: Cascade)
 
-    type RelationshipType
+  type RelationshipType
 
-    unionDate DateTime? @db.Date
+  sourcePersonId String
 
-    marriageDate DateTime? @db.Date
+  sourcePerson Person @relation("sourceRelationships", fields: [sourcePersonId], references: [id], onDelete: Cascade)
 
-    divorceDate DateTime? @db.Date
+  targetPersonId String
 
-    sourcePersonId String
+  targetPerson Person @relation("targetRelationships", fields: [targetPersonId], references: [id], onDelete: Cascade)
 
-    sourcePerson Person @relation("sourceRelationships", fields: [sourcePersonId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 
-    targetPersonId String
+  events Event[]
 
-    targetPerson Person @relation("targetRelationships", fields: [targetPersonId], references: [id], onDelete: Cascade)
-
-    createdAt DateTime @default(now())
-
-    @@index([treeId])
-    @@index([sourcePersonId])
-    @@index([targetPersonId])
+  @@index([treeId])
+  @@index([sourcePersonId])
+  @@index([targetPersonId])
 }
 
 enum RelationshipType {
-    PARENT
-    FREE_UNION
-    MARRIAGE
-    DIVORCE
+  PARENT
+  FREE_UNION
+  MARRIAGE
+  DIVORCE
 }

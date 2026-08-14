@@ -134,6 +134,11 @@ export default function DashboardPage() {
     closeRelationshipForm();
   }
 
+  function handleGraphPaneClick() {
+    closePerson();
+    handleCloseRelationshipForm();
+  }
+
   return (
     <>
       <AppLayout
@@ -164,7 +169,11 @@ export default function DashboardPage() {
           ) : undefined
         }
       >
-        {selectedTreeId ? <FamilyGraph /> : <WelcomePage />}
+        {selectedTreeId ? (
+          <FamilyGraph onPaneClick={handleGraphPaneClick} />
+        ) : (
+          <WelcomePage />
+        )}
       </AppLayout>
 
       <OverlayLayer>

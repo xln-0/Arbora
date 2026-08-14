@@ -1,6 +1,7 @@
 import type { Person } from "./person";
 import type { Relationship } from "./relationship";
 import type { TreeMember, TreeRole } from "./treeMember";
+import type { Event } from "./event";
 
 /**
  * Données nécessaires à la création d'un arbre.
@@ -34,6 +35,8 @@ export interface FamilyTree {
   persons?: Person[];
 
   relationships?: Relationship[];
+
+  events?: Event[];
 
   /**
    * Membres de l'arbre avec leurs permissions.
