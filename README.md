@@ -101,8 +101,8 @@ docker compose -f docker-compose.prod.yml up -d
 
 | Image | Stable tags | Beta tag |
 | --- | --- | --- |
-| `ghcr.io/xln-0/arbora-api` | `latest`, `1.0.0` | `beta` |
-| `ghcr.io/xln-0/arbora-web` | `latest`, `1.0.0` | `beta` |
+| `ghcr.io/xln-0/arbora-api` | `latest`, `1.1.0` | `beta` |
+| `ghcr.io/xln-0/arbora-web` | `latest`, `1.1.0` | `beta` |
 
 Stable images support `linux/amd64` and `linux/arm64`. Beta images target `linux/arm64` for 64-bit Raspberry Pi installations.
 
