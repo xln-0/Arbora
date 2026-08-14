@@ -69,7 +69,7 @@ export default function TreeElementsPage() {
 
   return (
     <AppLayout title={title}>
-      <div className="mx-auto max-w-6xl space-y-8 p-6 lg:p-8">
+      <div className="mx-auto max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         {!selectedTreeId && (
           <p className="text-muted">{t("elements.noTree")}</p>
         )}

@@ -17,11 +17,11 @@ export default function StartupScreen({
   const key = unavailable ? "unavailable" : "loading";
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface-muted px-6">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-surface-muted p-4 sm:px-6">
       <span className="pointer-events-none absolute -left-24 top-8 h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
       <span className="pointer-events-none absolute -right-24 bottom-0 h-96 w-96 rounded-full bg-amber-200/25 blur-3xl" />
 
-      <section className="relative w-full max-w-md rounded-[2rem] border border-white/80 bg-surface p-8 text-center shadow-[0_24px_80px_rgba(15,23,42,0.10)] sm:p-10">
+      <section className="relative w-full max-w-md rounded-[1.5rem] border border-white/80 bg-surface p-6 text-center shadow-[0_24px_80px_rgba(15,23,42,0.10)] sm:rounded-[2rem] sm:p-10">
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-soft to-surface text-primary shadow-sm ring-1 ring-primary/15">
           {unavailable ? (
             <ServerOff size={27} />

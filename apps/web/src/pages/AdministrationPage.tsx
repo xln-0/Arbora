@@ -56,7 +56,7 @@ export default function AdministrationPage() {
 
   return (
     <AppLayout title={t("navigation.administration")}>
-      <main className="mx-auto max-w-6xl space-y-8 p-6 lg:p-8">
+      <main className="mx-auto max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         <header className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
           <div className="bg-gradient-to-br from-primary/15 via-surface to-amber-100/55 px-6 py-8 sm:px-8">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-sm">
@@ -72,7 +72,7 @@ export default function AdministrationPage() {
         </header>
 
         <div className="grid items-start gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+          <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-7">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
@@ -132,7 +132,7 @@ export default function AdministrationPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+          <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-7">
             <div className="flex items-start gap-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
                 <UserPlus size={20} />

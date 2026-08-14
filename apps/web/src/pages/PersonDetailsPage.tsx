@@ -75,28 +75,32 @@ export default function PersonDetailsPage() {
             <div className="flex items-center gap-2">
               <Button
                 variant="secondary"
+                aria-label={t("event.add")}
+                title={t("event.add")}
                 onClick={() => {
                   relationshipActions.closeForm();
                   eventActions.openCreateForm();
                 }}
               >
                 <CalendarPlus size={17} />
-                {t("event.add")}
+                <span className="hidden sm:inline">{t("event.add")}</span>
               </Button>
               <Button
+                aria-label={t("relationship.add")}
+                title={t("relationship.add")}
                 onClick={() => {
                   eventActions.closeForm();
                   relationshipActions.openCreateForm();
                 }}
               >
                 <GitFork size={17} />
-                {t("relationship.add")}
+                <span className="hidden sm:inline">{t("relationship.add")}</span>
               </Button>
             </div>
           ) : undefined
         }
       >
-        <div className="mx-auto max-w-6xl space-y-8 p-6 lg:p-8">
+        <div className="mx-auto max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
           <Link
             to="/elements"
             className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground"
@@ -293,7 +297,7 @@ function PersonHeader({
         />
 
         <div className="mt-4">
-          <h1 className="text-3xl font-semibold tracking-tight">{name}</h1>
+          <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">{name}</h1>
           <p className="mt-1 text-sm text-muted">
             {t(`gender.${person.gender}`)}
           </p>
@@ -414,7 +418,7 @@ function RelationGroup({
                       onClick={() => onEdit(relationship)}
                       aria-label={t("actions.edit")}
                       title={t("actions.edit")}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground sm:h-8 sm:w-8"
                     >
                       <Pencil size={14} />
                     </button>
@@ -423,7 +427,7 @@ function RelationGroup({
                       onClick={() => onDelete(relationship)}
                       aria-label={t("actions.delete")}
                       title={t("actions.delete")}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600"
+                      className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600 sm:h-8 sm:w-8"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -467,7 +471,7 @@ function VerticalTimeline({
   onDelete: (event: StoredEvent) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface px-5 py-7 shadow-sm sm:px-8">
+    <div className="rounded-2xl border border-border bg-surface px-3 py-6 shadow-sm sm:px-8 sm:py-7">
       <div className="relative ml-4 border-l-2 border-border">
         {events.map((event, index) => (
           <TimelineEvent
@@ -567,7 +571,7 @@ function TimelineEvent({
                 onClick={() => onEdit(event.storedEvent!)}
                 aria-label={t("actions.edit")}
                 title={t("actions.edit")}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground sm:h-8 sm:w-8"
               >
                 <Pencil size={14} />
               </button>
@@ -576,7 +580,7 @@ function TimelineEvent({
                 onClick={() => onDelete(event.storedEvent!)}
                 aria-label={t("actions.delete")}
                 title={t("actions.delete")}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600 sm:h-8 sm:w-8"
               >
                 <Trash2 size={14} />
               </button>

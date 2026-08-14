@@ -32,7 +32,7 @@ export default function TreeSettingsPage() {
   if (!tree || tree.role !== "OWNER") {
     return (
       <AppLayout title={t("navigation.treeSettings")}>
-        <main className="mx-auto max-w-4xl p-6 lg:p-8">
+        <main className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col items-center rounded-3xl border border-dashed border-border bg-surface px-6 py-16 text-center">
             <ShieldCheck size={28} className="text-primary" />
             <h1 className="mt-4 font-semibold">
@@ -104,7 +104,7 @@ export default function TreeSettingsPage() {
 
   return (
     <AppLayout title={t("navigation.treeSettings")}>
-      <main className="mx-auto max-w-5xl space-y-8 p-6 lg:p-8">
+      <main className="mx-auto max-w-5xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         <header className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
           <div className="bg-gradient-to-br from-primary/15 via-surface to-secondary/40 px-6 py-8 sm:px-8">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -131,7 +131,7 @@ export default function TreeSettingsPage() {
           </p>
         )}
 
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+        <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-7">
           <SectionHeader
             icon={<Settings2 size={20} />}
             title={t("settings.treeName")}
@@ -159,7 +159,7 @@ export default function TreeSettingsPage() {
           </form>
         </section>
 
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+        <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <SectionHeader
               icon={<MailPlus size={20} />}
@@ -168,7 +168,7 @@ export default function TreeSettingsPage() {
             />
             <form
               onSubmit={handleAddMember}
-              className="flex w-full gap-2 lg:max-w-md"
+              className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md"
             >
               <input
                 type="email"
@@ -180,7 +180,7 @@ export default function TreeSettingsPage() {
               <Button
                 type="submit"
                 disabled={!memberEmail.trim() || isAddingMember}
-                className="shrink-0 rounded-xl px-4"
+                className="w-full shrink-0 rounded-xl px-4 sm:w-auto"
               >
                 {t("settings.addMember")}
               </Button>

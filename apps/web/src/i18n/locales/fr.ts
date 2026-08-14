@@ -134,6 +134,8 @@ export default {
   },
 
   sidebar: {
+    open: "Ouvrir la navigation",
+    close: "Fermer la navigation",
     collapse: "Réduire la barre latérale",
     expand: "Déployer la barre latérale",
   },

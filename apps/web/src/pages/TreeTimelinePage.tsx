@@ -51,7 +51,7 @@ export default function TreeTimelinePage() {
 
   return (
     <AppLayout title={title}>
-      <div className="mx-auto min-w-0 max-w-6xl space-y-8 p-6 lg:p-8">
+      <div className="mx-auto min-w-0 max-w-6xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         {!selectedTreeId && (
           <EmptyState message={t("timeline.noTree")} />
         )}
@@ -77,7 +77,7 @@ export default function TreeTimelinePage() {
               <EmptyState message={t("timeline.empty")} />
             ) : (
               <section className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-                <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-5 sm:py-4">
                   <p className="text-sm text-muted">
                     {t("timeline.eventCount", {
                       count: String(events.length),
@@ -89,7 +89,7 @@ export default function TreeTimelinePage() {
                 </div>
 
                 <div className="max-w-full overflow-x-auto overscroll-x-contain pb-2">
-                  <div className="relative flex h-[28rem] min-w-max items-stretch gap-8 px-10 py-8">
+                  <div className="relative flex h-[25rem] min-w-max items-stretch gap-5 px-5 py-6 sm:h-[28rem] sm:gap-8 sm:px-10 sm:py-8">
                     <div className="absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 bg-border" />
 
                     {events.map((event, index) => (

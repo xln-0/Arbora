@@ -64,7 +64,10 @@ export default function ConfirmDialog({
         className="
           relative
 
-          w-96
+          w-[calc(100vw-2rem)]
+          max-w-96
+          max-h-[calc(100dvh-2rem)]
+          overflow-y-auto
 
           bg-surface
 
@@ -75,7 +78,8 @@ export default function ConfirmDialog({
 
           shadow-xl
 
-          p-6
+          p-5
+          sm:p-6
         "
       >
         <div
