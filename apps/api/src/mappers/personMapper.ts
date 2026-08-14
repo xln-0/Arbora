@@ -4,7 +4,9 @@ import type { CreatePersonInput, UpdatePersonInput } from "@arbora/shared";
 
 import { createAppError } from "../errors/createAppError.js";
 
-type PersonEntity = Prisma.PersonGetPayload<{}>;
+type PersonEntity = Prisma.PersonGetPayload<{}> & {
+  events?: Array<{ type: string; date: Date }>;
+};
 
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -15,6 +17,9 @@ type DateErrorCode = "INVALID_BIRTH_DATE" | "INVALID_DEATH_DATE";
  * en DTO exposé par l'API.
  */
 export function mapPerson(person: PersonEntity) {
+  const birthDate = person.events?.find((event) => event.type === "BIRTH")?.date;
+  const deathDate = person.events?.find((event) => event.type === "DEATH")?.date;
+
   return {
     id: person.id,
     treeId: person.treeId,
@@ -22,8 +27,8 @@ export function mapPerson(person: PersonEntity) {
     lastName: person.lastName,
     gender: person.gender,
 
-    birthDate: formatDate(person.birthDate),
-    deathDate: formatDate(person.deathDate),
+    birthDate: formatDate(birthDate ?? null),
+    deathDate: formatDate(deathDate ?? null),
 
     positionX: person.positionX,
     positionY: person.positionY,
@@ -80,12 +85,12 @@ export function mapPersonInput(data: CreatePersonInput | UpdatePersonInput) {
       gender: data.gender,
     }),
 
-    ...(data.birthDate !== undefined && {
-      birthDate: parseDate(data.birthDate, "INVALID_BIRTH_DATE"),
-    }),
+  };
+}
 
-    ...(data.deathDate !== undefined && {
-      deathDate: parseDate(data.deathDate, "INVALID_DEATH_DATE"),
-    }),
+export function mapPersonLifeDates(data: CreatePersonInput | UpdatePersonInput) {
+  return {
+    birthDate: parseDate(data.birthDate, "INVALID_BIRTH_DATE"),
+    deathDate: parseDate(data.deathDate, "INVALID_DEATH_DATE"),
   };
 }

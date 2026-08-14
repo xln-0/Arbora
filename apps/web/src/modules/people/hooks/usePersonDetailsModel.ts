@@ -48,9 +48,14 @@ export function usePersonDetailsModel(
   const timelineEvents = useMemo(
     () =>
       person
-        ? buildPersonalTimeline(person, graph.persons, graph.relationships)
+        ? buildPersonalTimeline(
+            person,
+            graph.persons,
+            graph.relationships,
+            graph.events,
+          )
         : [],
-    [graph.persons, graph.relationships, person],
+    [graph.events, graph.persons, graph.relationships, person],
   );
   const dateFormatter = useMemo(
     () =>

@@ -181,4 +181,52 @@ export const ERROR_CODES = {
     statusCode: 400,
     message: "A person cannot be related to itself",
   },
+
+  /**
+   * Events
+   */
+  EVENT_NOT_FOUND: {
+    statusCode: 404,
+    message: "Event not found",
+  },
+
+  INVALID_EVENT: {
+    statusCode: 400,
+    message: "Invalid event",
+  },
+
+  INVALID_EVENT_TYPE: {
+    statusCode: 400,
+    message: "Invalid event type",
+  },
+
+  INVALID_EVENT_DATE: {
+    statusCode: 400,
+    message: "Invalid event date",
+  },
+
+  INVALID_EVENT_PERSON: {
+    statusCode: 400,
+    message: "The event person must belong to the tree",
+  },
+
+  INVALID_EVENT_RELATIONSHIP: {
+    statusCode: 400,
+    message: "The event relationship is invalid",
+  },
+
+  EVENT_RELATIONSHIP_REQUIRED: {
+    statusCode: 400,
+    message: "A couple event requires a relationship",
+  },
+
+  EVENT_TEXT_TOO_LONG: {
+    statusCode: 400,
+    message: "Event text is too long",
+  },
+
+  DUPLICATE_EVENT: {
+    statusCode: 409,
+    message: "This event already exists for the person or relationship",
+  },
 } as const;

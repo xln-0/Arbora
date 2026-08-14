@@ -1,5 +1,6 @@
 import {
   isCoupleRelationshipType,
+  type Event as StoredEvent,
   type Person,
   type Relationship,
 } from "@arbora/shared";
@@ -16,6 +17,7 @@ interface BaseTimelineEvent {
   date: string;
   type: TimelineEventType;
   relatedPerson?: Person;
+  storedEvent?: StoredEvent;
 }
 
 export interface TreeTimelineEvent extends BaseTimelineEvent {
@@ -23,9 +25,19 @@ export interface TreeTimelineEvent extends BaseTimelineEvent {
   type: Exclude<TimelineEventType, "childBirth">;
 }
 
-export type PersonalTimelineEvent = BaseTimelineEvent;
+export type PersonalTimelineEvent =
+  | BaseTimelineEvent
+  | {
+      id: string;
+      date: string;
+      type: "customEvent";
+      storedEvent: StoredEvent;
+    };
 
-function compareEvents(a: BaseTimelineEvent, b: BaseTimelineEvent) {
+function compareEvents(
+  a: Pick<PersonalTimelineEvent, "id" | "date" | "type">,
+  b: Pick<PersonalTimelineEvent, "id" | "date" | "type">,
+) {
   return (
     a.date.localeCompare(b.date) ||
     a.type.localeCompare(b.type) ||
@@ -104,15 +116,24 @@ export function buildPersonalTimeline(
   person: Person,
   persons: Person[],
   relationships: Relationship[],
+  storedEvents: StoredEvent[] = [],
 ) {
   const events: PersonalTimelineEvent[] = [];
   const personById = new Map(persons.map((item) => [item.id, item]));
+  const findPersonalEvent = (type: StoredEvent["type"]) =>
+    storedEvents.find(
+      (event) =>
+        event.personId === person.id &&
+        event.type === type &&
+        !event.relationshipId,
+    );
 
   if (person.birthDate) {
     events.push({
       id: `${person.id}-birth`,
       date: person.birthDate,
       type: "birth",
+      storedEvent: findPersonalEvent("BIRTH"),
     });
   }
 
@@ -121,6 +142,7 @@ export function buildPersonalTimeline(
       id: `${person.id}-death`,
       date: person.deathDate,
       type: "death",
+      storedEvent: findPersonalEvent("DEATH"),
     });
   }
 
@@ -147,6 +169,16 @@ export function buildPersonalTimeline(
             date,
             type,
             relatedPerson,
+            storedEvent: storedEvents.find(
+              (event) =>
+                event.relationshipId === relationship.id &&
+                event.type ===
+                  ({
+                    freeUnion: "FREE_UNION",
+                    marriage: "MARRIAGE",
+                    divorce: "DIVORCE",
+                  } as const)[type],
+            ),
           });
         }
       }
@@ -167,6 +199,25 @@ export function buildPersonalTimeline(
         });
       }
     }
+  }
+
+  for (const event of storedEvents) {
+    if (
+      event.type === "BIRTH" ||
+      event.type === "DEATH" ||
+      isCoupleRelationshipType(event.type)
+    ) {
+      continue;
+    }
+
+    if (event.personId !== person.id) continue;
+
+    events.push({
+      id: `event-${event.id}`,
+      date: event.date,
+      type: "customEvent",
+      storedEvent: event,
+    });
   }
 
   return events.sort(compareEvents);

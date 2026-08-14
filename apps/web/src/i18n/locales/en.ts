@@ -170,6 +170,46 @@ export default {
     },
   },
 
+  event: {
+    add: "Add an event",
+    edit: "Edit event",
+    description: "Add a meaningful moment to this person's life.",
+    editDescription: "Update this moment in this person's life.",
+    deleteTitle: "Delete event",
+    deleteMessage: "Are you sure you want to delete this event?",
+    dateAtPlace: "{{date}} in {{place}}",
+    person: "Person concerned",
+    titlePlaceholder: "E.g. Moved to London",
+    selectRelatedPerson: "Select the second person",
+    noCoupleRelationship:
+      "Create a couple relationship with this person first.",
+    fields: {
+      type: "Event type",
+      title: "Title (optional)",
+      date: "Date",
+      place: "Place",
+      description: "Description",
+      relatedPerson: "Second person",
+    },
+    types: {
+      BIRTH: "Birth",
+      BAPTISM: "Baptism",
+      EDUCATION: "Education",
+      OCCUPATION: "Occupation",
+      RESIDENCE: "Residence",
+      FREE_UNION: "Domestic partnership",
+      MARRIAGE: "Marriage",
+      DIVORCE: "Divorce",
+      DEATH: "Death",
+      BURIAL: "Burial",
+      OTHER: "Other",
+    },
+    errors: {
+      generic: "Unable to save this event.",
+      delete: "Unable to delete this event.",
+    },
+  },
+
   person: {
     add: "Add a person",
     edit: "Edit person",

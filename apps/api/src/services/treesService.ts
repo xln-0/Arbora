@@ -4,6 +4,7 @@ import type { CreateTreeInput, UpdateTreeInput } from "@arbora/shared";
 import { createAppError } from "../errors/createAppError.js";
 import { mapPerson } from "../mappers/personMapper.js";
 import { mapRelationship } from "../mappers/relationshipMapper.js";
+import { mapEvent } from "../mappers/eventMapper.js";
 
 const TREE_NAME_MAX_LENGTH = 120;
 
@@ -120,8 +121,9 @@ export async function getTree(
       ],
     },
     include: {
-      persons: true,
-      relationships: true,
+      persons: { include: { events: true } },
+      relationships: { include: { events: true } },
+      events: true,
       members: {
         where: { userId },
         select: { role: true },
@@ -143,6 +145,7 @@ export async function getTree(
     ...mapTreeSummary(tree, role),
     persons: tree.persons.map(mapPerson),
     relationships: tree.relationships.map(mapRelationship),
+    events: tree.events.map(mapEvent),
   };
 }
 

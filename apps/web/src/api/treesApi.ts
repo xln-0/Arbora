@@ -3,6 +3,7 @@ import { apiClient } from "./client";
 import type {
   CreateTreeInput,
   FamilyTree,
+  Event,
   Person,
   Relationship,
   UpdateTreeInput,
@@ -11,6 +12,7 @@ import type {
 export interface TreeGraph {
   persons: Person[];
   relationships: Relationship[];
+  events: Event[];
 }
 
 const GRAPH_CACHE_TTL_MS = 30_000;

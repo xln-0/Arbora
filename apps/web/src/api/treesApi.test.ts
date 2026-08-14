@@ -15,6 +15,7 @@ vi.mock("./client", () => ({
 const graph: TreeGraph = {
   persons: [],
   relationships: [],
+  events: [],
 };
 
 describe("tree graph cache", () => {

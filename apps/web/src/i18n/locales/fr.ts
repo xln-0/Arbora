@@ -170,6 +170,46 @@ export default {
     },
   },
 
+  event: {
+    add: "Ajouter un événement",
+    edit: "Modifier l’événement",
+    description: "Ajoutez un moment marquant à la vie de cette personne.",
+    editDescription: "Mettez à jour ce moment de la vie de cette personne.",
+    deleteTitle: "Supprimer l’événement",
+    deleteMessage: "Voulez-vous vraiment supprimer cet événement ?",
+    dateAtPlace: "{{date}} à {{place}}",
+    person: "Personne concernée",
+    titlePlaceholder: "Ex. Déménagement à Lyon",
+    selectRelatedPerson: "Sélectionner la deuxième personne",
+    noCoupleRelationship:
+      "Créez d’abord une relation de couple avec cette personne.",
+    fields: {
+      type: "Type d’événement",
+      title: "Titre (optionnel)",
+      date: "Date",
+      place: "Lieu",
+      description: "Description",
+      relatedPerson: "Deuxième personne",
+    },
+    types: {
+      BIRTH: "Naissance",
+      BAPTISM: "Baptême",
+      EDUCATION: "Études",
+      OCCUPATION: "Profession",
+      RESIDENCE: "Résidence",
+      FREE_UNION: "Union libre",
+      MARRIAGE: "Mariage",
+      DIVORCE: "Divorce",
+      DEATH: "Décès",
+      BURIAL: "Inhumation",
+      OTHER: "Autre",
+    },
+    errors: {
+      generic: "Impossible d’enregistrer cet événement.",
+      delete: "Impossible de supprimer cet événement.",
+    },
+  },
+
   person: {
     add: "Ajouter une personne",
     edit: "Modifier la personne",

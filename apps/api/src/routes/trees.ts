@@ -144,6 +144,7 @@ const treesRoutes: FastifyPluginAsync = async (app) => {
       return {
         persons: tree.persons,
         relationships: tree.relationships,
+        events: tree.events,
       };
     },
   );

@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Baby,
   CalendarDays,
+  CalendarPlus,
   GitFork,
   Heart,
   HeartCrack,
@@ -16,6 +17,7 @@ import {
 import {
   isCoupleRelationshipType,
   type CoupleRelationshipType,
+  type Event as StoredEvent,
   type Person,
   type Relationship,
 } from "@arbora/shared";
@@ -31,6 +33,8 @@ import { useTreeGraphQuery } from "@/modules/graph/hooks/useTreeGraphQuery";
 import type { PersonalTimelineEvent } from "@/modules/timeline/timelineUtils";
 import { usePersonDetailsModel } from "@/modules/people/hooks/usePersonDetailsModel";
 import { usePersonRelationshipActions } from "@/modules/people/hooks/usePersonRelationshipActions";
+import EventFormPanel from "@/modules/events/components/EventFormPanel";
+import { usePersonEventActions } from "@/modules/events/hooks/usePersonEventActions";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useTreeStore } from "@/stores/treeStore";
 
@@ -52,6 +56,11 @@ export default function PersonDetailsPage() {
     person,
     reload,
   });
+  const eventActions = usePersonEventActions({
+    treeId: selectedTreeId,
+    personId: person?.id,
+    reload,
+  });
 
   const name = person ? getPersonName(person) : t("personDetails.title");
   const canEdit =
@@ -63,10 +72,27 @@ export default function PersonDetailsPage() {
         title={name}
         actions={
           person && canEdit ? (
-            <Button onClick={relationshipActions.openCreateForm}>
-              <GitFork size={17} />
-              {t("relationship.add")}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  relationshipActions.closeForm();
+                  eventActions.openCreateForm();
+                }}
+              >
+                <CalendarPlus size={17} />
+                {t("event.add")}
+              </Button>
+              <Button
+                onClick={() => {
+                  eventActions.closeForm();
+                  relationshipActions.openCreateForm();
+                }}
+              >
+                <GitFork size={17} />
+                {t("relationship.add")}
+              </Button>
+            </div>
           ) : undefined
         }
       >
@@ -94,6 +120,12 @@ export default function PersonDetailsPage() {
         {relationshipActions.actionError && (
           <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
             {relationshipActions.actionError}
+          </p>
+        )}
+
+        {eventActions.errorMessage && !eventActions.isFormOpen && (
+          <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+            {eventActions.errorMessage}
           </p>
         )}
 
@@ -168,6 +200,9 @@ export default function PersonDetailsPage() {
                 <VerticalTimeline
                   events={timelineEvents}
                   formatDate={formatDate}
+                  canEdit={canEdit}
+                  onEdit={eventActions.openEditForm}
+                  onDelete={eventActions.requestDelete}
                 />
               )}
             </section>
@@ -177,6 +212,21 @@ export default function PersonDetailsPage() {
       </AppLayout>
 
       <OverlayLayer>
+        {eventActions.isFormOpen && person && (
+          <EventFormPanel
+            key={eventActions.editingEvent?.id ?? "new-event"}
+            personName={getPersonName(person)}
+            personId={person.id}
+            persons={graph.persons}
+            relationships={graph.relationships}
+            mode={eventActions.editingEvent ? "edit" : "create"}
+            initialData={eventActions.editingEvent}
+            onSave={eventActions.save}
+            onClose={eventActions.closeForm}
+            errorMessage={eventActions.errorMessage}
+          />
+        )}
+
         {relationshipActions.isFormOpen && person && (
           <RelationshipFormPanel
             persons={graph.persons.filter((item) => item.id !== person.id)}
@@ -208,6 +258,15 @@ export default function PersonDetailsPage() {
             })}
             onCancel={relationshipActions.cancelDelete}
             onConfirm={relationshipActions.confirmDelete}
+          />
+        )}
+
+        {eventActions.eventToDelete && (
+          <ConfirmDialog
+            title={t("event.deleteTitle")}
+            message={t("event.deleteMessage")}
+            onCancel={eventActions.cancelDelete}
+            onConfirm={eventActions.confirmDelete}
           />
         )}
       </OverlayLayer>
@@ -397,9 +456,15 @@ function RelationGroup({
 function VerticalTimeline({
   events,
   formatDate,
+  canEdit,
+  onEdit,
+  onDelete,
 }: {
   events: PersonalTimelineEvent[];
   formatDate: (date: string) => string;
+  canEdit: boolean;
+  onEdit: (event: StoredEvent) => void;
+  onDelete: (event: StoredEvent) => void;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-surface px-5 py-7 shadow-sm sm:px-8">
@@ -410,6 +475,9 @@ function VerticalTimeline({
             event={event}
             formatDate={formatDate}
             isLast={index === events.length - 1}
+            canEdit={canEdit}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))}
       </div>
@@ -421,12 +489,21 @@ function TimelineEvent({
   event,
   formatDate,
   isLast,
+  canEdit,
+  onEdit,
+  onDelete,
 }: {
   event: PersonalTimelineEvent;
   formatDate: (date: string) => string;
   isLast: boolean;
+  canEdit: boolean;
+  onEdit: (event: StoredEvent) => void;
+  onDelete: (event: StoredEvent) => void;
 }) {
-  const styles = {
+  const styles = event.type === "customEvent" ? {
+    icon: CalendarDays,
+    color: "bg-primary text-white",
+  } : {
     birth: { icon: Baby, color: "bg-primary text-white" },
     freeUnion: { icon: HeartHandshake, color: "bg-cyan-500 text-white" },
     marriage: { icon: Heart, color: "bg-pink-500 text-white" },
@@ -447,9 +524,22 @@ function TimelineEvent({
       <article className="rounded-2xl bg-surface-muted p-4 sm:flex sm:items-center sm:justify-between sm:gap-6">
         <div className="min-w-0">
           <h3 className="font-semibold">
-            {t(`personDetails.timeline.events.${event.type}`)}
+            {event.type === "customEvent"
+              ? event.storedEvent.title ||
+                t(`event.types.${event.storedEvent.type}`)
+              : t(`personDetails.timeline.events.${event.type}`)}
           </h3>
-          {event.relatedPerson && (
+          {event.type === "customEvent" && (
+            <div className="mt-1 space-y-1 text-sm text-muted">
+              <p>{t(`event.types.${event.storedEvent.type}`)}</p>
+              {event.storedEvent.description && (
+                <p className="whitespace-pre-line">
+                  {event.storedEvent.description}
+                </p>
+              )}
+            </div>
+          )}
+          {event.type !== "customEvent" && event.relatedPerson && (
             <Link
               to={`/people/${event.relatedPerson.id}`}
               className="mt-1 inline-block truncate text-sm text-primary hover:underline"
@@ -458,9 +548,41 @@ function TimelineEvent({
             </Link>
           )}
         </div>
-        <time className="mt-2 block shrink-0 text-sm font-medium text-muted sm:mt-0">
-          {formatDate(event.date)}
-        </time>
+        <div className="mt-2 flex shrink-0 items-center gap-1 sm:mt-0">
+          <time
+            dateTime={event.date}
+            className="mr-1 text-sm font-medium text-muted"
+          >
+            {event.storedEvent?.place
+              ? t("event.dateAtPlace", {
+                  date: formatDate(event.date),
+                  place: event.storedEvent.place,
+                })
+              : formatDate(event.date)}
+          </time>
+          {canEdit && event.storedEvent && (
+            <>
+              <button
+                type="button"
+                onClick={() => onEdit(event.storedEvent!)}
+                aria-label={t("actions.edit")}
+                title={t("actions.edit")}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-foreground"
+              >
+                <Pencil size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(event.storedEvent!)}
+                aria-label={t("actions.delete")}
+                title={t("actions.delete")}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-red-50 hover:text-red-600"
+              >
+                <Trash2 size={14} />
+              </button>
+            </>
+          )}
+        </div>
       </article>
     </div>
   );
