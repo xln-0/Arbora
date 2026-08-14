@@ -10,7 +10,8 @@ export default function WelcomePage() {
         items-center
         justify-center
 
-        p-6
+        p-4
+        sm:p-6
       "
     >
       <div
@@ -32,7 +33,8 @@ export default function WelcomePage() {
 
         <h1
           className="
-            text-3xl
+            text-2xl
+            sm:text-3xl
             font-bold
           "
         >

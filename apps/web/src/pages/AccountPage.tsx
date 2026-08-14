@@ -43,7 +43,7 @@ export default function AccountPage() {
 
   return (
     <AppLayout title={t("navigation.account")}>
-      <main className="mx-auto max-w-5xl space-y-8 p-6 lg:p-8">
+      <main className="mx-auto max-w-5xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         <header className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
           <div className="h-24 bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/50" />
           <div className="px-6 pb-7 sm:px-8">
@@ -52,11 +52,11 @@ export default function AccountPage() {
               className="-mt-10 h-20 w-20 border-4 border-surface bg-primary text-2xl text-white shadow-sm"
             />
             <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs font-medium uppercase tracking-wider text-primary">
                   {t("account.profile")}
                 </p>
-                <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                <h1 className="mt-1 break-all text-xl font-semibold tracking-tight sm:text-2xl">
                   {email}
                 </h1>
               </div>
@@ -84,15 +84,15 @@ export default function AccountPage() {
 
             <div className="mt-6 flex items-center gap-3 rounded-2xl bg-surface-muted px-4 py-3">
               <Mail size={17} className="text-primary" />
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs text-muted">{t("account.email")}</p>
-                <p className="text-sm font-medium">{email}</p>
+                <p className="break-all text-sm font-medium">{email}</p>
               </div>
             </div>
           </div>
         </header>
 
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+        <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-7">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="flex items-start gap-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
@@ -108,7 +108,7 @@ export default function AccountPage() {
 
             <form
               onSubmit={handleCreateTree}
-              className="flex w-full gap-2 lg:max-w-md"
+              className="flex w-full flex-col gap-2 sm:flex-row lg:max-w-md"
             >
               <input
                 className={inputClassName}
@@ -119,7 +119,7 @@ export default function AccountPage() {
               <Button
                 type="submit"
                 disabled={!newTreeName.trim() || isCreatingTree}
-                className="shrink-0 rounded-xl px-4"
+                className="w-full shrink-0 rounded-xl px-4 sm:w-auto"
               >
                 <Plus size={16} />
                 {t("tree.create")}

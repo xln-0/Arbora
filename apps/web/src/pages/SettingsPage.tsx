@@ -10,7 +10,7 @@ export default function SettingsPage() {
 
   return (
     <AppLayout title={t("navigation.settings")}>
-      <main className="mx-auto max-w-5xl space-y-8 p-6 lg:p-8">
+      <main className="mx-auto max-w-5xl space-y-6 p-4 sm:space-y-8 sm:p-6 lg:p-8">
         <header className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
           <div className="bg-gradient-to-br from-primary/15 via-surface to-secondary/40 px-6 py-8 sm:px-8">
             <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-sm">
@@ -25,7 +25,7 @@ export default function SettingsPage() {
           </div>
         </header>
 
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-7">
+        <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm sm:p-7">
           <div className="flex items-start gap-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
               <Languages size={20} />

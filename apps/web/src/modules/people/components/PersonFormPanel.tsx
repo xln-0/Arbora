@@ -126,9 +126,9 @@ export default function PersonFormPanel({
   return (
     <form
       onSubmit={handleSubmit}
-      className="fixed right-6 top-20 z-50 flex max-h-[calc(100vh-6.5rem)] w-[min(26rem,calc(100vw-3rem))] flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl"
+      className="fixed inset-x-2 bottom-2 z-50 flex max-h-[calc(100dvh-1rem)] flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl sm:inset-x-auto sm:bottom-auto sm:right-6 sm:top-20 sm:max-h-[calc(100vh-6.5rem)] sm:w-[min(26rem,calc(100vw-3rem))]"
     >
-      <div className="relative shrink-0 border-b border-border bg-gradient-to-br from-primary/15 via-surface to-secondary/30 px-6 pb-5 pt-6">
+      <div className="relative shrink-0 border-b border-border bg-gradient-to-br from-primary/15 via-surface to-secondary/30 px-4 pb-4 pt-5 sm:px-6 sm:pb-5 sm:pt-6">
         <button
           type="button"
           onClick={onClose}
@@ -157,15 +157,15 @@ export default function PersonFormPanel({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-5">
+      <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
         {isReadonly ? (
           person && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <ReadonlyField
                   label={t("person.fields.gender")}
                   value={t(`gender.${person.gender}`)}
-                  className="col-span-2"
+                  className="sm:col-span-2"
                 />
                 <ReadonlyField
                   label={t("person.fields.birthDate")}
@@ -287,7 +287,7 @@ export default function PersonFormPanel({
         )}
       </div>
 
-      <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-border bg-surface px-6 py-4">
+      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t border-border bg-surface px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
         {mode === "view" ? (
           <>
             <Button type="button" variant="ghost" onClick={onClose}>

@@ -45,7 +45,8 @@ export default function Button({
         justify-center
         gap-2
 
-        h-10
+        h-11
+        sm:h-10
         px-3
 
         rounded-lg
